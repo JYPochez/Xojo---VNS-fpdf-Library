@@ -22,7 +22,7 @@ Xojo_fpdf is a pure Xojo implementation for creating PDF documents programmatica
 - **Polygons**: Arbitrary polygon shapes from Point arrays (triangles, pentagons, stars, etc.)
 - **Error Accumulation**: Graceful error handling without interrupting workflow
 
-- Basic Example
+## Basic Example
 
 ```xojo
 // Create a new PDF document (A4, Portrait, Millimeters)
