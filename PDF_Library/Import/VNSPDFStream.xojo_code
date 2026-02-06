@@ -40,21 +40,16 @@ Inherits VNSPDFType
 		    Dim decodeParmsObj As VNSPDFType = dictValue.Value(key)
 		    If decodeParmsObj IsA VNSPDFDictionary Then
 		      decodeParms = VNSPDFDictionary(decodeParmsObj).value
-		      System.DebugLog("VNSPDFStream.GetDecodedData: Found DecodeParms")
 		    End If
 		  End If
 
 		  // Decode using VNSPDFStreamDecoder
-		  System.DebugLog("VNSPDFStream.GetDecodedData: Decoding with filter = " + filterName)
 		  Dim decoder As New VNSPDFStreamDecoder
 		  mDecodedData = decoder.DecodeStream(data, filterName, decodeParms)
 
 		  If decoder.GetError() <> "" Then
 		    // Decompression failed - return empty string
-		    System.DebugLog("VNSPDFStream.GetDecodedData: ERROR - " + decoder.GetError())
 		    mDecodedData = ""
-		  Else
-		    System.DebugLog("VNSPDFStream.GetDecodedData: Success, decoded length = " + Str(mDecodedData.Length))
 		  End If
 
 		  Return mDecodedData

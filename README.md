@@ -19,12 +19,18 @@ Xojo_fpdf is a pure Xojo implementation for creating PDF documents programmatica
 - **Custom Page Sizes**: Support for standard sizes (A4, Letter, Legal, etc.) and custom dimensions
 - **Flexible Units**: Work in millimeters, centimeters, inches, or points
 - **Portrait/Landscape**: Automatic handling of page orientation
-- **Gradients**: Linear and radial gradients with PDF shading patterns
+- **Gradients**: Linear, radial, and multi-stop gradients with PDF shading patterns (FunctionType 3 stitching)
 - **Clipping Paths**: Rectangular, circular, elliptical, polygon, and text clipping with nesting support
 - **Bezier Curves**: Quadratic and cubic Bezier curves for smooth curved paths
 - **Arrows**: Lines with arrowheads at start, end, or both ends
 - **Polygons**: Arbitrary polygon shapes from Point arrays (triangles, pentagons, stars, etc.)
 - **Error Accumulation**: Graceful error handling without interrupting workflow
+- **Bounds Checking**: Optional exception mode for out-of-bounds drawing detection
+- **PDF Import**: Import pages from existing PDF files as XObject Form templates with full parsing, resource copying, and nested XObject support (most real-world PDFs use FlateDecode compression and require the premium Zlib module for import)
+- **File Attachments**: Document-level and page annotation attachments (E-Invoice/Factur-X ready)
+- **PDFGraphics Compatible**: VNSPDFGraphics provides complete Xojo PDFGraphics API compatibility
+- **DrawObject Support**: Full Object2D rendering (RectShape, OvalShape, RoundRectShape, ArcShape, CurveShape, FigureShape, TextShape, PixmapShape, Group2D with rotation)
+- **CJK Text Wrapping**: Intelligent character-based line breaking for Chinese, Japanese, Korean text
 
 ### Premium Modules (Optional)
 
@@ -33,6 +39,7 @@ Xojo_fpdf is a pure Xojo implementation for creating PDF documents programmatica
 - **🔐 Encryption Module** ✅ *Ready* - RC4-128, AES-128, AES-256 encryption with pure Xojo implementation
 - **📊 Table Module** ✅ *Ready* - Professional table generation with headers, footers, pagination, and calculations
 - **🗜️ Zlib Module** ✅ *Ready* - Pure Xojo compression for iOS support (bypasses sandboxing)
+- **📝 Forms Module** 📋 *Planned* - Interactive PDF AcroForms with text fields, checkboxes, radio buttons, dropdowns, buttons, and signature fields
 - **🔮 PDF/A Module** 📋 *Planned* - Full archival compliance with validation
 - **🧾 E-Invoice Module** 📋 *Planned* - Factur-X, ZUGFeRD, EN 16931 compliant hybrid PDF/XML invoices
 
@@ -50,16 +57,16 @@ For details, see `docs/FEATURE_COMPARISON_PREMIUM.md`
 
 The repository includes four ready-to-use project files:
 
-- **Xojo_fpdf.xojo_project** - Desktop application with GUI examples
-- **Xojo_fpdf_web.xojo_project** - Web application with browser-based examples
-- **Xojo_iospdf.xojo_project** - iOS application with touch-based interface
-- **xojo_consolepdf.xojo_project** - Console application with interactive menu
+- **Xojo_fpdf_free.xojo_project** - Desktop application with GUI examples
+- **Xojo_fpdf_web_free.xojo_project** - Web application with browser-based examples
+- **Xojo_iospdf_free.xojo_project** - iOS application with touch-based interface
+- **xojo_consolepdf_free.xojo_project** - Console application with interactive menu
 
-All projects share the same `PDF_Library` folder for maximum code reuse. All four projects (Desktop, Web, iOS, and Console) include 19 working examples demonstrating various PDF features.
+All projects share the same `PDF_Library` folder for maximum code reuse. All four projects (Desktop, Web, iOS, and Console) include **23 working examples** demonstrating various PDF features.
 
 ### iOS Application
 
-The iOS project provides a native iOS interface with 19 example buttons:
+The iOS project provides a native iOS interface with 23 example buttons:
 
 - Generates PDFs using the shared `VNSPDFExamplesModule`
 - Saves PDFs to the iOS Documents folder
@@ -81,32 +88,37 @@ The iOS project provides a native iOS interface with 19 example buttons:
 ### Basic Example
 
 ```xojo
-// Create a new PDF document (A4, Portrait, Millimeters)
+// Create a new PDF document (default: A4, Portrait, Millimeters)
 Dim pdf As New VNSPDFDocument()
 
-// Add a page
-pdf.AddPage()
+// Set metadata (Xojo PDFDocument-compatible properties)
+pdf.Title = "My First PDF"
+pdf.Author = "Your Name"
 
-// Set font
+// Set font and add content
 pdf.SetFont("helvetica", "B", 16)
-
-// Add a cell with text
 pdf.Cell(0, 10, "Hello World!", 1, 1, "C")
 
 // Add more content
 pdf.SetFont("helvetica", "", 12)
 pdf.MultiCell(0, 6, "This is a longer paragraph that demonstrates the MultiCell method with automatic text wrapping.", 1, "L")
 
-// Save the PDF
+// Save the PDF (Xojo PDFDocument-compatible method)
 Dim f As FolderItem = SpecialFolder.Desktop.Child("output.pdf")
-pdf.SaveToFile(f)
+pdf.Save(f)
 ```
 
 ### Specifying Page Format
 
 ```xojo
-// Create a Letter-sized document in landscape orientation
-Dim pdf As New VNSPDFDocument( _
+// Xojo PDFDocument-compatible: Use page format enum
+Dim pdf As New VNSPDFDocument(VNSPDFModule.ePageFormat.Letter)
+
+// Or use custom dimensions (width, height in points)
+Dim pdf2 As New VNSPDFDocument(612.0, 792.0)  // US Letter in points
+
+// Advanced: Full control with orientation and units
+Dim pdf3 As New VNSPDFDocument( _
     VNSPDFModule.ePageOrientation.Landscape, _
     VNSPDFModule.ePageUnit.Inches, _
     VNSPDFModule.ePageFormat.Letter _
@@ -213,6 +225,43 @@ pdf.RadialGradient(x, y, w, h, r1, g1, b1, r2, g2, b2, x1, y1, x2, y2, r)
 // x1, y1: Starting circle center (normalized 0-1)
 // x2, y2: Ending circle center (normalized 0-1)
 // r: Ending circle radius (normalized 0-1)
+
+// Multi-stop linear gradient (rainbow gradients)
+pdf.LinearGradientMultiStop(x, y, w, h, stops(), x1, y1, x2, y2)
+// stops: Array of Pairs where Left = position (0.0-1.0), Right = Color
+// Example: Rainbow gradient
+Dim stops() As Pair
+stops.Add(0.0 : Color.Red)
+stops.Add(0.25 : Color.Yellow)
+stops.Add(0.5 : Color.Green)
+stops.Add(0.75 : Color.Cyan)
+stops.Add(1.0 : Color.Blue)
+pdf.LinearGradientMultiStop(10, 10, 100, 50, stops, 0, 0, 1, 0)
+```
+
+**VNSPDFGraphics Brush Support:**
+
+VNSPDFGraphics supports Xojo's gradient brushes (LinearGradientBrush, RadialGradientBrush, PictureBrush):
+
+```xojo
+Dim g As New VNSPDFGraphics(pdf)
+
+// LinearGradientBrush - multi-stop gradients supported
+Dim lgb As New LinearGradientBrush
+lgb.StartPoint = New Point(0, 0)
+lgb.EndPoint = New Point(100, 0)
+lgb.GradientStops.Add(0.0 : Color.Red)
+lgb.GradientStops.Add(0.5 : Color.Yellow)
+lgb.GradientStops.Add(1.0 : Color.Blue)
+g.Brush = lgb
+g.FillRectangle(10, 10, 100, 50)
+
+// RadialGradientBrush
+Dim rgb As New RadialGradientBrush
+rgb.StartPoint = New Point(50, 25)
+rgb.EndRadius = 50
+g.Brush = rgb
+g.FillOval(10, 70, 100, 50)
 ```
 
 ### Clipping Methods
@@ -359,12 +408,23 @@ PDF_Library/
 - `GetPageSize(ByRef width, ByRef height)` - Get current page dimensions
 - `SetAutoPageBreak(enable, margin)` - Enable/disable automatic page breaks
 - `GetAutoPageBreak(ByRef enable, ByRef margin)` - Get auto page break settings
-- `SetTitle(title)` - Set document title metadata
-- `SetAuthor(author)` - Set document author metadata
-- `SetSubject(subject)` - Set document subject metadata
-- `SetKeywords(keywords)` - Set document keywords metadata
-- `SetCreator(creator)` - Set document creator metadata
-- `SetLang(lang)` - Set document language (e.g., "en-US")
+
+*Xojo PDFDocument-Compatible Properties* (read/write):
+- `Title` - Document title metadata
+- `Author` - Author name metadata
+- `Subject` - Subject/description metadata
+- `Keywords` - Comma-separated keywords
+- `Creator` - Application name
+- `Language` - Document language (e.g., "en-US")
+- `CurrentPage` - Current page number (1-based)
+- `PageHeight` - Current page height in points
+- `PageWidth` - Current page width in points
+- `Landscape` - True if current page is landscape orientation
+- `Compressed` - Enable/disable stream compression
+- `Graphics` - VNSPDFGraphics object for drawing
+
+*Legacy Metadata Methods* (still supported):
+- `SetTitle(title)`, `SetAuthor(author)`, `SetSubject(subject)`, `SetKeywords(keywords)`, `SetCreator(creator)`, `SetLang(lang)`
 
 *Text Output*:
 - `SetFont(family, style, size)` - Set the current font
@@ -433,8 +493,10 @@ PDF_Library/
 - `AddOutputIntent(subtype, outputCondition, info, iccProfile)` - Add ICC color profile for PDF/A compliance
 
 *Output*:
-- `SaveToFile(path)` - Save PDF to file
-- `Output()` - Get PDF as String
+- `Save(file As FolderItem)` - Save PDF to file (Xojo PDFDocument-compatible)
+- `ToData() As MemoryBlock` - Get PDF as MemoryBlock (Xojo PDFDocument-compatible)
+- `SaveToFile(path)` - Save PDF to file (legacy method, still supported)
+- `Output()` - Get PDF as String (legacy method, still supported)
 
 *Margins & Positioning*:
 - `SetMargins(left, top, right)` - Set page margins
@@ -461,9 +523,64 @@ PDF_Library/
 - `SetError(message)` - Set an error (first error wins)
 - `ClearError()` - Clear error state
 
+*File Attachments*:
+- `AddAttachment(filename, content, description)` - Add document-level file attachment
+- `AddAttachmentAnnotation(filename, content, x, y, w, h, description)` - Add page annotation attachment
+
+### VNSPDFGraphics - PDFGraphics Compatible API
+
+Drop-in replacement for Xojo's native PDFGraphics class:
+
+```xojo
+// Use Graphics property (Xojo PDFDocument-compatible)
+Dim pdf As New VNSPDFDocument()
+Dim g As VNSPDFGraphics = pdf.Graphics
+
+// Same API as Xojo's Graphics/PDFGraphics
+g.DrawingColor = Color.Blue
+g.FillRectangle(100, 100, 200, 50)
+g.DrawText("Hello World!", 100, 200)
+
+// Full Object2D support with rotation
+Dim rect As New RectShape
+rect.X = 150
+rect.Y = 150
+rect.Width = 100
+rect.Height = 50
+rect.FillColor = Color.Orange
+rect.Rotation = 0.785  // 45 degrees
+g.DrawObject(rect, 0, 0)
+
+// Save using Xojo-compatible method
+pdf.Save(SpecialFolder.Desktop.Child("output.pdf"))
+```
+
+*Properties*: Bold, Italic, Underline, FontName, FontSize, DrawingColor, PenSize, LineCap, LineJoin, CharacterSpacing, Width, Height
+
+*Drawing*: DrawLine, DrawRectangle, FillRectangle, DrawOval, FillOval, DrawRoundRectangle, FillRoundRectangle, DrawPolygon, FillPolygon, DrawPath, FillPath, DrawPicture
+
+*Text*: DrawText (with rotation), DrawTextBlock (word-wrap, CJK), TextWidth, TextHeight
+
+*Object2D*: DrawObject supports RectShape, OvalShape, RoundRectShape, ArcShape, CurveShape, FigureShape, TextShape (with HorizontalAlignment), PixmapShape, Group2D (with rotation)
+
+*Transforms*: Rotate, Translate, Scale, Transform
+
+*State*: SaveState, RestoreState, ResetState
+
+*Clipping*: Clip, ClipToRectangle, ClipToPath, ClipEnd
+
+*Navigation*: NextPage
+
+See `docs/developer/18-wrapper-classes.md` for complete PDFGraphics API compatibility reference.
+
 ## Current Status
 
-**Version**: 0.3.0 (Active Development)
+**Version**: 1.1.1 (Production Ready)
+
+**Xojo Compatibility**:
+- Xojo 2025r3.1 with API2
+- **✅ API2 Compliant** - Fully migrated from API1 to API2
+- Desktop, Web, iOS, Console: Full support with platform-specific optimizations
 
 **Implemented Features**:
 - ✅ Document initialization
@@ -493,6 +610,7 @@ PDF_Library/
 - ✅ Image support (JPEG, PNG with RGB/Grayscale/CMYK color spaces)
 - ✅ TrueType font embedding with full UTF-8/Unicode support
 - ✅ Comprehensive Unicode rendering with proper glyph spacing (CJK, Cyrillic, RTL scripts, math symbols, currencies)
+- ✅ **Arabic text shaping** - Automatic contextual letter forms (isolated, initial, medial, final) with proper RTL rendering
 - ✅ Stream compression (FlateDecode/zlib) - 27-60% file size reduction on text/vector content (Desktop/Web/Console via system libs; **iOS fully supported with Premium Zlib module**)
 - ✅ Header/Footer callbacks (SetHeaderFunc, SetFooterFunc) with automatic invocation on every page
 - ✅ Internal links (AddLink, SetLink, Link) for navigation within PDF
@@ -522,6 +640,25 @@ PDF_Library/
     - Template-based formatting with placeholders: `"{sum} items ({count} rows)"`
     - Custom styling for intermediate vs grand footers
     - Per-calculation number formatting (e.g., `%.2f` for currency)
+
+**New in v1.1.0**:
+- ✅ **VNSPDFGraphics API** - Complete Xojo PDFGraphics API compatibility (43 features)
+- ✅ **DrawObject support** - Full Object2D rendering with rotation (RectShape, OvalShape, RoundRectShape, ArcShape, CurveShape, FigureShape, TextShape, PixmapShape, Group2D)
+- ✅ **File attachments** - Document-level and page annotation attachments (E-Invoice/Factur-X ready)
+- ✅ **DrawTextBlock** - Word-wrap with CJK character-based line breaking
+- ✅ **Clipping methods** - Clip, ClipToRectangle, ClipToPath, ClipEnd
+- ✅ **Transformation methods** - Rotate, Translate, Scale, Transform matrix
+- ✅ **State management** - SaveState, RestoreState, ResetState
+- ✅ **Bounds checking** - Optional exception mode (`gkRaiseExceptionOnOutOfBounds`)
+- ✅ **23 working examples** across all 4 platforms
+
+**New in v1.1.1** (Bug fixes from community feedback):
+- ✅ **MultiCell single-line bottom border** - Fixed missing bottom border when border=1 on single-line cells
+- ✅ **SplitTextToLines first character** - Fixed off-by-one error dropping first character of wrapped words
+- ✅ **MultiCell newline handling** - Fixed Chr(10) and CRLF being ignored (all text on one line)
+- ✅ **MultiCell positioning** - Fixed cursor not returning to left margin after MultiCell
+- ✅ **ImageFromPicture on Windows/Linux** - Fixed PNG corruption (RGBA vs RGB mismatch) by forcing JPEG on Windows and Linux
+- ✅ **Example 26** - Cross-platform bug test suite verifying all fixes on macOS, Windows 11, and Ubuntu 22.04 ARM64
 
 **In Development**:
 - 🔨 Native color emoji fonts for Web (SBIX, COLR/CPAL, SVG-in-OpenType) - Desktop/iOS working
@@ -571,4 +708,4 @@ For bugs, feature requests, or questions, please contact jypochez@verynicesw.fr
 
 ---
 
-**Note**: This library is under active development. The API may change as features are implemented. Check the git history for the latest updates.
+**Note**: This library is production-ready (v1.1.0). Check the git history and `VERSION_HISTORY.md` for the latest updates.

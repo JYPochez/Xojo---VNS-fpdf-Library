@@ -4,8 +4,8 @@ Protected Module VNSPDFModule
 		Delegate Function AcceptPageBreakDelegate() As Boolean
 	#tag EndDelegateDeclaration
 
-	#tag Method, Flags = &h0, Description = 436F6E76657274732063656E74696D657465727320746F20706F696E74732E0A
-		Function CentimetersToPoints(cm As Double) As Double
+	#tag Method, Flags = &h1, Description = 436F6E76657274732063656E74696D657465727320746F20706F696E74732E0A
+		Protected Function CentimetersToPoints(cm As Double) As Double
 		  Return cm * gkPointsPerCentimeter
 		End Function
 	#tag EndMethod
@@ -14,8 +14,8 @@ Protected Module VNSPDFModule
 		Delegate Sub FooterDelegateLpi(doc As VNSPDFDocument, lastPage As Boolean)
 	#tag EndDelegateDeclaration
 
-	#tag Method, Flags = &h0, Description = 43726F73732D706C6174666F726D20666F726D6174206865C6C7065722
-		Function FormatHelper(value As Double, format As String) As String
+	#tag Method, Flags = &h1, Description = 43726F73732D706C6174666F726D20666F726D61742068656C7065722E0A
+		Protected Function FormatHelper(value As Double, format As String) As String
 		  // Cross-platform format helper
 		  // iOS: Use Str() with manual formatting (API2 doesn't have Format)
 		  // Desktop: Use Format() function (API1)
@@ -98,8 +98,8 @@ Protected Module VNSPDFModule
 		End Function
 	#tag EndMethod
 
-	#tag Method, Flags = &h0, Description = 476574206368617261637465722077696474682066726F6D20636F72652066F6E74206D6574726963732028696E20676C797068207761697473292
-		Function GetCoreFontCharWidth(fontKey As String, charCode As Integer) As Integer
+	#tag Method, Flags = &h1, Description = 476574206368617261637465722077696474682066726F6D20636F726520666F6E74206D6574726963732028696E20676C79706820756E697473292E0A
+		Protected Function GetCoreFontCharWidth(fontKey As String, charCode As Integer) As Integer
 		  // Returns character width in glyph units (1/1000 of em)
 		  // Font metrics from go-fpdf font_embed
 		  
@@ -176,22 +176,18 @@ Protected Module VNSPDFModule
 		End Function
 	#tag EndMethod
 
-	#tag Method, Flags = &h0, Description = 43726F73732D706C6174666F726D206D696372F73656F6E6473206865C6C7065722E
-		Function GetMicroseconds() As Int64
+	#tag Method, Flags = &h1, Description = 43726F73732D706C6174666F726D206D6963726F7365636F6E64732068656C7065722E0A
+		Protected Function GetMicroseconds() As Int64
 		  // Cross-platform microseconds helper
 		  // iOS: Use System.Microseconds (API2)
 		  // Desktop: Use Microseconds function (API1)
 		  
-		  #If TargetiOS Then
-		    Return System.Microseconds
-		  #Else
-		    Return System.Microseconds
-		  #EndIf
+		  Return System.Microseconds
 		End Function
 	#tag EndMethod
 
-	#tag Method, Flags = &h0, Description = 52657475726E7320706167652064696D656E73696F6E7320666F7220676976656E20666F726D617420617320506169722E0A
-		Function GetPageFormatDimensions(format As ePageFormat) As Pair
+	#tag Method, Flags = &h1, Description = 52657475726E7320706167652064696D656E73696F6E7320666F7220676976656E20666F726D617420617320506169722E0A
+		Protected Function GetPageFormatDimensions(format As ePageFormat) As Pair
 		  Select Case format
 		  Case ePageFormat.A3
 		    Return New Pair(gkA3Width, gkA3Height)
@@ -238,8 +234,12 @@ Protected Module VNSPDFModule
 		Delegate Sub HeaderFooterDelegate(doc As VNSPDFDocument)
 	#tag EndDelegateDeclaration
 
-	#tag Method, Flags = &h0, Description = 4368656620696620556E69636F646520636F646520706F696E7420697320616E20656D6F6A692E0A
-		Function IsEmoji(codePoint As UInt32) As Boolean
+	#tag DelegateDeclaration, Flags = &h0, Description = 50726F677265737320757064617465206465656761746520666F72206C6F6E672D72756E6E696E67206F7065726174696F6E732E0A
+		Delegate Sub ProgressDelegate(percentage As Double)
+	#tag EndDelegateDeclaration
+
+	#tag Method, Flags = &h1, Description = 4368656620696620556E69636F646520636F646520706F696E7420697320616E20656D6F6A692E0A
+		Protected Function IsEmoji(codePoint As UInt32) As Boolean
 		  // Check if Unicode code point represents an emoji character
 		  // Based on Unicode 15.0 emoji ranges (2023)
 		  
@@ -275,14 +275,14 @@ Protected Module VNSPDFModule
 		End Function
 	#tag EndMethod
 
-	#tag Method, Flags = &h0, Description = 436F6E7665727473206D696C6C696D657465727320746F20706F696E74732E0A
-		Function MillimetersToPoints(mm As Double) As Double
+	#tag Method, Flags = &h1, Description = 436F6E7665727473206D696C6C696D657465727320746F20706F696E74732E0A
+		Protected Function MillimetersToPoints(mm As Double) As Double
 		  Return mm * gkPointsPerMillimeter
 		End Function
 	#tag EndMethod
 
-	#tag Method, Flags = &h0, Description = 436F6E7665727473207061676520666F726D617420656E756D20746F20737472696E672E0A
-		Function PageFormatToString(format As ePageFormat) As String
+	#tag Method, Flags = &h1, Description = 436F6E7665727473207061676520666F726D617420656E756D20746F20737472696E672E0A
+		Protected Function PageFormatToString(format As ePageFormat) As String
 		  Select Case format
 		  Case ePageFormat.A3
 		    Return "A3"
@@ -302,8 +302,8 @@ Protected Module VNSPDFModule
 		End Function
 	#tag EndMethod
 
-	#tag Method, Flags = &h0, Description = 436F6E76657274732070616765206F7269656E746174696F6E20656E756D20746F20737472696E672E0A
-		Function PageOrientationToString(orientation As ePageOrientation) As String
+	#tag Method, Flags = &h1, Description = 436F6E76657274732070616765206F7269656E746174696F6E20656E756D20746F20737472696E672E0A
+		Protected Function PageOrientationToString(orientation As ePageOrientation) As String
 		  Select Case orientation
 		  Case ePageOrientation.Portrait
 		    Return "Portrait"
@@ -315,8 +315,8 @@ Protected Module VNSPDFModule
 		End Function
 	#tag EndMethod
 
-	#tag Method, Flags = &h0, Description = 436F6E7665727473207061676520756E697420656E756D20746F20737472696E672E0A
-		Function PageUnitToString(unit As ePageUnit) As String
+	#tag Method, Flags = &h1, Description = 436F6E7665727473207061676520756E697420656E756D20746F20737472696E672E0A
+		Protected Function PageUnitToString(unit As ePageUnit) As String
 		  Select Case unit
 		  Case ePageUnit.Points
 		    Return "Points"
@@ -332,7 +332,7 @@ Protected Module VNSPDFModule
 		End Function
 	#tag EndMethod
 
-	#tag Method, Flags = &h21, Description = 50617273652066F6E74206D6574726963732066726F6D204A534F4
+	#tag Method, Flags = &h21, Description = 506172736520666F6E74206D6574726963732066726F6D204A534F4E2E0A
 		Private Function ParseFontMetrics(jsonData As String) As Integer()
 		  // Parse JSON font metrics from go-fpdf format
 		  // Returns character widths array
@@ -352,11 +352,21 @@ Protected Module VNSPDFModule
 		    
 		    // Extract the array content
 		    Dim startPos As Integer = cwPos + 6 // Position after "Cw":[
-		    Dim endPos As Integer = jsonData.IndexOf(startPos, "]")
-		    
-		    // Calculate length and extract substring using string method
-		    Dim arrayLength As Integer = endPos - startPos
-		    Dim arrayStr As String = jsonData.Middle(startPos, arrayLength)
+
+		    // API2 compatible: search for ] in the remainder of the string
+		    Dim remainder As String = jsonData.Middle(startPos)
+		    Dim endPosInRemainder As Integer = remainder.IndexOf("]")
+
+		    If endPosInRemainder < 0 Then
+		      // Malformed JSON, use defaults
+		      For i As Integer = 0 To 255
+		        widths(i) = 500
+		      Next
+		      Return widths
+		    End If
+
+		    // Calculate actual end position
+		    Dim arrayStr As String = remainder.Left(endPosInRemainder)
 		    
 		    // Parse comma-separated values
 		    Dim parts() As String = arrayStr.Split(",")
@@ -375,26 +385,26 @@ Protected Module VNSPDFModule
 		End Function
 	#tag EndMethod
 
-	#tag Method, Flags = &h0, Description = 436F6E766572747320706F696E747320746F2063656E74696D65746572732E0A
-		Function PointsToCentimeters(points As Double) As Double
+	#tag Method, Flags = &h1, Description = 436F6E766572747320706F696E747320746F2063656E74696D65746572732E0A
+		Protected Function PointsToCentimeters(points As Double) As Double
 		  Return points / gkPointsPerCentimeter
 		End Function
 	#tag EndMethod
 
-	#tag Method, Flags = &h0, Description = 436F6E766572747320706F696E747320746F20696E636865732E0A
-		Function PointsToInches(points As Double) As Double
+	#tag Method, Flags = &h1, Description = 436F6E766572747320706F696E747320746F20696E636865732E0A
+		Protected Function PointsToInches(points As Double) As Double
 		  Return points / gkPointsPerInch
 		End Function
 	#tag EndMethod
 
-	#tag Method, Flags = &h0, Description = 436F6E766572747320706F696E747320746F206D696C6C696D65746572732E0A
-		Function PointsToMillimeters(points As Double) As Double
+	#tag Method, Flags = &h1, Description = 436F6E766572747320706F696E747320746F206D696C6C696D65746572732E0A
+		Protected Function PointsToMillimeters(points As Double) As Double
 		  Return points / gkPointsPerMillimeter
 		End Function
 	#tag EndMethod
 
-	#tag Method, Flags = &h0, Description = 52656E64657220656D6F6A69206173206120636F6C6F7220696D6167652075736E6720706C6174666F726D277320656D6F6A6920666F6E742E0A
-		Function RenderEmojiToImage(emojiChar As String, sizeInPoints As Integer, webSession As Variant = Nil) As Picture
+	#tag Method, Flags = &h1, Description = 52656E64657220656D6F6A69206173206120636F6C6F7220696D616765207573696E6720706C6174666F726D277320656D6F6A6920666F6E742E0A
+		Protected Function RenderEmojiToImage(emojiChar As String, sizeInPoints As Integer, webSession As Variant = Nil) As Picture
 		  #Pragma Unused webSession
 		  // Render an emoji character to a color image using platform's emoji font
 		  // Returns a Picture that can be saved and embedded in PDF
@@ -635,8 +645,8 @@ Protected Module VNSPDFModule
 		End Function
 	#tag EndMethod
 
-	#tag Method, Flags = &h0, Description = 50726F76696465732062617369632070726E7467662D7374796C6520666F726D617474696E6720666F722043656C6C6628292F5772697465662829206D6574686F64732E
-		Function SprintfHelper(format As String, args() As Variant) As String
+	#tag Method, Flags = &h1, Description = 50726F7669646573206261736963207072696E74662D7374796C6520666F726D617474696E6720666F722043656C6C6628292F5772697465662829206D6574686F64732E0A
+		Protected Function SprintfHelper(format As String, args() As Variant) As String
 		  // Basic printf-style string formatting
 		  // Supports: %s (string), %d/%i (integer), %f (float), %.Nf (float with N decimals), %% (escaped %)
 		  // Example: SprintfHelper("Hello %s, value: %.2f", "World", 3.14159) → "Hello World, value: 3.14"
@@ -815,8 +825,8 @@ Protected Module VNSPDFModule
 		End Function
 	#tag EndMethod
 
-	#tag Method, Flags = &h0, Description = 43726F73732D706C6174666F726D206279746520746F20696E74656765722068656C7065722E
-		Function StringAscB(s As String) As Integer
+	#tag Method, Flags = &h1, Description = 43726F73732D706C6174666F726D206279746520746F20696E74656765722068656C7065722E
+		Protected Function StringAscB(s As String) As Integer
 		  // Cross-platform byte to integer helper
 		  // iOS: Use .AscByte (API2)
 		  // Desktop: Use AscB() function (API1)
@@ -833,8 +843,8 @@ Protected Module VNSPDFModule
 		End Function
 	#tag EndMethod
 
-	#tag Method, Flags = &h0, Description = 43726F73732D706C6174666F726D20696E746567657220746F206279746520737472696E67206865C6C7065722
-		Function StringChrB(byteValue As Integer) As String
+	#tag Method, Flags = &h1, Description = 43726F73732D706C6174666F726D20696E746567657220746F206279746520737472696E672068656C7065722E0A
+		Protected Function StringChrB(byteValue As Integer) As String
 		  // Cross-platform integer to byte string helper
 		  // iOS: Use MemoryBlock (ChrB doesn't exist in API2)
 		  // Desktop: Use ChrB() function (API1)
@@ -849,50 +859,38 @@ Protected Module VNSPDFModule
 		End Function
 	#tag EndMethod
 
-	#tag Method, Flags = &h0, Description = 43726F73732D706C6174666F726D206C656674206279746573206865C6C7065722
-		Function StringLeftB(s As String, numBytes As Integer) As String
+	#tag Method, Flags = &h1, Description = 43726F73732D706C6174666F726D206C6566742062797465732068656C7065722E0A
+		Protected Function StringLeftB(s As String, numBytes As Integer) As String
 		  // Cross-platform left bytes helper
 		  // iOS: Use .LeftBytes() (API2)
 		  // Desktop: Use LeftB() function (API1)
 		  
-		  #If TargetiOS Then
-		    Return s.LeftBytes(numBytes)
-		  #Else
-		    Return s.LeftBytes(numBytes)
-		  #EndIf
+		  Return s.LeftBytes(numBytes)
 		End Function
 	#tag EndMethod
 
-	#tag Method, Flags = &h0, Description = 43726F73732D706C6174666F726D2073626769676E67206C656E6774682068656C7065722E
-		Function StringLen(s As String) As Integer
+	#tag Method, Flags = &h1, Description = 43726F73732D706C6174666F726D20737562737472696E67206C656E6774682068656C7065722E0A
+		Protected Function StringLen(s As String) As Integer
 		  // Cross-platform string length helper
 		  // iOS: Use .Length property (API2)
 		  // Desktop: Use Len() function (API1)
 		  
-		  #If TargetiOS Then
-		    Return s.Length
-		  #Else
-		    Return s.Length
-		  #EndIf
+		  Return s.Length
 		End Function
 	#tag EndMethod
 
-	#tag Method, Flags = &h0, Description = 43726F73732D706C6174666F726D206279746520C6C656E677468206865C6C706572
-		Function StringLenB(s As String) As Integer
+	#tag Method, Flags = &h1, Description = 43726F73732D706C6174666F726D2062797465206C656E6774682068656C7065722E0A
+		Protected Function StringLenB(s As String) As Integer
 		  // Cross-platform byte length helper
 		  // iOS: Use .Bytes property (API2)
 		  // Desktop: Use LenB() function (API1)
 		  
-		  #If TargetiOS Then
-		    Return s.Bytes
-		  #Else
-		    Return s.Bytes
-		  #EndIf
+		  Return s.Bytes
 		End Function
 	#tag EndMethod
 
-	#tag Method, Flags = &h0, Description = 43726F73732D706C6174666F726D206D6964206279746573206865C6C7065722
-		Function StringMidB(s As String, start As Integer, length As Integer) As String
+	#tag Method, Flags = &h1, Description = 43726F73732D706C6174666F726D206D69642062797465732068656C7065722E0A
+		Protected Function StringMidB(s As String, start As Integer, length As Integer) As String
 		  // Cross-platform middle bytes helper
 		  // iOS: Use .MiddleBytes() with 0-based index (API2)
 		  // Desktop: Use MidB() with 1-based index (API1)
@@ -905,22 +903,18 @@ Protected Module VNSPDFModule
 		End Function
 	#tag EndMethod
 
-	#tag Method, Flags = &h0, Description = 43726F73732D706C6174666F726D207269676874206279746573206865C6C7065722
-		Function StringRightB(s As String, numBytes As Integer) As String
+	#tag Method, Flags = &h1, Description = 43726F73732D706C6174666F726D2072696768742062797465732068656C7065722E0A
+		Protected Function StringRightB(s As String, numBytes As Integer) As String
 		  // Cross-platform right bytes helper
 		  // iOS: Use .RightBytes() (API2)
 		  // Desktop: Use RightB() function (API1)
 		  
-		  #If TargetiOS Then
-		    Return s.RightBytes(numBytes)
-		  #Else
-		    Return s.RightBytes(numBytes)
-		  #EndIf
+		  Return s.RightBytes(numBytes)
 		End Function
 	#tag EndMethod
 
-	#tag Method, Flags = &h0, Description = 436F6E76657274732055544638206279746573206174206F666673657420746F20556E69636F646520636F646520706F696E742E0A
-		Function UTF8ToCodePoint(utf8Str As String, offset As Integer, ByRef bytesRead As Integer) As UInt32
+	#tag Method, Flags = &h1, Description = 436F6E76657274732055544638206279746573206174206F666673657420746F20556E69636F646520636F646520706F696E742E0A
+		Protected Function UTF8ToCodePoint(utf8Str As String, offset As Integer, ByRef bytesRead As Integer) As UInt32
 		  // Convert UTF-8 byte sequence to Unicode code point
 		  // offset: byte position in string (0-based for all platforms)
 		  // bytesRead: output parameter indicating how many bytes were consumed
@@ -990,7 +984,7 @@ Protected Module VNSPDFModule
 	#tag Constant, Name = gkA3Height, Type = Double, Dynamic = False, Default = \"1190.55", Scope = Public, Description = 41332048656967687420696E20706F696E74732E0A
 	#tag EndConstant
 
-	#tag Constant, Name = gkA3Width, Type = Double, Dynamic = False, Default = \"841.89", Scope = Public, Description = 4133205769647468206E20706F696E74732E0A
+	#tag Constant, Name = gkA3Width, Type = Double, Dynamic = False, Default = \"841.89", Scope = Public, Description = 413320576964746820696E20706F696E74732E0A
 	#tag EndConstant
 
 	#tag Constant, Name = gkA4Height, Type = Double, Dynamic = False, Default = \"841.89", Scope = Public, Description = 41342048656967687420696E20706F696E74732E0A
@@ -1020,19 +1014,19 @@ Protected Module VNSPDFModule
 	#tag Constant, Name = gkDefaultPageUnit, Type = String, Dynamic = False, Default = \"Millimeters", Scope = Public, Description = 44656661756C74206D6561737572656D656E7420756E69742E0A
 	#tag EndConstant
 
-	#tag Constant, Name = gkEncryptionAES128, Type = Integer, Dynamic = False, Default = \"4", Scope = Public, Description = 454E6372797074696F6E20726576697369CF6E20343A204145532D31323820283132382062697420E2A0C2A0414553C2A02C2050524D494D20E2A0C2A06D6F64756C652072657175697265642902E0
+	#tag Constant, Name = gkEncryptionAES128, Type = Integer, Dynamic = False, Default = \"4", Scope = Public, Description = 456E6372797074696F6E207265766973696F6E20343A204145532D313238202831323820626974204145532C205052454D49554D206D6F64756C65207265717569726564292E0A
 	#tag EndConstant
 
-	#tag Constant, Name = gkEncryptionAES256, Type = Integer, Dynamic = False, Default = \"5", Scope = Public, Description = 454E6372797074696F6E20726576697369CF6E20353A204145532D323536202832353620626974204145532C2050524D494D206D6F64756C652072657175697265642902E0
+	#tag Constant, Name = gkEncryptionAES256, Type = Integer, Dynamic = False, Default = \"5", Scope = Public, Description = 456E6372797074696F6E207265766973696F6E20353A204145532D323536202832353620626974204145532C205052454D49554D206D6F64756C65207265717569726564292E0A
 	#tag EndConstant
 
-	#tag Constant, Name = gkEncryptionAES256_PDF2, Type = Integer, Dynamic = False, Default = \"6", Scope = Public, Description = 454E6372797074696F6E20726576697369CF6E20363A204145532D3235362050444620322E30202832353620626974204145532C2050524D494D206D6F64756C652072657175697265642902E0
+	#tag Constant, Name = gkEncryptionAES256_PDF2, Type = Integer, Dynamic = False, Default = \"6", Scope = Public, Description = 456E6372797074696F6E207265766973696F6E20363A204145532D3235362050444620322E30202832353620626974204145532C205052454D49554D206D6F64756C65207265717569726564292E0A
 	#tag EndConstant
 
-	#tag Constant, Name = gkEncryptionRC4_128, Type = Integer, Dynamic = False, Default = \"3", Scope = Public, Description = 454E6372797074696F6E20726576697369CF6E20333A20524334C2D3132382028313238206269742C2050524D494D20E2A0C2A06D6F64756C652072657175697265642092E0A
+	#tag Constant, Name = gkEncryptionRC4_128, Type = Integer, Dynamic = False, Default = \"3", Scope = Public, Description = 456E6372797074696F6E207265766973696F6E20333A205243342D3132382028313238206269742C205052454D49554D206D6F64756C65207265717569726564292E0A
 	#tag EndConstant
 
-	#tag Constant, Name = gkEncryptionRC4_40, Type = Integer, Dynamic = False, Default = \"2", Scope = Public, Description = 454E6372797074696F6E20726576697369CF6E20323A20524334C2D34302028343020626974292C2046524545207665727369CF6E2E0
+	#tag Constant, Name = gkEncryptionRC4_40, Type = Integer, Dynamic = False, Default = \"2", Scope = Public, Description = 456E6372797074696F6E207265766973696F6E20323A205243342D34302028343020626974292C20465245452076657273696F6E2E0A
 	#tag EndConstant
 
 	#tag Constant, Name = gkLegalHeight, Type = Double, Dynamic = False, Default = \"1008", Scope = Public, Description = 4C6567616C2048656967687420696E20706F696E74732E0A
@@ -1045,6 +1039,9 @@ Protected Module VNSPDFModule
 	#tag EndConstant
 
 	#tag Constant, Name = gkLetterWidth, Type = Double, Dynamic = False, Default = \"612", Scope = Public, Description = 4C657474657220576964746820696E20706F696E74732E0A
+	#tag EndConstant
+
+	#tag Constant, Name = gkMMToPoints, Type = Double, Dynamic = False, Default = \"2.83464567", Scope = Public, Description = 436F6E76657273696F6E20666163746F7220666F72206D696C6C696D657465727320746F20706F696E74732028616C696173206F6620676B506F696E74735065724D696C6C696D65746572292E0A
 	#tag EndConstant
 
 	#tag Constant, Name = gkOutputIntentPDFA1, Type = String, Dynamic = False, Default = \"GTS_PDFA1", Scope = Public, Description = 4F757470757420696E74656E74207375627479706520666F7220504446412D312E0A
@@ -1065,10 +1062,19 @@ Protected Module VNSPDFModule
 	#tag Constant, Name = gkPointsPerMillimeter, Type = Double, Dynamic = False, Default = \"2.83464567", Scope = Public, Description = 436F6E76657273696F6E20666163746F7220666F72206D696C6C696D657465727320746F20706F696E74732E0A
 	#tag EndConstant
 
+	#tag Constant, Name = gkPointsToMM, Type = Double, Dynamic = False, Default = \"0.352778", Scope = Public, Description = 436F6E76657273696F6E20666163746F7220666F7220706F696E747320746F206D696C6C696D65746572732E
+	#tag EndConstant
+
+	#tag Constant, Name = gkRaiseExceptionOnOutOfBounds, Type = Boolean, Dynamic = False, Default = \"False", Scope = Public, Description = 496620747275652C20726169736573204F75744F66426F756E6473457863657074696F6E207768656E2064726177696E67206F757473696465207061676520626F756E64732E2044656661756C742069732066616C736520286F6E6C79206C6F6773207761726E696E67292E
+	#tag EndConstant
+
 	#tag Constant, Name = gkVersion, Type = String, Dynamic = False, Default = \"0.3.0", Scope = Public, Description = 564E5320504446204C6962726172792076657273696F6E20737472696E672E0A
 	#tag EndConstant
 
-	#tag Constant, Name = hasPremiumEncryptionModule, Type = Boolean, Dynamic = False, Default = \"false", Scope = Public, Description = 5072656D69756D206D6F64756C653A20524334EFBFBD1323EFBFBD0C2B020414553206EFBFBD3727EFBFBD0746EFBFBD6E2E204365742074782054727565207768656E20696E7374616C6C65642E0A
+	#tag Constant, Name = hasPremiumEncryptionModule, Type = Boolean, Dynamic = False, Default = \"false", Scope = Public, Description = 5072656D69756D206D6F64756C653A205243342D31323820616E642041455320656E6372797074696F6E2E2053657420746F2054727565207768656E20696E7374616C6C65642E0A
+	#tag EndConstant
+
+	#tag Constant, Name = hasPremiumFormsModule, Type = Boolean, Dynamic = False, Default = \"false", Scope = Public, Description = 5072656D69756D206D6F64756C653A20504446204163726F466F726D7320287465787420666965EFBFBD4732EFBFBD36EFBFBD5636EFBFBD26EFBFBDEFBFBD5732EFBFBD261646EFBFBDEFBFBD27574746EFBFBDEFBFBDEFBFBD574632EFBFBD053657420746EFBFBD472756520776EFBFBD56EFBFBDEFBFBDEFBFBD4616EFBFBD5642
 	#tag EndConstant
 
 	#tag Constant, Name = hasPremiumPDFAModule, Type = Boolean, Dynamic = False, Default = \"false", Scope = Public, Description = 5072656D69756D206D6F64756C653A2050444620412F41636F6D706C69616E63652E204365742074EFBFBD54727565207768656E20696E7374616C6C65642E0A
@@ -1077,7 +1083,7 @@ Protected Module VNSPDFModule
 	#tag Constant, Name = hasPremiumTableModule, Type = Boolean, Dynamic = False, Default = \"false", Scope = Public, Description = 5072656D69756D206D6F64756C653A205461626C652067656E65726174696F6E2E205365742074EFBFBD54727565207768656E20696E7374616C6C65642E0A
 	#tag EndConstant
 
-	#tag Constant, Name = hasPremiumZlibModule, Type = Boolean, Dynamic = False, Default = \"false", Scope = Public, Description = 5072656D69756D206D6F64756C653A2050757265205861EFBFBDEFBFBDEFBFBDEFBFBDC6962C2A0636EFBFBDEFBFBD26573736EFBFBDEFBFBDEFBFBD04365742074CEFBFBD472756520776EFBFBD56EFBFBDEFBFBDEFBFBD4616EFBFBD564202EFBFBDEFBFBDEFBFBD3C2A0C2A0656EFBFBD26EFBFBD32EFBFBDEFBFBD
+	#tag Constant, Name = hasPremiumZlibModule, Type = Boolean, Dynamic = False, Default = \"false", Scope = Public, Description = 5072656D69756D206D6F64756C653A205075726520586F6A6F207A6C696220636F6D7072657373696F6E2E2053657420746F2054727565207768656E20696E7374616C6C65642E0A
 	#tag EndConstant
 
 	#tag Constant, Name = kHelveticaBoldJSON, Type = String, Dynamic = False, Default = \"{\"Tp\":\"Core\"\x2C\"Name\":\"Helvetica-Bold\"\x2C\"Up\":-100\x2C\"Ut\":50\x2C\"Cw\":[278\x2C278\x2C278\x2C278\x2C278\x2C278\x2C278\x2C278\x2C278\x2C278\x2C278\x2C278\x2C278\x2C278\x2C278\x2C278\x2C278\x2C278\x2C278\x2C278\x2C278\x2C278\x2C278\x2C278\x2C278\x2C278\x2C278\x2C278\x2C278\x2C278\x2C278\x2C278\x2C278\x2C333\x2C474\x2C556\x2C556\x2C889\x2C722\x2C238\x2C333\x2C333\x2C389\x2C584\x2C278\x2C333\x2C278\x2C278\x2C556\x2C556\x2C556\x2C556\x2C556\x2C556\x2C556\x2C556\x2C556\x2C556\x2C333\x2C333\x2C584\x2C584\x2C584\x2C611\x2C975\x2C722\x2C722\x2C722\x2C722\x2C667\x2C611\x2C778\x2C722\x2C278\x2C556\x2C722\x2C611\x2C833\x2C722\x2C778\x2C667\x2C778\x2C722\x2C667\x2C611\x2C722\x2C667\x2C944\x2C667\x2C667\x2C611\x2C333\x2C278\x2C333\x2C584\x2C556\x2C333\x2C556\x2C611\x2C556\x2C611\x2C556\x2C333\x2C611\x2C611\x2C278\x2C278\x2C556\x2C278\x2C889\x2C611\x2C611\x2C611\x2C611\x2C389\x2C556\x2C333\x2C611\x2C556\x2C778\x2C556\x2C556\x2C500\x2C389\x2C280\x2C389\x2C584\x2C350\x2C556\x2C350\x2C278\x2C556\x2C500\x2C1000\x2C556\x2C556\x2C333\x2C1000\x2C667\x2C333\x2C1000\x2C350\x2C611\x2C350\x2C350\x2C278\x2C278\x2C500\x2C500\x2C350\x2C556\x2C1000\x2C333\x2C1000\x2C556\x2C333\x2C944\x2C350\x2C500\x2C667\x2C278\x2C333\x2C556\x2C556\x2C556\x2C556\x2C280\x2C556\x2C333\x2C737\x2C370\x2C556\x2C584\x2C333\x2C737\x2C333\x2C400\x2C584\x2C333\x2C333\x2C333\x2C611\x2C556\x2C278\x2C333\x2C333\x2C365\x2C556\x2C834\x2C834\x2C834\x2C611\x2C722\x2C722\x2C722\x2C722\x2C722\x2C722\x2C1000\x2C722\x2C667\x2C667\x2C667\x2C667\x2C278\x2C278\x2C278\x2C278\x2C722\x2C722\x2C778\x2C778\x2C778\x2C778\x2C778\x2C584\x2C778\x2C722\x2C722\x2C722\x2C722\x2C667\x2C667\x2C611\x2C556\x2C556\x2C556\x2C556\x2C556\x2C556\x2C889\x2C556\x2C556\x2C556\x2C556\x2C556\x2C278\x2C278\x2C278\x2C278\x2C611\x2C611\x2C611\x2C611\x2C611\x2C611\x2C611\x2C584\x2C611\x2C611\x2C611\x2C611\x2C611\x2C556\x2C611\x2C556]}", Scope = Private, Description = 48656C7665746963612D426F6C64206D6574726963732066726F6D20676F2D66706466

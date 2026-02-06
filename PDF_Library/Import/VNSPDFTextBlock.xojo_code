@@ -1,19 +1,23 @@
 #tag Class
-Protected Class VNSPDFBlendMode
-	#tag Property, Flags = &h0, Description = 416C7068612076616C756520666F722066696C6C206F7065726174696F6E732028652E672E2C2022302E35303022292E0A
-		fillStr As String
+Protected Class VNSPDFTextBlock
+	#tag Property, Flags = &h0, Description = 546578742063 6F6E74656E740A
+		text As String
 	#tag EndProperty
 
-	#tag Property, Flags = &h0, Description = 426C656E64206D6F6465206E616D652028652E672E2C20224E6F726D616C22292E0A
-		modeStr As String
+	#tag Property, Flags = &h0, Description = 466F6E74206E616D65202865 2E672E202F4631290A
+		fontName As String
 	#tag EndProperty
 
-	#tag Property, Flags = &h0, Description = 504446206F626A656374206E756D62657220666F722074686973206772617068696373207374617465206F626A6563742E0A
-		objNum As Integer
+	#tag Property, Flags = &h0, Description = 466F6E742073697A6520696E20706F696E74730A
+		fontSize As Double
 	#tag EndProperty
 
-	#tag Property, Flags = &h0, Description = 416C7068612076616C756520666F72207374726F6B65206F7065726174696F6E732028652E672E2C2022302E35303022292E0A
-		strokeStr As String
+	#tag Property, Flags = &h0, Description = 582D706F736974696F6E20696E207573657220756E6974730A
+		x As Double
+	#tag EndProperty
+
+	#tag Property, Flags = &h0, Description = 592D706F736974696F6E20696E207573657220756E6974730A
+		y As Double
 	#tag EndProperty
 
 
@@ -59,35 +63,43 @@ Protected Class VNSPDFBlendMode
 			EditorType=""
 		#tag EndViewProperty
 		#tag ViewProperty
-			Name="fillStr"
+			Name="text"
 			Visible=false
 			Group="Behavior"
 			InitialValue=""
 			Type="String"
-			EditorType="MultiLineEditor"
+			EditorType=""
 		#tag EndViewProperty
 		#tag ViewProperty
-			Name="strokeStr"
+			Name="fontName"
 			Visible=false
 			Group="Behavior"
 			InitialValue=""
 			Type="String"
-			EditorType="MultiLineEditor"
+			EditorType=""
 		#tag EndViewProperty
 		#tag ViewProperty
-			Name="modeStr"
+			Name="fontSize"
 			Visible=false
 			Group="Behavior"
 			InitialValue=""
-			Type="String"
-			EditorType="MultiLineEditor"
+			Type="Double"
+			EditorType=""
 		#tag EndViewProperty
 		#tag ViewProperty
-			Name="objNum"
+			Name="x"
 			Visible=false
 			Group="Behavior"
 			InitialValue=""
-			Type="Integer"
+			Type="Double"
+			EditorType=""
+		#tag EndViewProperty
+		#tag ViewProperty
+			Name="y"
+			Visible=false
+			Group="Behavior"
+			InitialValue=""
+			Type="Double"
 			EditorType=""
 		#tag EndViewProperty
 	#tag EndViewBehavior

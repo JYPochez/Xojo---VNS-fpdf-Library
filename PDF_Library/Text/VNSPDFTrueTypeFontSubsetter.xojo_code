@@ -244,7 +244,7 @@ Protected Class VNSPDFTrueTypeFontSubsetter
 		  
 		  // Create dictionary of used glyphs for faster lookup
 		  Dim usedGlyphs As New Dictionary
-		  For i As Integer = 0 To mUsedGlyphIDs.Count - 1
+		  For i As Integer = 0 To mUsedGlyphIDs.LastIndex
 		    usedGlyphs.Value(Str(mUsedGlyphIDs(i))) = True
 		  Next
 		  
@@ -310,7 +310,7 @@ Protected Class VNSPDFTrueTypeFontSubsetter
 		  
 		  // Create dictionary of used glyphs for faster lookup
 		  Dim usedGlyphs As New Dictionary
-		  For i As Integer = 0 To mUsedGlyphIDs.Count - 1
+		  For i As Integer = 0 To mUsedGlyphIDs.LastIndex
 		    usedGlyphs.Value(Str(mUsedGlyphIDs(i))) = True
 		  Next
 		  
@@ -418,7 +418,7 @@ Protected Class VNSPDFTrueTypeFontSubsetter
 		  mNewToOldGID = New Dictionary
 		  
 		  // Create identity mapping (old ID = new ID, no change)
-		  For i As Integer = 0 To mUsedGlyphIDs.Count - 1
+		  For i As Integer = 0 To mUsedGlyphIDs.LastIndex
 		    Dim gid As Integer = mUsedGlyphIDs(i)
 		    mOldToNewGID.Value(Str(gid)) = gid  // Identity mapping
 		    mNewToOldGID.Value(Str(gid)) = gid  // Identity mapping
@@ -426,7 +426,7 @@ Protected Class VNSPDFTrueTypeFontSubsetter
 		  
 		  // Find maximum glyph ID to determine subset font size
 		  Dim maxGlyphID As Integer = 0
-		  For i As Integer = 0 To mUsedGlyphIDs.Count - 1
+		  For i As Integer = 0 To mUsedGlyphIDs.LastIndex
 		    If mUsedGlyphIDs(i) > maxGlyphID Then
 		      maxGlyphID = mUsedGlyphIDs(i)
 		    End If

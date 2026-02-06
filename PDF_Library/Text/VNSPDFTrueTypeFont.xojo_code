@@ -36,17 +36,17 @@ Protected Class VNSPDFTrueTypeFont
 		Function GetCharWidth(charCode As Integer) As Double
 		  // Map character to glyph
 		  Dim glyphIndex As Integer = GetGlyphID(charCode)
-		  
+
 		  // Get glyph width
 		  Dim width As Integer = 500 // Default width
-		  
+
 		  If mGlyphWidths.HasKey(Str(glyphIndex)) Then
 		    width = mGlyphWidths.Value(Str(glyphIndex))
 		  ElseIf mGlyphWidths.KeyCount > 0 Then
 		    // Use last width if glyph index is out of range
 		    width = mGlyphWidths.Value(Str(mNumOfLongHorMetrics - 1))
 		  End If
-		  
+
 		  // Convert to PDF units (1000 units per em)
 		  Return width * 1000.0 / mUnitsPerEm
 		End Function

@@ -126,7 +126,7 @@ Protected Class VNSPDFLZWDecoder
 		      // This means oldCode + firstChar(oldCode)
 		      Dim oldSeq() As UInt8 = GetSequence(oldCode)
 		      ReDim sequence(oldSeq.Count)
-		      For i As Integer = 0 To oldSeq.Count - 1
+		      For i As Integer = 0 To oldSeq.LastIndex
 		        sequence(i) = oldSeq(i)
 		      Next
 		      sequence(oldSeq.Count) = oldSeq(0)
@@ -139,7 +139,7 @@ Protected Class VNSPDFLZWDecoder
 		    // Output the sequence
 		    Dim oldSize As Integer = output.Size
 		    output.Size = oldSize + sequence.Count
-		    For i As Integer = 0 To sequence.Count - 1
+		    For i As Integer = 0 To sequence.LastIndex
 		      output.UInt8Value(oldSize + i) = sequence(i)
 		    Next
 		    outputPos = output.Size
