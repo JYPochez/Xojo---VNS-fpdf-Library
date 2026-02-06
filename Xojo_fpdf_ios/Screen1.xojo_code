@@ -183,50 +183,51 @@ End
 		  #Pragma Unused section
 		  
 		  // Call appropriate GenerateExampleN() based on row (row is 0-based)
-		  Dim exampleNumber As Integer = row + 1
+		  // Get example constant from data source (like Desktop's CellTag)
+		  Dim exampleNumber As Integer = mDataSource.ExampleConstant(row)
 		  Dim result As Dictionary
-		  
+
 		  Select Case exampleNumber
-		  Case kExample1
+		  Case VNSPDFExamplesModule.kExample1
 		    result = VNSPDFExamplesModule.GenerateExample1()
-		  Case kExample2
+		  Case VNSPDFExamplesModule.kExample2
 		    result = VNSPDFExamplesModule.GenerateExample2()
-		  Case kExample3
+		  Case VNSPDFExamplesModule.kExample3
 		    result = VNSPDFExamplesModule.GenerateExample3()
-		  Case kExample4
+		  Case VNSPDFExamplesModule.kExample4
 		    result = VNSPDFExamplesModule.GenerateExample4()
-		  Case kExample5
+		  Case VNSPDFExamplesModule.kExample5
 		    result = VNSPDFExamplesModule.GenerateExample5()
-		  Case kExample6
+		  Case VNSPDFExamplesModule.kExample6
 		    result = VNSPDFExamplesModule.GenerateExample6()
-		  Case kExample7
+		  Case VNSPDFExamplesModule.kExample7
 		    result = VNSPDFExamplesModule.GenerateExample7()
-		  Case kExample8
+		  Case VNSPDFExamplesModule.kExample8
 		    result = VNSPDFExamplesModule.GenerateExample8()
-		  Case kExample9
+		  Case VNSPDFExamplesModule.kExample9
 		    result = VNSPDFExamplesModule.GenerateExample9()
-		  Case kExample10
+		  Case VNSPDFExamplesModule.kExample10
 		    result = VNSPDFExamplesModule.GenerateExample10()
-		  Case kExample11
+		  Case VNSPDFExamplesModule.kExample11
 		    result = VNSPDFExamplesModule.GenerateExample11()
-		  Case kExample12
+		  Case VNSPDFExamplesModule.kExample12
 		    result = VNSPDFExamplesModule.GenerateExample12()
-		  Case kExample13
+		  Case VNSPDFExamplesModule.kExample13
 		    result = VNSPDFExamplesModule.GenerateExample13()
-		  Case kExample14
+		  Case VNSPDFExamplesModule.kExample14
 		    // Use RC4-40 (revision 2) which is available in FREE version
 		    result = VNSPDFExamplesModule.GenerateExample14(VNSPDFModule.gkEncryptionRC4_40, "user123", "owner456", True, True, True, True, True, True, True, True)
-		  Case kExample15
+		  Case VNSPDFExamplesModule.kExample15
 		    result = VNSPDFExamplesModule.GenerateExample15()
-		  Case kExample16
+		  Case VNSPDFExamplesModule.kExample16
 		    result = VNSPDFExamplesModule.GenerateExample16()
-		  Case kExample17
+		  Case VNSPDFExamplesModule.kExample17
 		    result = VNSPDFExamplesModule.GenerateExample17()
-		  Case kExample18
+		  Case VNSPDFExamplesModule.kExample18
 		    result = VNSPDFExamplesModule.GenerateExample18()
-		  Case kExample19
+		  Case VNSPDFExamplesModule.kExample19
 		    result = VNSPDFExamplesModule.GenerateExample19()
-		  Case kExample20
+		  Case VNSPDFExamplesModule.kExample20
 		    // Example 20: PDF Import - look for PDF in Documents folder
 		    Dim sourcePath As String = FindPDFInDocuments()
 		    If sourcePath = "" Then
@@ -253,10 +254,20 @@ End
 		    If result <> Nil And result.HasKey("status") Then
 		      result.Value("status") = sourceInfo + result.Value("status")
 		    End If
-		  Case kTestZlib
+		  Case VNSPDFExamplesModule.kExample21
+		    result = VNSPDFExamplesModule.GenerateExample21()
+		  Case VNSPDFExamplesModule.kExample22
+		    result = VNSPDFExamplesModule.GenerateExample22()
+		  Case VNSPDFExamplesModule.kExample23
+		    result = VNSPDFExamplesModule.GenerateExample23()
+		  Case VNSPDFExamplesModule.kExample24
+		    result = VNSPDFExamplesModule.GenerateExample24()
+		  Case VNSPDFExamplesModule.kExample26
+		    result = VNSPDFExamplesModule.GenerateExample26_BugTests()
+		  Case VNSPDFExamplesModule.kTestZlib
 		    // Test Zlib - special test, not a PDF example
 		    result = VNSPDFExamplesModule.TestZlib()
-		  Case kTestAES
+		  Case VNSPDFExamplesModule.kTestAES
 		    // Test AES - special test, not a PDF example
 		    result = VNSPDFExamplesModule.TestAES()
 		  End Select
@@ -265,7 +276,7 @@ End
 		  Dim msg As String
 
 		  // Handle test results (different format than PDF examples)
-		  If exampleNumber >= 21 Then
+		  If exampleNumber = VNSPDFExamplesModule.kTestZlib Or exampleNumber = VNSPDFExamplesModule.kTestAES Then
 		    // TestZlib and TestAES return "passed" (Boolean) and "output" (String)
 		    If result = Nil Then
 		      msg = "ERROR: Test returned Nil" + EndOfLine
@@ -347,74 +358,6 @@ End
 		End Sub
 	#tag EndEvent
 #tag EndEvents
-#tag Constants
-	#tag Constant, Name = kExample1, Type = Double, Dynamic = False, Default = \"1", Scope = Private
-	#tag EndConstant
-
-	#tag Constant, Name = kExample2, Type = Double, Dynamic = False, Default = \"2", Scope = Private
-	#tag EndConstant
-
-	#tag Constant, Name = kExample3, Type = Double, Dynamic = False, Default = \"3", Scope = Private
-	#tag EndConstant
-
-	#tag Constant, Name = kExample4, Type = Double, Dynamic = False, Default = \"4", Scope = Private
-	#tag EndConstant
-
-	#tag Constant, Name = kExample5, Type = Double, Dynamic = False, Default = \"5", Scope = Private
-	#tag EndConstant
-
-	#tag Constant, Name = kExample6, Type = Double, Dynamic = False, Default = \"6", Scope = Private
-	#tag EndConstant
-
-	#tag Constant, Name = kExample7, Type = Double, Dynamic = False, Default = \"7", Scope = Private
-	#tag EndConstant
-
-	#tag Constant, Name = kExample8, Type = Double, Dynamic = False, Default = \"8", Scope = Private
-	#tag EndConstant
-
-	#tag Constant, Name = kExample9, Type = Double, Dynamic = False, Default = \"9", Scope = Private
-	#tag EndConstant
-
-	#tag Constant, Name = kExample10, Type = Double, Dynamic = False, Default = \"10", Scope = Private
-	#tag EndConstant
-
-	#tag Constant, Name = kExample11, Type = Double, Dynamic = False, Default = \"11", Scope = Private
-	#tag EndConstant
-
-	#tag Constant, Name = kExample12, Type = Double, Dynamic = False, Default = \"12", Scope = Private
-	#tag EndConstant
-
-	#tag Constant, Name = kExample13, Type = Double, Dynamic = False, Default = \"13", Scope = Private
-	#tag EndConstant
-
-	#tag Constant, Name = kExample14, Type = Double, Dynamic = False, Default = \"14", Scope = Private
-	#tag EndConstant
-
-	#tag Constant, Name = kExample15, Type = Double, Dynamic = False, Default = \"15", Scope = Private
-	#tag EndConstant
-
-	#tag Constant, Name = kExample16, Type = Double, Dynamic = False, Default = \"16", Scope = Private
-	#tag EndConstant
-
-	#tag Constant, Name = kExample17, Type = Double, Dynamic = False, Default = \"17", Scope = Private
-	#tag EndConstant
-
-	#tag Constant, Name = kExample18, Type = Double, Dynamic = False, Default = \"18", Scope = Private
-	#tag EndConstant
-
-	#tag Constant, Name = kExample19, Type = Double, Dynamic = False, Default = \"19", Scope = Private
-	#tag EndConstant
-
-	#tag Constant, Name = kExample20, Type = Double, Dynamic = False, Default = \"20", Scope = Private
-	#tag EndConstant
-
-	#tag Constant, Name = kTestZlib, Type = Double, Dynamic = False, Default = \"21", Scope = Private
-	#tag EndConstant
-
-	#tag Constant, Name = kTestAES, Type = Double, Dynamic = False, Default = \"22", Scope = Private
-	#tag EndConstant
-
-#tag EndConstants
 #tag ViewBehavior
 	#tag ViewProperty
 		Name="Index"

@@ -169,73 +169,88 @@ End
 		  
 		  // Populate examples list
 		  lstExamples.AddRow("Example 1", "Simple shapes: Lines, rectangles, circles")
-		  lstExamples.CellTagAt(lstExamples.LastAddedRowIndex, 0) = kExample1
+		  lstExamples.CellTagAt(lstExamples.LastAddedRowIndex, 0) = VNSPDFExamplesModule.kExample1
 		  
 		  lstExamples.AddRow("Example 2", "Text layouts: Cell, MultiCell, Write methods")
-		  lstExamples.CellTagAt(lstExamples.LastAddedRowIndex, 0) = kExample2
+		  lstExamples.CellTagAt(lstExamples.LastAddedRowIndex, 0) = VNSPDFExamplesModule.kExample2
 		  
 		  lstExamples.AddRow("Example 3", "Multiple pages with various shapes")
-		  lstExamples.CellTagAt(lstExamples.LastAddedRowIndex, 0) = kExample3
-
+		  lstExamples.CellTagAt(lstExamples.LastAddedRowIndex, 0) = VNSPDFExamplesModule.kExample3
+		  
 		  lstExamples.AddRow("Example 4", "Line widths and styles")
-		  lstExamples.CellTagAt(lstExamples.LastAddedRowIndex, 0) = kExample4
-
+		  lstExamples.CellTagAt(lstExamples.LastAddedRowIndex, 0) = VNSPDFExamplesModule.kExample4
+		  
 		  lstExamples.AddRow("Example 5", "UTF-8 & TrueType fonts")
-		  lstExamples.CellTagAt(lstExamples.LastAddedRowIndex, 0) = kExample5
-
+		  lstExamples.CellTagAt(lstExamples.LastAddedRowIndex, 0) = VNSPDFExamplesModule.kExample5
+		  
 		  lstExamples.AddRow("Example 5 (Xojo)", "TrueType font with Xojo font path")
-		  lstExamples.CellTagAt(lstExamples.LastAddedRowIndex, 0) = kExample5Xojo
-
+		  lstExamples.CellTagAt(lstExamples.LastAddedRowIndex, 0) = VNSPDFExamplesModule.kExample5Xojo
+		  
 		  lstExamples.AddRow("Example 6", "Text measurement: GetStringWidth()")
-		  lstExamples.CellTagAt(lstExamples.LastAddedRowIndex, 0) = kExample6
+		  lstExamples.CellTagAt(lstExamples.LastAddedRowIndex, 0) = VNSPDFExamplesModule.kExample6
 		  
 		  lstExamples.AddRow("Example 7", "Document metadata")
-		  lstExamples.CellTagAt(lstExamples.LastAddedRowIndex, 0) = kExample7
-
+		  lstExamples.CellTagAt(lstExamples.LastAddedRowIndex, 0) = VNSPDFExamplesModule.kExample7
+		  
 		  lstExamples.AddRow("Example 8", "Error handling: Ok/Err/GetError")
-		  lstExamples.CellTagAt(lstExamples.LastAddedRowIndex, 0) = kExample8
-
+		  lstExamples.CellTagAt(lstExamples.LastAddedRowIndex, 0) = VNSPDFExamplesModule.kExample8
+		  
 		  lstExamples.AddRow("Example 9", "Image support: JPEG, PNG, programmatic graphics")
-		  lstExamples.CellTagAt(lstExamples.LastAddedRowIndex, 0) = kExample9
-
+		  lstExamples.CellTagAt(lstExamples.LastAddedRowIndex, 0) = VNSPDFExamplesModule.kExample9
+		  
 		  lstExamples.AddRow("Example 10", "Header/Footer callbacks")
-		  lstExamples.CellTagAt(lstExamples.LastAddedRowIndex, 0) = kExample10
-
+		  lstExamples.CellTagAt(lstExamples.LastAddedRowIndex, 0) = VNSPDFExamplesModule.kExample10
+		  
 		  lstExamples.AddRow("Example 11", "Links and bookmarks")
-		  lstExamples.CellTagAt(lstExamples.LastAddedRowIndex, 0) = kExample11
-
+		  lstExamples.CellTagAt(lstExamples.LastAddedRowIndex, 0) = VNSPDFExamplesModule.kExample11
+		  
 		  lstExamples.AddRow("Example 12", "Custom page formats")
-		  lstExamples.CellTagAt(lstExamples.LastAddedRowIndex, 0) = kExample12
+		  lstExamples.CellTagAt(lstExamples.LastAddedRowIndex, 0) = VNSPDFExamplesModule.kExample12
 		  
 		  lstExamples.AddRow("Example 13", "PDF/A compliance")
-		  lstExamples.CellTagAt(lstExamples.LastAddedRowIndex, 0) = kExample13
-
+		  lstExamples.CellTagAt(lstExamples.LastAddedRowIndex, 0) = VNSPDFExamplesModule.kExample13
+		  
 		  lstExamples.AddRow("Example 14", "Document encryption")
-		  lstExamples.CellTagAt(lstExamples.LastAddedRowIndex, 0) = kExample14
-
+		  lstExamples.CellTagAt(lstExamples.LastAddedRowIndex, 0) = VNSPDFExamplesModule.kExample14
+		  
 		  lstExamples.AddRow("Example 15", "Watermark header")
-		  lstExamples.CellTagAt(lstExamples.LastAddedRowIndex, 0) = kExample15
-
+		  lstExamples.CellTagAt(lstExamples.LastAddedRowIndex, 0) = VNSPDFExamplesModule.kExample15
+		  
 		  lstExamples.AddRow("Example 16", "Formatting features")
-		  lstExamples.CellTagAt(lstExamples.LastAddedRowIndex, 0) = kExample16
-
+		  lstExamples.CellTagAt(lstExamples.LastAddedRowIndex, 0) = VNSPDFExamplesModule.kExample16
+		  
 		  lstExamples.AddRow("Example 17", "Utility methods")
-		  lstExamples.CellTagAt(lstExamples.LastAddedRowIndex, 0) = kExample17
-
+		  lstExamples.CellTagAt(lstExamples.LastAddedRowIndex, 0) = VNSPDFExamplesModule.kExample17
+		  
 		  lstExamples.AddRow("Example 18", "Plugin architecture")
-		  lstExamples.CellTagAt(lstExamples.LastAddedRowIndex, 0) = kExample18
+		  lstExamples.CellTagAt(lstExamples.LastAddedRowIndex, 0) = VNSPDFExamplesModule.kExample18
 		  
 		  lstExamples.AddRow("Example 19", "Table generation")
-		  lstExamples.CellTagAt(lstExamples.LastAddedRowIndex, 0) = kExample19
-
+		  lstExamples.CellTagAt(lstExamples.LastAddedRowIndex, 0) = VNSPDFExamplesModule.kExample19
+		  
 		  lstExamples.AddRow("Example 20", "PDF import: Import pages from existing PDFs")
-		  lstExamples.CellTagAt(lstExamples.LastAddedRowIndex, 0) = kExample20
+		  lstExamples.CellTagAt(lstExamples.LastAddedRowIndex, 0) = VNSPDFExamplesModule.kExample20
+		  
+		  lstExamples.AddRow("Example 21", "UTF-8 text: All Google Translate languages")
+		  lstExamples.CellTagAt(lstExamples.LastAddedRowIndex, 0) = VNSPDFExamplesModule.kExample21
+		  
+		  lstExamples.AddRow("Example 22", "UTF Compatibility Wrapper: PDFDocument comparison")
+		  lstExamples.CellTagAt(lstExamples.LastAddedRowIndex, 0) = VNSPDFExamplesModule.kExample22
+		  
+		  lstExamples.AddRow("Example 23", "File Attachments: Document-level and page annotations")
+		  lstExamples.CellTagAt(lstExamples.LastAddedRowIndex, 0) = VNSPDFExamplesModule.kExample23
+
+		  lstExamples.AddRow("Example 24", "PDF Forms: All 9 control types (Premium)")
+		  lstExamples.CellTagAt(lstExamples.LastAddedRowIndex, 0) = VNSPDFExamplesModule.kExample24
+
+		  lstExamples.AddRow("Example 26", "Bug Tests: Geoff Bridges Windows bug report tests")
+		  lstExamples.CellTagAt(lstExamples.LastAddedRowIndex, 0) = VNSPDFExamplesModule.kExample26
 
 		  lstExamples.AddRow("Test Zlib", "Premium pure Xojo compression tests")
-		  lstExamples.CellTagAt(lstExamples.LastAddedRowIndex, 0) = kTestZlib
-
+		  lstExamples.CellTagAt(lstExamples.LastAddedRowIndex, 0) = VNSPDFExamplesModule.kTestZlib
+		  
 		  lstExamples.AddRow("Test AES", "Premium pure Xojo encryption tests")
-		  lstExamples.CellTagAt(lstExamples.LastAddedRowIndex, 0) = kTestAES
+		  lstExamples.CellTagAt(lstExamples.LastAddedRowIndex, 0) = VNSPDFExamplesModule.kTestAES
 		End Sub
 	#tag EndEvent
 
@@ -660,37 +675,137 @@ End
 	#tag EndMethod
 
 	#tag Method, Flags = &h21
-		Private Sub RunTestZlib()
-		  // Run Zlib premium compression tests
-		  txtOutput.Text = txtOutput.Text + "Running Zlib Premium Tests..." + EndOfLine + EndOfLine
-
-		  Dim result As Dictionary = VNSPDFExamplesModule.TestZlib()
-		  txtOutput.Text = txtOutput.Text + result.Value("output")
-
-		  Dim passed As Boolean = result.Value("passed")
-		  If passed Then
-		    txtOutput.Text = txtOutput.Text + EndOfLine + "ALL ZLIB TESTS PASSED!" + EndOfLine
-		  Else
-		    txtOutput.Text = txtOutput.Text + EndOfLine + "SOME ZLIB TESTS FAILED!" + EndOfLine
+		Private Sub GenerateExample21()
+		  // Call shared module function
+		  Dim result As Dictionary = VNSPDFExamplesModule.GenerateExample21()
+		  
+		  // Display status
+		  txtOutput.Text = txtOutput.Text + result.Value("status")
+		  
+		  // Save PDF if generated successfully
+		  If result.HasKey("pdf") Then
+		    Dim pdfData As String = result.Value("pdf")
+		    Dim filename As String = result.Value("filename")
+		    Dim desktop As FolderItem = SpecialFolder.Desktop
+		    Dim pdfFile As FolderItem = desktop.Child(filename)
+		    
+		    Try
+		      Dim stream As BinaryStream = BinaryStream.Create(pdfFile, True)
+		      stream.Write(pdfData)
+		      stream.Close()
+		      txtOutput.Text = txtOutput.Text + "Success! PDF saved to: " + pdfFile.NativePath + EndOfLine
+		    Catch e As IOException
+		      txtOutput.Text = txtOutput.Text + "Error saving PDF: " + e.Message + EndOfLine
+		    End Try
 		  End If
-
+		  
 		  txtOutput.Text = txtOutput.Text + EndOfLine
 		End Sub
 	#tag EndMethod
 
 	#tag Method, Flags = &h21
-		Private Sub RunTestAES()
-		  // Run AES premium encryption tests
-		  txtOutput.Text = txtOutput.Text + "Running AES Premium Tests..." + EndOfLine + EndOfLine
+		Private Sub GenerateExample22()
+		  // Call shared module function
+		  Dim result As Dictionary = VNSPDFExamplesModule.GenerateExample22()
+		  
+		  // Display status
+		  txtOutput.Text = txtOutput.Text + result.Value("status")
+		  
+		  // Note: Example 22 generates TWO PDFs (native Xojo and wrapper)
+		  // Both are saved by the shared module function
+		  // No need to save here as they're already saved to Desktop
+		  
+		  txtOutput.Text = txtOutput.Text + EndOfLine
+		End Sub
+	#tag EndMethod
 
-		  Dim result As Dictionary = VNSPDFExamplesModule.TestAES()
-		  txtOutput.Text = txtOutput.Text + result.Value("output")
+	#tag Method, Flags = &h21
+		Private Sub GenerateExample23()
+		  // Call shared module function
+		  Dim result As Dictionary = VNSPDFExamplesModule.GenerateExample23()
+		  
+		  // Display status
+		  txtOutput.Text = txtOutput.Text + result.Value("status").StringValue
+		  
+		  // Save PDF if generated successfully
+		  If result.HasKey("pdf") Then
+		    Dim pdfData As String = result.Value("pdf").StringValue
+		    Dim filename As String = result.Value("filename").StringValue
+		    Dim desktop As FolderItem = SpecialFolder.Desktop
+		    Dim pdfFile As FolderItem = desktop.Child(filename)
+		    
+		    Try
+		      Dim stream As BinaryStream = BinaryStream.Create(pdfFile, True)
+		      stream.Write(pdfData)
+		      stream.Close()
+		      txtOutput.Text = txtOutput.Text + "PDF saved to: " + pdfFile.NativePath + EndOfLine
+		    Catch e As IOException
+		      txtOutput.Text = txtOutput.Text + "Error saving PDF: " + e.Message + EndOfLine
+		    End Try
+		  End If
+		  
+		  txtOutput.Text = txtOutput.Text + EndOfLine
+		End Sub
+	#tag EndMethod
 
-		  Dim passed As Boolean = result.Value("passed")
-		  If passed Then
-		    txtOutput.Text = txtOutput.Text + EndOfLine + "ALL AES TESTS PASSED!" + EndOfLine
+	#tag Method, Flags = &h21
+		Private Sub GenerateExample24()
+		  // Call shared module function - PDF Forms (Premium)
+		  Dim result As Dictionary = VNSPDFExamplesModule.GenerateExample24()
+		  
+		  // Display status
+		  txtOutput.Text = txtOutput.Text + result.Value("status").StringValue
+		  
+		  // Save PDF if generated successfully
+		  If result.HasKey("pdf") Then
+		    Dim pdfData As String = result.Value("pdf").StringValue
+		    Dim filename As String = result.Value("filename").StringValue
+		    Dim desktop As FolderItem = SpecialFolder.Desktop
+		    Dim pdfFile As FolderItem = desktop.Child(filename)
+		    
+		    Try
+		      Dim stream As BinaryStream = BinaryStream.Create(pdfFile, True)
+		      stream.Write(pdfData)
+		      stream.Close()
+		      txtOutput.Text = txtOutput.Text + "PDF saved to: " + pdfFile.NativePath + EndOfLine
+		    Catch e As IOException
+		      txtOutput.Text = txtOutput.Text + "Error saving PDF: " + e.Message + EndOfLine
+		    End Try
+		  End If
+		  
+		  txtOutput.Text = txtOutput.Text + EndOfLine
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h21
+		Private Sub GenerateExample26()
+		  // Call shared module function - Bug Tests
+		  Dim result As Dictionary = VNSPDFExamplesModule.GenerateExample26_BugTests()
+
+		  // Display message (contains all status info)
+		  If result.HasKey("message") Then
+		    txtOutput.Text = txtOutput.Text + result.Value("message").StringValue
+		  End If
+
+		  // Save PDF to desktop if generated successfully
+		  If result.HasKey("success") And result.Value("success").BooleanValue And result.HasKey("pdf") Then
+		    Dim pdfData As String = result.Value("pdf").StringValue
+		    Dim filename As String = result.Value("filename").StringValue
+		    Dim desktop As FolderItem = SpecialFolder.Desktop
+		    Dim pdfFile As FolderItem = desktop.Child(filename)
+
+		    Try
+		      Dim stream As BinaryStream = BinaryStream.Create(pdfFile, True)
+		      stream.Write(pdfData)
+		      stream.Close()
+		      txtOutput.Text = txtOutput.Text + EndOfLine
+		      txtOutput.Text = txtOutput.Text + "PDF saved to Desktop: " + pdfFile.NativePath + EndOfLine
+		      txtOutput.Text = txtOutput.Text + "This test verifies bugs reported by Geoff Bridges (Windows 11 user)." + EndOfLine
+		    Catch e As IOException
+		      txtOutput.Text = txtOutput.Text + "Error saving PDF to desktop: " + e.Message + EndOfLine
+		    End Try
 		  Else
-		    txtOutput.Text = txtOutput.Text + EndOfLine + "SOME AES TESTS FAILED!" + EndOfLine
+		    txtOutput.Text = txtOutput.Text + "Test generation failed." + EndOfLine
 		  End If
 
 		  txtOutput.Text = txtOutput.Text + EndOfLine
@@ -929,6 +1044,44 @@ End
 		End Sub
 	#tag EndMethod
 
+	#tag Method, Flags = &h21
+		Private Sub RunTestAES()
+		  // Run AES premium encryption tests
+		  txtOutput.Text = txtOutput.Text + "Running AES Premium Tests..." + EndOfLine + EndOfLine
+		  
+		  Dim result As Dictionary = VNSPDFExamplesModule.TestAES()
+		  txtOutput.Text = txtOutput.Text + result.Value("output")
+		  
+		  Dim passed As Boolean = result.Value("passed")
+		  If passed Then
+		    txtOutput.Text = txtOutput.Text + EndOfLine + "ALL AES TESTS PASSED!" + EndOfLine
+		  Else
+		    txtOutput.Text = txtOutput.Text + EndOfLine + "SOME AES TESTS FAILED!" + EndOfLine
+		  End If
+		  
+		  txtOutput.Text = txtOutput.Text + EndOfLine
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h21
+		Private Sub RunTestZlib()
+		  // Run Zlib premium compression tests
+		  txtOutput.Text = txtOutput.Text + "Running Zlib Premium Tests..." + EndOfLine + EndOfLine
+		  
+		  Dim result As Dictionary = VNSPDFExamplesModule.TestZlib()
+		  txtOutput.Text = txtOutput.Text + result.Value("output")
+		  
+		  Dim passed As Boolean = result.Value("passed")
+		  If passed Then
+		    txtOutput.Text = txtOutput.Text + EndOfLine + "ALL ZLIB TESTS PASSED!" + EndOfLine
+		  Else
+		    txtOutput.Text = txtOutput.Text + EndOfLine + "SOME ZLIB TESTS FAILED!" + EndOfLine
+		  End If
+		  
+		  txtOutput.Text = txtOutput.Text + EndOfLine
+		End Sub
+	#tag EndMethod
+
 
 #tag EndWindowCode
 
@@ -951,51 +1104,61 @@ End
 		  
 		  // Call the appropriate GenerateExample method
 		  Select Case exampleNum
-		  Case kExample1
+		  Case VNSPDFExamplesModule.kExample1
 		    GenerateExample1()
-		  Case kExample2
+		  Case VNSPDFExamplesModule.kExample2
 		    GenerateExample2()
-		  Case kExample3
+		  Case VNSPDFExamplesModule.kExample3
 		    GenerateExample3()
-		  Case kExample4
+		  Case VNSPDFExamplesModule.kExample4
 		    GenerateExample4()
-		  Case kExample5
+		  Case VNSPDFExamplesModule.kExample5
 		    GenerateExample5()
-		  Case kExample5Xojo  // Example 5 Xojo variant
+		  Case VNSPDFExamplesModule.kExample5Xojo  // Example 5 Xojo variant
 		    GenerateExample5Xojo()
-		  Case kExample6
+		  Case VNSPDFExamplesModule.kExample6
 		    GenerateExample6()
-		  Case kExample7
+		  Case VNSPDFExamplesModule.kExample7
 		    GenerateExample7()
-		  Case kExample8
+		  Case VNSPDFExamplesModule.kExample8
 		    GenerateExample8()
-		  Case kExample9
+		  Case VNSPDFExamplesModule.kExample9
 		    GenerateExample9()
-		  Case kExample10
+		  Case VNSPDFExamplesModule.kExample10
 		    GenerateExample10()
-		  Case kExample11
+		  Case VNSPDFExamplesModule.kExample11
 		    GenerateExample11()
-		  Case kExample12
+		  Case VNSPDFExamplesModule.kExample12
 		    GenerateExample12()
-		  Case kExample13
+		  Case VNSPDFExamplesModule.kExample13
 		    GenerateExample13()
-		  Case kExample14
+		  Case VNSPDFExamplesModule.kExample14
 		    GenerateExample14Interactive()
-		  Case kExample15
+		  Case VNSPDFExamplesModule.kExample15
 		    GenerateExample15()
-		  Case kExample16
+		  Case VNSPDFExamplesModule.kExample16
 		    GenerateExample16()
-		  Case kExample17
+		  Case VNSPDFExamplesModule.kExample17
 		    GenerateExample17()
-		  Case kExample18
+		  Case VNSPDFExamplesModule.kExample18
 		    GenerateExample18()
-		  Case kExample19
+		  Case VNSPDFExamplesModule.kExample19
 		    GenerateExample19()
-		  Case kExample20
+		  Case VNSPDFExamplesModule.kExample20
 		    GenerateExample20()
-		  Case kTestZlib
+		  Case VNSPDFExamplesModule.kExample21
+		    GenerateExample21()
+		  Case VNSPDFExamplesModule.kExample22
+		    GenerateExample22()
+		  Case VNSPDFExamplesModule.kExample23
+		    GenerateExample23()
+		  Case VNSPDFExamplesModule.kExample24
+		    GenerateExample24()
+		  Case VNSPDFExamplesModule.kExample26
+		    GenerateExample26()
+		  Case VNSPDFExamplesModule.kTestZlib
 		    RunTestZlib()
-		  Case kTestAES
+		  Case VNSPDFExamplesModule.kTestAES
 		    RunTestAES()
 		  Else
 		    txtOutput.Text = txtOutput.Text + "Unknown example number: " + exampleNum.StringValue + EndOfLine
@@ -1003,78 +1166,6 @@ End
 		End Sub
 	#tag EndEvent
 #tag EndEvents
-#tag Constants
-	#tag Constant, Name = kExample1, Type = Double, Dynamic = False, Default = \"1", Scope = Private
-	#tag EndConstant
-
-	#tag Constant, Name = kExample2, Type = Double, Dynamic = False, Default = \"2", Scope = Private
-	#tag EndConstant
-
-	#tag Constant, Name = kExample3, Type = Double, Dynamic = False, Default = \"3", Scope = Private
-	#tag EndConstant
-
-	#tag Constant, Name = kExample4, Type = Double, Dynamic = False, Default = \"4", Scope = Private
-	#tag EndConstant
-
-	#tag Constant, Name = kExample5, Type = Double, Dynamic = False, Default = \"5", Scope = Private
-	#tag EndConstant
-
-	#tag Constant, Name = kExample5Xojo, Type = Double, Dynamic = False, Default = \"51", Scope = Private
-	#tag EndConstant
-
-	#tag Constant, Name = kExample6, Type = Double, Dynamic = False, Default = \"6", Scope = Private
-	#tag EndConstant
-
-	#tag Constant, Name = kExample7, Type = Double, Dynamic = False, Default = \"7", Scope = Private
-	#tag EndConstant
-
-	#tag Constant, Name = kExample8, Type = Double, Dynamic = False, Default = \"8", Scope = Private
-	#tag EndConstant
-
-	#tag Constant, Name = kExample9, Type = Double, Dynamic = False, Default = \"9", Scope = Private
-	#tag EndConstant
-
-	#tag Constant, Name = kExample10, Type = Double, Dynamic = False, Default = \"10", Scope = Private
-	#tag EndConstant
-
-	#tag Constant, Name = kExample11, Type = Double, Dynamic = False, Default = \"11", Scope = Private
-	#tag EndConstant
-
-	#tag Constant, Name = kExample12, Type = Double, Dynamic = False, Default = \"12", Scope = Private
-	#tag EndConstant
-
-	#tag Constant, Name = kExample13, Type = Double, Dynamic = False, Default = \"13", Scope = Private
-	#tag EndConstant
-
-	#tag Constant, Name = kExample14, Type = Double, Dynamic = False, Default = \"14", Scope = Private
-	#tag EndConstant
-
-	#tag Constant, Name = kExample15, Type = Double, Dynamic = False, Default = \"15", Scope = Private
-	#tag EndConstant
-
-	#tag Constant, Name = kExample16, Type = Double, Dynamic = False, Default = \"16", Scope = Private
-	#tag EndConstant
-
-	#tag Constant, Name = kExample17, Type = Double, Dynamic = False, Default = \"17", Scope = Private
-	#tag EndConstant
-
-	#tag Constant, Name = kExample18, Type = Double, Dynamic = False, Default = \"18", Scope = Private
-	#tag EndConstant
-
-	#tag Constant, Name = kExample19, Type = Double, Dynamic = False, Default = \"19", Scope = Private
-	#tag EndConstant
-
-	#tag Constant, Name = kExample20, Type = Double, Dynamic = False, Default = \"20", Scope = Private
-	#tag EndConstant
-
-	#tag Constant, Name = kTestZlib, Type = Double, Dynamic = False, Default = \"21", Scope = Private
-	#tag EndConstant
-
-	#tag Constant, Name = kTestAES, Type = Double, Dynamic = False, Default = \"22", Scope = Private
-	#tag EndConstant
-
-
-#tag EndConstants
 #tag ViewBehavior
 	#tag ViewProperty
 		Name="HasTitleBar"
