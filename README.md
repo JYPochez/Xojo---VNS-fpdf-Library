@@ -1,6 +1,8 @@
 # Xojo FPDF Library
 
 A Xojo port of the popular FPDF library for PDF generation, supporting Desktop, Web, iOS, and Console applications.
+[Homepage](https://www.verynicesw.fr/xojo-fpdf-pure-xojo-pdf-generation-with-full-unicode-support.html)
+[More about Premium Modules](https://www.verynicesw.fr/xojo-fpdf-premium-modules.html)
 
 ## Overview
 
@@ -709,3 +711,4 @@ For bugs, feature requests, or questions, please contact jypochez@verynicesw.fr
 ---
 
 **Note**: This library is production-ready (v1.1.0). Check the git history and `VERSION_HISTORY.md` for the latest updates.
+
