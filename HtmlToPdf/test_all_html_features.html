@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html>
+<head><title>HTML to PDF - Complete Feature Test</title></head>
+<body>
+
+<h1>HTML to PDF Renderer - Complete Test Suite</h1>
+<p>This file tests every supported HTML tag and style attribute for the VNSPDFHTMLRenderer.</p>
+<hr>
+
+<!-- ==================== HEADINGS ==================== -->
+<h2>1. Headings</h2>
+<h1>Heading Level 1</h1>
+<h2>Heading Level 2</h2>
+<h3>Heading Level 3</h3>
+<h4>Heading Level 4</h4>
+<h5>Heading Level 5</h5>
+<h6>Heading Level 6</h6>
+<hr>
+
+<!-- ==================== TEXT FORMATTING ==================== -->
+<h2>2. Text Formatting</h2>
+<p>This is a normal paragraph with plain text.</p>
+<p>This has <b>bold text</b> using the b tag.</p>
+<p>This has <strong>strong text</strong> using the strong tag.</p>
+<p>This has <i>italic text</i> using the i tag.</p>
+<p>This has <em>emphasized text</em> using the em tag.</p>
+<p>This has <u>underlined text</u> using the u tag.</p>
+<p>This has <b><i>bold italic</i></b> combined.</p>
+<p>This has <b><i><u>bold italic underlined</u></i></b> all three.</p>
+<p>This has <code>inline code</code> using the code tag.</p>
+<p>This has <sub>subscript</sub> and <sup>superscript</sup> text.</p>
+<p>This has a line<br>break in the middle.</p>
+<hr>
+
+<!-- ==================== PARAGRAPHS AND DIVS ==================== -->
+<h2>3. Paragraphs and Divs</h2>
+<p>First paragraph. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+<p>Second paragraph. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
+<div>This is a div element. It should render like a paragraph.</div>
+<p>Paragraph after div.</p>
+<hr>
+
+<!-- ==================== INLINE STYLES ==================== -->
+<h2>4. Inline Styles</h2>
+<p style="color:red">Red text via inline style.</p>
+<p style="color:#0000FF">Blue text via hex color.</p>
+<p style="color:rgb(0,128,0)">Green text via rgb().</p>
+<p style="font-size:18pt">Large text at 18pt.</p>
+<p style="font-size:8pt">Small text at 8pt.</p>
+<p style="font-size:14pt; color:purple">Purple text at 14pt combining size and color.</p>
+<p style="font-family:'Times New Roman'; font-size:12pt">Times New Roman font family.</p>
+<p style="font-family:'Courier New'; font-size:11pt">Courier New monospace font.</p>
+<p style="font-family:Arial; color:navy; font-size:13pt">Arial font, navy color, 13pt.</p>
+
+<h3>Font Family Comparison</h3>
+<p style="font-family:Helvetica; font-size:11pt">Helvetica (sans-serif): The quick brown fox jumps over the lazy dog. 0123456789</p>
+<p style="font-family:'Times New Roman'; font-size:11pt">Times New Roman (serif): The quick brown fox jumps over the lazy dog. 0123456789</p>
+<p style="font-family:'Courier New'; font-size:11pt">Courier New (monospace): The quick brown fox jumps over the lazy dog. 0123456789</p>
+<p style="font-family:Arial; font-size:11pt">Arial (sans-serif): The quick brown fox jumps over the lazy dog. 0123456789</p>
+<p style="font-family:Verdana; font-size:11pt">Verdana (sans-serif): The quick brown fox jumps over the lazy dog. 0123456789</p>
+<p style="font-family:Georgia; font-size:11pt">Georgia (serif): The quick brown fox jumps over the lazy dog. 0123456789</p>
+<p style="font-family:'Trebuchet MS'; font-size:11pt">Trebuchet MS (sans-serif): The quick brown fox jumps over the lazy dog. 0123456789</p>
+<p style="font-family:Palatino; font-size:11pt">Palatino (serif): The quick brown fox jumps over the lazy dog. 0123456789</p>
+
+<h3>Font Families with Formatting</h3>
+<p style="font-family:'Times New Roman'; font-size:12pt"><b>Bold Times</b> and <i>Italic Times</i> and <b><i>Bold Italic Times</i></b></p>
+<p style="font-family:'Courier New'; font-size:11pt"><b>Bold Courier</b> and <i>Italic Courier</i> and <b><i>Bold Italic Courier</i></b></p>
+<p style="font-family:Helvetica; font-size:11pt"><b>Bold Helvetica</b> and <i>Italic Helvetica</i> and <b><i>Bold Italic Helvetica</i></b></p>
+
+<h3>Mixed Fonts in Same Paragraph</h3>
+<p>Default font, then <span style="font-family:'Times New Roman'">switch to Times New Roman</span>, then <span style="font-family:'Courier New'">switch to Courier New</span>, then back to default.</p>
+<p><span style="font-family:Helvetica; color:blue">Blue Helvetica</span> mixed with <span style="font-family:'Times New Roman'; color:red">Red Times</span> and <span style="font-family:'Courier New'; color:green">Green Courier</span>.</p>
+
+<h3>Font Family via Font Tag</h3>
+<p><font face="Helvetica">Helvetica via font tag</font> - <font face="Times">Times via font tag</font> - <font face="Courier">Courier via font tag</font></p>
+<hr>
+
+<!-- ==================== SPAN FORMATTING ==================== -->
+<h2>5. Span Inline Formatting</h2>
+<p>Normal text with <span style="color:red">red span</span> in the middle.</p>
+<p>Text with <span style="font-size:16pt">larger span</span> and back to normal.</p>
+<p>Mixed: <span style="color:blue; font-size:14pt">blue 14pt</span> then <span style="color:green">green</span> then normal.</p>
+<p><span style="color:#FF6600">Orange hex</span> and <span style="color:rgb(128,0,128)">purple rgb</span> spans.</p>
+<hr>
+
+<!-- ==================== FONT TAG (LEGACY) ==================== -->
+<h2>6. Legacy Font Tag</h2>
+<p><font size="1">Font size 1 (smallest)</font></p>
+<p><font size="3">Font size 3 (normal)</font></p>
+<p><font size="5">Font size 5 (large)</font></p>
+<p><font size="7">Font size 7 (largest)</font></p>
+<p><font color="red">Red font color</font></p>
+<p><font color="#008000" size="4">Green font at size 4</font></p>
+<p><font face="Courier">Courier font face</font></p>
+<p><font face="Times New Roman" color="blue" size="4">Times, blue, size 4 - all attributes</font></p>
+<hr>
+
+<!-- ==================== LISTS ==================== -->
+<h2>7. Unordered Lists</h2>
+<ul>
+  <li>First item</li>
+  <li>Second item</li>
+  <li>Third item with <b>bold</b> text</li>
+  <li>Fourth item with <i>italic</i> text</li>
+</ul>
+
+<h2>8. Ordered Lists</h2>
+<ol>
+  <li>First numbered item</li>
+  <li>Second numbered item</li>
+  <li>Third numbered item with <b>bold</b></li>
+  <li>Fourth numbered item</li>
+  <li>Fifth numbered item</li>
+</ol>
+
+<h2>9. Multiple Lists</h2>
+<p>Unordered list:</p>
+<ul>
+  <li>Apple</li>
+  <li>Banana</li>
+  <li>Cherry</li>
+</ul>
+<p>Followed by ordered list:</p>
+<ol>
+  <li>Step one</li>
+  <li>Step two</li>
+  <li>Step three</li>
+</ol>
+<hr>
+
+<!-- ==================== TABLES ==================== -->
+<h2>10. Simple Table</h2>
+<table>
+  <tr>
+    <th>Name</th>
+    <th>Age</th>
+    <th>City</th>
+  </tr>
+  <tr>
+    <td>Alice</td>
+    <td>30</td>
+    <td>Paris</td>
+  </tr>
+  <tr>
+    <td>Bob</td>
+    <td>25</td>
+    <td>London</td>
+  </tr>
+  <tr>
+    <td>Charlie</td>
+    <td>35</td>
+    <td>New York</td>
+  </tr>
+</table>
+
+<h2>11. Table with 2 Columns</h2>
+<table>
+  <tr>
+    <th>Feature</th>
+    <th>Status</th>
+  </tr>
+  <tr>
+    <td>Headings</td>
+    <td>Working</td>
+  </tr>
+  <tr>
+    <td>Bold/Italic</td>
+    <td>Working</td>
+  </tr>
+  <tr>
+    <td>Tables</td>
+    <td>Working</td>
+  </tr>
+</table>
+
+<h2>12. Table with Many Columns</h2>
+<table>
+  <tr>
+    <th>Col 1</th>
+    <th>Col 2</th>
+    <th>Col 3</th>
+    <th>Col 4</th>
+    <th>Col 5</th>
+    <th>Col 6</th>
+  </tr>
+  <tr>
+    <td>A1</td>
+    <td>B1</td>
+    <td>C1</td>
+    <td>D1</td>
+    <td>E1</td>
+    <td>F1</td>
+  </tr>
+  <tr>
+    <td>A2</td>
+    <td>B2</td>
+    <td>C2</td>
+    <td>D2</td>
+    <td>E2</td>
+    <td>F2</td>
+  </tr>
+</table>
+
+<h2>13. Table Without Header</h2>
+<table>
+  <tr>
+    <td>Row 1 Col 1</td>
+    <td>Row 1 Col 2</td>
+    <td>Row 1 Col 3</td>
+  </tr>
+  <tr>
+    <td>Row 2 Col 1</td>
+    <td>Row 2 Col 2</td>
+    <td>Row 2 Col 3</td>
+  </tr>
+</table>
+<hr>
+
+<!-- ==================== BLOCKQUOTE ==================== -->
+<h2>14. Blockquotes</h2>
+<blockquote>This is a blockquote. It should be indented from the left margin.</blockquote>
+<p>Normal paragraph after blockquote.</p>
+<blockquote>Another blockquote with longer text. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</blockquote>
+<hr>
+
+<!-- ==================== CODE BLOCKS ==================== -->
+<h2>15. Code Blocks</h2>
+<p>Inline: <code>Var x As Integer = 42</code> in a sentence.</p>
+<pre><code>// Multi-line code block
+Var pdf As New VNSPDFDocument
+pdf.SetFont("Helvetica", "", 12)
+pdf.Cell(40, 10, "Hello World!")
+pdf.Save(outputFile)</code></pre>
+<p>Paragraph after code block.</p>
+<hr>
+
+<!-- ==================== LINKS ==================== -->
+<h2>16. Links</h2>
+<p>Visit <a href="https://www.example.com">Example.com</a> for more info.</p>
+<p>Link to <a href="https://documentation.xojo.com">Xojo Documentation</a> site.</p>
+<p>Text before <a href="https://www.google.com">Google</a> and text after.</p>
+<hr>
+
+<!-- ==================== IMAGES ==================== -->
+<h2>17. Images</h2>
+<p>Small base64 red square image:</p>
+<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAIAAAAC64paAAAAG0lEQVR4nGP4z8BANiJf56jmUc2jmkc1U0UzADHNjoAymaoJAAAAAElFTkSuQmCC" width="20" height="20">
+<p>Image with width attribute:</p>
+<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAIAAAAC64paAAAAG0lEQVR4nGP4z8BANiJf56jmUc2jmkc1U0UzADHNjoAymaoJAAAAAElFTkSuQmCC" width="50">
+<hr>
+
+<!-- ==================== HORIZONTAL RULES ==================== -->
+<h2>18. Horizontal Rules</h2>
+<p>Text before rule.</p>
+<hr>
+<p>Text between rules.</p>
+<hr>
+<p>Text after rules.</p>
+
+<!-- ==================== MIXED CONTENT ==================== -->
+<h2>19. Mixed Content</h2>
+<p>This paragraph has <b>bold</b>, <i>italic</i>, <u>underline</u>, <code>code</code>, and <span style="color:red">colored</span> text all mixed together.</p>
+<p>Here is a <b>bold <i>and italic</i></b> nested combination.</p>
+<p>Formula: H<sub>2</sub>O and E=mc<sup>2</sup></p>
+<hr>
+
+<!-- ==================== SPECIAL CHARACTERS ==================== -->
+<h2>20. Special Characters and Entities</h2>
+<p>HTML entities: &amp; &lt; &gt; &quot; &nbsp; &copy; &reg; &euro;</p>
+<p>French: Les caract&egrave;res sp&eacute;ciaux sont g&eacute;r&eacute;s correctement.</p>
+<p>Accented: &agrave; &aacute; &acirc; &atilde; &auml; &ccedil; &egrave; &eacute; &ecirc; &euml;</p>
+<p>Unicode directly: Caf&eacute; cr&egrave;me, na&iuml;ve, r&eacute;sum&eacute;</p>
+<hr>
+
+<!-- ==================== UNICODE AND INTERNATIONAL TEXT ==================== -->
+<h2>21. Unicode and International Text</h2>
+<h3>French</h3>
+<p>Caf&eacute; cr&egrave;me, na&iuml;ve, r&eacute;sum&eacute;, Ch&acirc;teau de Versailles, gar&ccedil;on</p>
+<h3>German</h3>
+<p>&Auml;rger, &Ouml;ffnung, &Uuml;bung, Stra&szlig;e, Gr&ouml;&szlig;e, Gem&uuml;tlichkeit</p>
+<h3>Spanish</h3>
+<p>&iexcl;Buenos d&iacute;as! &iquest;C&oacute;mo est&aacute;s? El ni&ntilde;o peque&ntilde;o comi&oacute; pi&ntilde;a</p>
+<h3>Arabic</h3>
+<p>بسم الله الرحمن الرحيم</p>
+<p>مرحبا بالعالم - هذا نص تجريبي باللغة العربية</p>
+<h3>Chinese</h3>
+<p>你好世界 - 这是一个中文测试段落</p>
+<h3>Japanese</h3>
+<p>こんにちは世界 - これはテストです</p>
+<h3>Korean</h3>
+<p>안녕하세요 세계 - 이것은 테스트입니다</p>
+<h3>Russian</h3>
+<p>Привет мир! Это тестовый текст на русском языке.</p>
+<h3>Greek</h3>
+<p>Γεια σου κόσμε! Αυτό είναι ένα δοκιμαστικό κείμενο.</p>
+<h3>Hebrew</h3>
+<p>שלום עולם! זהו טקסט לבדיקה</p>
+<h3>Thai</h3>
+<p>สวัสดีชาวโลก นี่คือข้อความทดสอบ</p>
+<h3>Currency Symbols</h3>
+<p>Euro: &euro; 1.234,56 | Pound: &pound; 1,234.56 | Yen: &yen; 123,456</p>
+<hr>
+
+<!-- ==================== UNICODE IN TABLES ==================== -->
+<h2>22. Unicode in Tables</h2>
+<table>
+  <tr>
+    <th>Language</th>
+    <th>Greeting</th>
+    <th>Thank You</th>
+  </tr>
+  <tr>
+    <td>French</td>
+    <td>Bonjour, ça va ?</td>
+    <td>Merci beaucoup</td>
+  </tr>
+  <tr>
+    <td>German</td>
+    <td>Guten Tag, wie geht's?</td>
+    <td>Vielen Dank, tschüss</td>
+  </tr>
+  <tr>
+    <td>Spanish</td>
+    <td>¡Hola! ¿Cómo estás?</td>
+    <td>Muchas gracias, señor</td>
+  </tr>
+  <tr>
+    <td>Arabic</td>
+    <td>مرحبا</td>
+    <td>شكرا جزيلا</td>
+  </tr>
+  <tr>
+    <td>Chinese</td>
+    <td>你好</td>
+    <td>谢谢</td>
+  </tr>
+  <tr>
+    <td>Japanese</td>
+    <td>こんにちは</td>
+    <td>ありがとう</td>
+  </tr>
+  <tr>
+    <td>Korean</td>
+    <td>안녕하세요</td>
+    <td>감사합니다</td>
+  </tr>
+  <tr>
+    <td>Russian</td>
+    <td>Здравствуйте</td>
+    <td>Спасибо</td>
+  </tr>
+  <tr>
+    <td>Greek</td>
+    <td>Γεια σας</td>
+    <td>Ευχαριστώ</td>
+  </tr>
+  <tr>
+    <td>Polish</td>
+    <td>Dzień dobry</td>
+    <td>Dziękuję</td>
+  </tr>
+</table>
+
+<h2>23. Pricing Table with Symbols</h2>
+<table>
+  <tr>
+    <th>Product</th>
+    <th>Price (EUR)</th>
+    <th>Price (GBP)</th>
+    <th>Notes</th>
+  </tr>
+  <tr>
+    <td>Encryption Module</td>
+    <td>&euro; 50,00</td>
+    <td>&pound; 43,00</td>
+    <td>AES-256 &amp; RC4-128</td>
+  </tr>
+  <tr>
+    <td>Table Module</td>
+    <td>&euro; 50,00</td>
+    <td>&pound; 43,00</td>
+    <td>Auto-pagination &raquo; multi-page</td>
+  </tr>
+  <tr>
+    <td>Bundle (3 modules)</td>
+    <td>&euro; 100,00</td>
+    <td>&pound; 86,00</td>
+    <td>&laquo; Buy 2 Get 1 Free &raquo;</td>
+  </tr>
+</table>
+<hr>
+
+<!-- ==================== LONG TEXT FOR WORD WRAP ==================== -->
+<h2>24. Long Text Word Wrapping</h2>
+<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+<p>Superlongwordwithoutanyspacestotestwordbreakingbehaviorwhentextexceedstheavailablewidthofthecellandneedstobeforcefullysplit at some point.</p>
+<hr>
+
+<!-- ==================== MULTIPLE LINE BREAKS ==================== -->
+<h2>25. Line Breaks</h2>
+<p>Line one.<br>Line two.<br>Line three.<br>Line four.</p>
+<p>Self-closing: Line A.<br/>Line B.<br />Line C.</p>
+<hr>
+
+<!-- ==================== EMPTY ELEMENTS ==================== -->
+<h2>26. Edge Cases</h2>
+<p></p>
+<p>Paragraph after empty paragraph.</p>
+<p>   </p>
+<p>Paragraph after whitespace-only paragraph.</p>
+<p>Text with    multiple   spaces    between    words.</p>
+<hr>
+
+<!-- ==================== FINAL SUMMARY ==================== -->
+<h2>27. Test Summary</h2>
+<table>
+  <tr>
+    <th>Test Category</th>
+    <th>Tags Tested</th>
+    <th>Expected</th>
+  </tr>
+  <tr>
+    <td>Headings</td>
+    <td>h1-h6</td>
+    <td>Decreasing sizes, bold</td>
+  </tr>
+  <tr>
+    <td>Text formatting</td>
+    <td>b, strong, i, em, u, code, sub, sup</td>
+    <td>Proper styling</td>
+  </tr>
+  <tr>
+    <td>Inline styles</td>
+    <td>color, font-size, font-family</td>
+    <td>CSS applied</td>
+  </tr>
+  <tr>
+    <td>Lists</td>
+    <td>ul, ol, li</td>
+    <td>Bullets and numbers</td>
+  </tr>
+  <tr>
+    <td>Tables</td>
+    <td>table, tr, td, th</td>
+    <td>Grid with borders</td>
+  </tr>
+  <tr>
+    <td>Media</td>
+    <td>img (base64)</td>
+    <td>Embedded images</td>
+  </tr>
+  <tr>
+    <td>Structure</td>
+    <td>p, div, br, hr, blockquote, pre</td>
+    <td>Layout elements</td>
+  </tr>
+  <tr>
+    <td>Links</td>
+    <td>a href</td>
+    <td>Clickable text</td>
+  </tr>
+  <tr>
+    <td>Legacy</td>
+    <td>font (size, color, face)</td>
+    <td>Legacy formatting</td>
+  </tr>
+  <tr>
+    <td>Unicode</td>
+    <td>Multi-script text + entities</td>
+    <td>Correct rendering</td>
+  </tr>
+  <tr>
+    <td>Unicode tables</td>
+    <td>International text in cells</td>
+    <td>Proper alignment</td>
+  </tr>
+</table>
+
+<p><b>End of HTML Feature Test</b></p>
+
+</body>
+</html>
