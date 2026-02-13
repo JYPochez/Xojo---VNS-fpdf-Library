@@ -55,4 +55,5 @@ This is a free demo application for the **VNS PDF Library** HTML/Markdown Import
 
 The premium module provides `LoadHTML()` and `LoadMarkdown()` methods that you can integrate directly into your own Xojo applications.
 
-Learn more at [verynicesw.com](https://verynicesw.com)
+Learn more at [verynicesw.fr](https://www.verynicesw.fr)
+
