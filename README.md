@@ -31,21 +31,24 @@ Xojo_fpdf is a pure Xojo implementation for creating PDF documents programmatica
 - **PDFGraphics Compatible**: VNSPDFGraphics provides complete Xojo PDFGraphics API compatibility
 - **DrawObject Support**: Full Object2D rendering (RectShape, OvalShape, RoundRectShape, ArcShape, CurveShape, FigureShape, TextShape, PixmapShape, Group2D with rotation)
 - **CJK Text Wrapping**: Intelligent character-based line breaking for Chinese, Japanese, Korean text
+- **GraphicsPath**: Curves, arcs, round rectangles, clipping regions, and hit testing
+- **PDF Preview Window**: Desktop in-app modal preview with thumbnails, zoom/pan, save, and print
 
 ### Premium Modules (Optional)
 
-**💡 Purchase Only What You Need!** Each premium module can be purchased separately:
+**Purchase Only What You Need!** Each premium module can be purchased separately:
 
-- **🔐 Encryption Module** ✅ *Ready* - RC4-128, AES-128, AES-256 encryption with pure Xojo implementation
-- **📊 Table Module** ✅ *Ready* - Professional table generation with headers, footers, pagination, and calculations
-- **🗜️ Zlib Module** ✅ *Ready* - Pure Xojo compression for iOS support (bypasses sandboxing)
-- **📝 Forms Module** 📋 *Planned* - Interactive PDF AcroForms with text fields, checkboxes, radio buttons, dropdowns, buttons, and signature fields
-- **🔮 PDF/A Module** 📋 *Planned* - Full archival compliance with validation
-- **🧾 E-Invoice Module** 📋 *Planned* - Factur-X, ZUGFeRD, EN 16931 compliant hybrid PDF/XML invoices
+- **Encryption Module** - RC4-128, AES-128, AES-256 encryption + PAdES-B-B digital signatures (Adobe Acrobat validated)
+- **Table Module** - Professional table generation with headers, footers, pagination, per-cell styling, subtotal rows, and Manual Table Builder
+- **Zlib Module** - Pure Xojo compression for iOS support (bypasses sandboxing)
+- **E-Invoice Module** - Factur-X, ZUGFeRD, EN 16931 compliant hybrid PDF/XML invoices + Barcode Module (QR, Code128, EAN-13, EAN-8, UPC-A, Code 39, ITF, Codabar, DataMatrix, PDF417)
+- **HTML/Markdown Import Module** - LoadHTML() and LoadMarkdown() for converting HTML/Markdown to PDF
+- **Forms Module** (Planned) - Interactive PDF AcroForms with fillable fields
+- **PDF/A Module** (Planned) - Full archival compliance with validation
 
 All premium modules are delivered as **full, unencrypted source code** - same transparency as the free version!
 
-For details, see `docs/FEATURE_COMPARISON_PREMIUM.md`
+All premium modules are delivered as **full, unencrypted source code** - same transparency as the free version!
 
 ## Installation
 
@@ -62,11 +65,11 @@ The repository includes four ready-to-use project files:
 - **Xojo_iospdf_free.xojo_project** - iOS application with touch-based interface
 - **xojo_consolepdf_free.xojo_project** - Console application with interactive menu
 
-All projects share the same `PDF_Library` folder for maximum code reuse. All four projects (Desktop, Web, iOS, and Console) include **23 working examples** demonstrating various PDF features.
+All projects share the same `PDF_Library` folder for maximum code reuse. All four projects (Desktop, Web, iOS, and Console) include **33 working examples** demonstrating various PDF features.
 
 ### iOS Application
 
-The iOS project provides a native iOS interface with 23 example buttons:
+The iOS project provides a native iOS interface with 33 examples:
 
 - Generates PDFs using the shared `VNSPDFExamplesModule`
 - Saves PDFs to the iOS Documents folder
@@ -177,9 +180,25 @@ Available Examples:
   13. PDF/A Compliance
       ICC color profile embedding for archival PDFs
 
+  14-17. Encryption, Watermark, Formatting, Utilities
+  18. Plugin Architecture
+  19. Tables (SQLite-driven, multi-page)
+  20. PDF Import (XObject templates)
+  21. Transformations
+  22. VNS PDF Graphics
+  23. File Attachments
+  26. Bug Tests
+  27. HTML Import (Premium)
+  28. Markdown Import (Premium)
+  29. GraphicsPath
+  30. E-Invoice (Premium)
+  31. E-Invoice Checker (Premium)
+  32. Digital Signatures (Premium)
+  33. Barcodes (Premium)
+
   0. Exit
 
-Enter example number (0-13): 1
+Enter example number (0-33): 1
 
 Generating Example 1: Simple shapes...
 Success! PDF generated.
@@ -387,13 +406,20 @@ pdf.Polygon(hexagon, "DF")  // Fill and outline
 
 ```
 PDF_Library/
-├── VNSPDFModule.xojo_code          # Global constants, enums, and utilities
-└── Core/
-    └── VNSPDFDocument.xojo_code    # Main document class with all PDF operations
+├── VNSPDFModule.xojo_code              # Global constants, enums, and utilities
+├── Core/
+│   ├── VNSPDFDocument.xojo_code        # Main document class with all PDF operations
+│   ├── VNSPDFGraphics.xojo_code        # PDFGraphics-compatible wrapper
+│   ├── VNSPDFGraphicsPath.xojo_code    # GraphicsPath implementation
+│   └── VNSPDFPathSegment.xojo_code     # Path segment types
+├── Text/VNSPDFFont.xojo_code           # TrueType/UTF-8 font handling
+├── Media/VNSPDFImage.xojo_code         # Image processing
+└── Examples/VNSPDFExamplesModule.xojo_code  # 33 working examples
 ```
 
 **Key Classes**:
-- `VNSPDFDocument` - Main class for PDF creation and manipulation
+- `VNSPDFDocument` - Main class for PDF creation and manipulation (Xojo PDFDocument drop-in replacement)
+- `VNSPDFGraphics` - Xojo PDFGraphics-compatible drawing wrapper
 - `VNSPDFModule` - Module containing enums, constants, and helper functions
 
 **Available Methods**:
@@ -575,7 +601,7 @@ See `docs/developer/18-wrapper-classes.md` for complete PDFGraphics API compatib
 
 ## Current Status
 
-**Version**: 1.1.1 (Production Ready)
+**Version**: 1.2 (Production Ready)
 
 **Xojo Compatibility**:
 - Xojo 2025r3.1 with API2
@@ -630,46 +656,50 @@ See `docs/developer/18-wrapper-classes.md` for complete PDFGraphics API compatib
   - SimpleTable() - Equal-width columns with basic formatting
   - ImprovedTable() - Custom column widths with auto number alignment
   - FancyTable() - Professional styling with colored headers and alternating rows
+  - Manual Table Builder - Full programmatic control with AddRow/AddSubtotalRow
+  - Per-cell style overrides (font family, style, size, color per individual cell)
   - Header repetition on page breaks via AcceptPageBreakFunc callback
   - SQLite-based data handling with RowSet for flexibility
   - Multi-page pagination with proper border handling
-  - **Advanced Table Footers** (v1.1.0) - Subtotals and grand totals
-    - Grand footers: Overall totals at end of table (all table types)
-    - Intermediate footers: Subtotals at group breaks (all table types via footerConfig.GroupByColumn)
-    - Multi-calculation cells: Combine SUM, AVG, MIN, MAX, COUNT in single cell
-    - Template-based formatting with placeholders: `"{sum} items ({count} rows)"`
-    - Custom styling for intermediate vs grand footers
-    - Per-calculation number formatting (e.g., `%.2f` for currency)
+  - Advanced table footers with subtotals and grand totals (SUM, AVG, MIN, MAX, COUNT)
+- ✅ **E-Invoice Module** - Factur-X/ZUGFeRD EN 16931 compliant electronic invoicing
+  - CII XML generation, PDF/A-3b compliance, 5 conformance profiles
+  - ReadEInvoice PDF conformity checker with JSON output
+  - Barcode Module: QR Code, Code128, EAN-13, EAN-8, UPC-A, Code 39, ITF, Codabar, DataMatrix, PDF417
+  - Vector rendering: all barcodes drawn as native PDF rectangles (no raster artifacts)
+- ✅ **Digital Signatures** (Encryption Module) - PAdES-B-B + XAdES-BES
+  - Pure Xojo RSA PKCS#1 v1.5 signing with CRT optimization
+  - CMS/PKCS#7 SignedData, ASN.1 DER, X.509 parser, W3C XML C14N
+  - Validated by Adobe Acrobat Reader
+- ✅ **HTML/Markdown Import Module** - LoadHTML() and LoadMarkdown() for PDF conversion
+- ✅ **GraphicsPath** - Curves, arcs, round rectangles, clipping, hit testing
+- ✅ **PDF Preview Window** (Desktop) - In-app modal preview with thumbnails, zoom/pan, save, print
 
-**New in v1.1.0**:
-- ✅ **VNSPDFGraphics API** - Complete Xojo PDFGraphics API compatibility (43 features)
-- ✅ **DrawObject support** - Full Object2D rendering with rotation (RectShape, OvalShape, RoundRectShape, ArcShape, CurveShape, FigureShape, TextShape, PixmapShape, Group2D)
-- ✅ **File attachments** - Document-level and page annotation attachments (E-Invoice/Factur-X ready)
-- ✅ **DrawTextBlock** - Word-wrap with CJK character-based line breaking
-- ✅ **Clipping methods** - Clip, ClipToRectangle, ClipToPath, ClipEnd
-- ✅ **Transformation methods** - Rotate, Translate, Scale, Transform matrix
-- ✅ **State management** - SaveState, RestoreState, ResetState
-- ✅ **Bounds checking** - Optional exception mode (`gkRaiseExceptionOnOutOfBounds`)
-- ✅ **23 working examples** across all 4 platforms
+**New in v1.2** (Current Release):
+- ✅ **PAdES-B-B & XAdES-BES digital signatures** - Adobe Acrobat validated PDF signing
+- ✅ **Barcode Module** - Free QR/Code128 + Premium 1D/2D vector barcodes (10 types)
+- ✅ **E-Invoice Module** - Factur-X/ZUGFeRD with conformity checker
+- ✅ **HTML/Markdown Import** - Convert HTML and Markdown files to PDF
+- ✅ **Per-cell style overrides** - Individual cell font/color in tables
+- ✅ **Manual Table Builder** - Programmatic table construction with subtotal rows
+- ✅ **GraphicsPath** - Full path drawing with clipping and hit testing
+- ✅ **PDF Preview Window** - Desktop in-app PDF preview with thumbnails
+- ✅ **33 working examples** across all 4 platforms
 
 **New in v1.1.1** (Bug fixes from community feedback):
 - ✅ **MultiCell single-line bottom border** - Fixed missing bottom border when border=1 on single-line cells
 - ✅ **SplitTextToLines first character** - Fixed off-by-one error dropping first character of wrapped words
 - ✅ **MultiCell newline handling** - Fixed Chr(10) and CRLF being ignored (all text on one line)
 - ✅ **MultiCell positioning** - Fixed cursor not returning to left margin after MultiCell
-- ✅ **ImageFromPicture on Windows/Linux** - Fixed PNG corruption (RGBA vs RGB mismatch) by forcing JPEG on Windows and Linux
+- ✅ **ImageFromPicture RGBA corruption** - Fixed on all platforms by using JPEG format
 - ✅ **Example 26** - Cross-platform bug test suite verifying all fixes on macOS, Windows 11, and Ubuntu 22.04 ARM64
 
-**In Development**:
-- 🔨 Native color emoji fonts for Web (SBIX, COLR/CPAL, SVG-in-OpenType) - Desktop/iOS working
-
-**💡 Premium Modules Available Separately**: Each premium module (Encryption, Table, Zlib, PDF/A, E-Invoice) can be purchased individually. You only pay for the features you need! See `docs/FEATURE_COMPARISON_PREMIUM.md` for details.
-
+**Premium Modules Available Separately**: Each premium module can be purchased individually. You only pay for the features you need!
 ## License
 
 **Free Version**: This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) file for details.
 
-**Premium Modules**: Premium modules (Encryption, Table, Zlib, PDF/A, E-Invoice) are licensed separately and require purchase.
+**Premium Modules**: Premium modules (Encryption, Table, Zlib, E-Invoice, HTML/Markdown Import) are licensed separately and require purchase.
 
 The free version is a Xojo port of:
 - [go-pdf/fpdf](https://codeberg.org/go-pdf/fpdf) (MIT License) - Go implementation
@@ -692,10 +722,11 @@ Email: jypochez@verynicesw.fr
 ## Example Use Cases
 
 - **Invoices and Reports**: Generate business documents programmatically
-- **E-Invoices** 📋: Create hybrid PDF/XML electronic invoices compliant with Factur-X, ZUGFeRD, EN 16931 (Premium E-Invoice Module - Planned)
+- **E-Invoices**: Create hybrid PDF/XML electronic invoices compliant with Factur-X, ZUGFeRD, EN 16931 (Premium E-Invoice Module)
 - **Certificates**: Create personalized certificates on-demand
-- **Labels and Badges**: Print custom labels with barcodes
-- **Forms**: Pre-fill PDF forms with data
+- **Labels and Badges**: Print custom labels with vector barcodes (QR, Code128, EAN-13, DataMatrix, PDF417, and more)
+- **Digital Signatures**: PAdES-B-B signed PDFs validated by Adobe Acrobat (Premium Encryption Module)
+- **HTML/Markdown to PDF**: Convert HTML and Markdown files to professional PDFs (Premium HTML/Markdown Module)
 - **Data Export**: Export database records to PDF
 - **Web Reports**: Generate PDF reports from web applications
 - **Secure Documents**: Password-protected PDFs with encryption (Premium Encryption Module)
@@ -708,4 +739,4 @@ For bugs, feature requests, or questions, please contact jypochez@verynicesw.fr
 
 ---
 
-**Note**: This library is production-ready (v1.1.0). Check the git history and `VERSION_HISTORY.md` for the latest updates.
+**Note**: This library is production-ready (v1.2).
