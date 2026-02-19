@@ -51,6 +51,7 @@ These properties match Xojo's PDFDocument API exactly:
 | `PageWidth` | Double | Read | Current page width in points |
 | `Landscape` | Boolean | Read | True if current page is landscape |
 | `Compressed` | Boolean | Read/Write | Enable/disable FlateDecode compression |
+| `Permissions` | PDFPermissions | Read/Write | PDF permissions and encryption (AES-128 with premium, RC4-40 without) |
 | `Graphics` | VNSPDFGraphics | Read | PDFGraphics-compatible drawing interface |
 
 ### Example Usage
@@ -318,7 +319,7 @@ pdf.Save(file)
 | `pdf.Save(file)` | `pdf.Save(file)` | Identical method! |
 | Limited Unicode | Full UTF-8 support | Arabic, CJK with text shaping |
 | No PDF Import | `ImportPage()`, `UseTemplate()` | Import existing PDFs |
-| No encryption | RC4-40/128, AES-128/256 | Full encryption support |
+| PDFPermissions only | PDFPermissions + SetProtection() (RC4-40/128, AES-128/256) | Full encryption support |
 
 ### Advantages of VNS PDF
 

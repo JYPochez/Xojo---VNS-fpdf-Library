@@ -4,6 +4,9 @@
 
 **Xojo 2025r3.1 API2**
 
+- Permissions property: Xojo-compatible `PDFPermissions` support (AES-128 with premium, RC4-40 without)
+- iOS compilation: Fixed Object2D method exclusion using CompatibilityFlags
+
 ## Version 1.0.2 (January 2026)
 
 **Critical Bug Fixes (January 2026)**

@@ -53,6 +53,16 @@ End If
 **Cause**: Picture.ToData(PNG) on Windows/Linux produces RGBA (4 channels), PDF expects RGB (3 channels).
 **Fix**: Force JPEG format on Windows/Linux/iOS/Web. JPEG auto-converts RGBA to RGB.
 
+### Font subsetter broken glyph rendering (v1.2)
+**Symptom**: TrueType fonts loaded via `AddUTF8Font()` render as boxes (□) for certain fonts (e.g., Verdana, Trebuchet MS) while others work fine (Arial, Georgia).
+**Cause**: Font subsetter always wrote the `loca` table in long format (4-byte entries) but preserved the original `indexToLocFormat` in the head table. Fonts with `indexToLocFormat=0` (short/2-byte loca) had a mismatch: head said short, but loca was long. PDF viewers read wrong offsets → garbled glyphs.
+**Fix**: Force `indexToLocFormat=1` (long) in the subset head table since the subset loca always uses 4-byte entries.
+
+### System font auto-load causes garbled text for core fonts
+**Symptom**: Text using Helvetica, Times, or Courier in HTML/Markdown import renders as garbled characters.
+**Cause**: The font resolver found system `.ttf`/`.ttc` files matching core PDF font names (e.g., `/System/Library/Fonts/Helvetica.ttc`) and loaded them as TrueType fonts instead of using the built-in core PDF fonts.
+**Fix**: Core PDF font names (Helvetica, Times, Courier, Symbol, ZapfDingbats) and generic CSS families (sans-serif, serif, monospace) are now resolved directly without auto-loading. System font auto-load only applies to non-core fonts.
+
 ---
 
 ## Platform-Specific Issues

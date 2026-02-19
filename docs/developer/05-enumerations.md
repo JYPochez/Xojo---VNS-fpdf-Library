@@ -68,6 +68,28 @@ Dim pdf As New VNSPDFDocument(, VNSPDFModule.ePageUnit.Inches)
 - 1 inch = 25.4 millimeters
 - 1 inch = 2.54 centimeters
 
+## ePathSegmentType
+
+**Location**: `VNSPDFModule`
+
+Path segment types for `VNSPDFGraphicsPath`. See [19-graphicspath.md](19-graphicspath.md) for full documentation.
+
+```xojo
+Enum ePathSegmentType
+    MoveTo = 0              // Move to point without drawing
+    LineTo = 1              // Straight line to point
+    CubicBezierTo = 2       // Cubic Bezier curve (2 control points)
+    QuadraticBezierTo = 3   // Quadratic Bezier curve (1 control point)
+    CloseSubpath = 4        // Close current subpath back to start
+    Rectangle = 5           // Axis-aligned rectangle
+End Enum
+```
+
+**Usage**:
+```xojo
+Dim seg As New VNSPDFPathSegment(VNSPDFModule.ePathSegmentType.LineTo, 100, 200)
+```
+
 ## Drawing Styles (String Constants)
 
 Drawing methods (Rect, Circle, Ellipse, Polygon, etc.) use String parameters for style:

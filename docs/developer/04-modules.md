@@ -113,6 +113,36 @@ Dim mm As Double = VNSPDFModule.ConvertFromPoints(points, VNSPDFModule.ePageUnit
 // Result: ~210 mm
 ```
 
+#### FindSystemFontPath
+```xojo
+Function FindSystemFontPath(fontName As String, styleSuffix As String = "") As String
+```
+
+**Parameters**:
+- `fontName` - Font family name (e.g., "Verdana", "Georgia", "DejaVu Sans")
+- `styleSuffix` - Optional style suffix: "", " Bold", " Italic", " Bold Italic"
+
+**Returns**: Full native file path if found, empty string if not found
+
+**Description**: Recursively searches platform-specific font directories for a TrueType font file (.ttf or .ttc). Results are cached in `mSystemFontCache` for performance. This is called automatically by `AddUTF8Font()` when no file path is provided.
+
+**Platform directories searched**:
+- **macOS**: `/System/Library/Fonts`, `/Library/Fonts`, `~/Library/Fonts`
+- **Windows**: `C:\Windows\Fonts`, `~\AppData\Local\Microsoft\Windows\Fonts`
+- **Linux**: `/usr/share/fonts`, `/usr/local/share/fonts`, `~/.fonts`, `~/.local/share/fonts`
+- **iOS**: No system font search (fonts must be bundled with the app)
+
+**Example**:
+```xojo
+Dim path As String = VNSPDFModule.FindSystemFontPath("Verdana")
+// macOS: "/System/Library/Fonts/Supplemental/Verdana.ttf"
+// Windows: "C:\Windows\Fonts\verdana.ttf"
+// Linux: "/usr/share/fonts/truetype/msttcorefonts/Verdana.ttf"
+
+Dim boldPath As String = VNSPDFModule.FindSystemFontPath("Verdana", " Bold")
+// Searches for "Verdana Bold.ttf" or "Verdana Bold.ttc"
+```
+
 ## Graphics State Classes
 
 ### VNSPDFBlendMode

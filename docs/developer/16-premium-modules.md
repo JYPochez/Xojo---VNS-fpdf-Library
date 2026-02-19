@@ -42,9 +42,11 @@ The VNS PDF library offers **premium modules** that extend the core FREE functio
 | Module | Status | Features | FREE Version | PREMIUM Version |
 |--------|--------|----------|--------------|-----------------|
 | **Encryption** | ✅ Complete | RC4-128, AES-128, AES-256 | RC4-40 only | RC4-40 + RC4-128 + AES-128 + AES-256 (✅ all working) |
-| **PDF/A** | 🔔 Coming Soon (Q2 2026) | Output Intent, ICC profiles | ❌ Not available | Planned |
-| **Zlib** | ✅ Complete | Pure Xojo deflate/inflate | Desktop/Web/Console only | **All platforms including iOS** (✅ fully working) |
 | **Table** | ✅ Complete | SimpleTable, ImprovedTable, FancyTable | Manual Cell() calls | High-level API (✅ fully working) |
+| **Zlib** | ✅ Complete | Pure Xojo deflate/inflate | Desktop/Web/Console only | **All platforms including iOS** (✅ fully working) |
+| **E-Invoice** | ✅ Complete | Factur-X, ZUGFeRD, EN 16931 | ❌ Not available | CII XML + PDF/A-3b (✅ fully working) |
+| **HTML/Markdown** | 🔔 Coming Soon | LoadHTML(), LoadMarkdown() | ❌ Not available | HTML + Markdown to PDF conversion |
+| **PDF/A** | 🔔 Coming Soon | Output Intent, ICC profiles | ❌ Not available | Planned |
 
 **Pricing**: €50 per module | Bundle: Buy 2, Get 1 Free = €100 (save €50) | PayPal only
 
@@ -60,6 +62,17 @@ PDF_Library/
 │   ├── VNSPDFEncryptionPremium.xojo_code    # RC4-128 + AES-128/256 encryption (✅ complete)
 │   ├── VNSPDFPDFAPremium.xojo_code          # PDF/A output intents (🔔 coming soon)
 │   ├── VNSPDFTablePremium.xojo_code         # Table generation (✅ complete)
+│   ├── VNSPDFHTMLPremium.xojo_code          # HTML/Markdown import (🔔 coming soon)
+│   ├── VNSPDFHTMLTokenizer.xojo_code        # HTML tokenizer/parser
+│   ├── VNSPDFMarkdownParser.xojo_code       # Markdown parser
+│   ├── EInvoiceModule/
+│   │   ├── VNSPDFEInvoicePremium.xojo_code  # E-Invoice orchestration (✅ complete)
+│   │   ├── VNSPDFEInvoice.xojo_code         # Invoice data model
+│   │   ├── VNSPDFEInvoiceParty.xojo_code    # Seller/Buyer party data
+│   │   ├── VNSPDFEInvoiceLineItem.xojo_code # Line item data
+│   │   ├── VNSPDFEInvoiceTaxBreakdown.xojo_code # Tax breakdown data
+│   │   ├── VNSPDFEInvoiceXMLGenerator.xojo_code # CII XML generation
+│   │   └── VNSPDFEInvoiceValidator.xojo_code    # Profile-aware validation
 │   └── README.md                             # Premium module documentation
 ├── Compression/
 │   ├── VNSZlibModule.xojo_code              # Main zlib interface
@@ -163,7 +176,6 @@ Dim pdf As New VNSPDFDocument(VNSPDFModule.ePageOrientation.Portrait, _
                               VNSPDFModule.ePageFormat.A4)
 
 // Add content
-pdf.AddPage()
 pdf.SetFont("Helvetica", "", 12)
 pdf.Cell(0, 10, "This document uses RC4-128 encryption")
 
@@ -367,7 +379,6 @@ pdf.AddOutputIntent(VNSPDFModule.gkOutputIntentPDFA1, _
                     iccProfile)
 
 // Add content with color calibration
-pdf.AddPage()
 pdf.SetFont("Helvetica", "", 12)
 pdf.Cell(0, 10, "This is a PDF/A-1b compliant document")
 
@@ -623,7 +634,6 @@ End If
 Dim pdf As New VNSPDFDocument(VNSPDFModule.ePageOrientation.Portrait, _
                               VNSPDFModule.ePageUnit.Millimeters, _
                               VNSPDFModule.ePageFormat.A4)
-pdf.AddPage()
 
 // Create in-memory SQLite database with sample data
 Dim db As New SQLiteDatabase

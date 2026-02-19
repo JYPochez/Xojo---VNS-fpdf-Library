@@ -48,7 +48,6 @@ Sub SetErrorf(format As String, args() As Variant)  // Printf-style error
 Sub GenerateReport()
     Dim pdf As New VNSPDFDocument()
 
-    pdf.AddPage()
     pdf.SetFont("helvetica", "", 12)
     pdf.Cell(0, 10, "Hello World")
 

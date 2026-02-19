@@ -117,7 +117,31 @@ Use JPEG (not PNG) on iOS - `Picture.ToData(PNG)` produces RGBA which PDF doesn'
 ### File Storage
 Use `SpecialFolder.Documents` not `SpecialFolder.Desktop` on iOS.
 
+## System Font Directories
+
+`AddUTF8Font()` and `VNSPDFModule.FindSystemFontPath()` search these directories recursively (max 4 levels deep) for `.ttf` and `.ttc` files:
+
+| Platform | Directories |
+|----------|-------------|
+| **macOS** | `/System/Library/Fonts`, `/Library/Fonts`, `~/Library/Fonts` |
+| **Windows** | `C:\Windows\Fonts`, `~\AppData\Local\Microsoft\Windows\Fonts` |
+| **Linux** | `/usr/share/fonts`, `/usr/local/share/fonts`, `~/.fonts`, `~/.local/share/fonts` |
+| **iOS** | No system font search - bundle fonts with the app |
+
+Lowercase filename variants are also searched (important for Linux where filenames are case-sensitive).
+
+Results are cached per font name + style, so the recursive search only runs once per font.
+
 ## Windows/Linux-Specific Considerations
+
+### System zlib Compatibility
+System zlib (`libz.so.1` on Linux) may not be available or compatible. For examples that don't require compression, disable it:
+```xojo
+#If TargetLinux Or TargetWindows Then
+  pdf.Compressed = False
+#EndIf
+```
+The Premium Zlib module (pure Xojo) provides cross-platform compression without system dependencies.
 
 ### ImageFromPicture Corruption
 `Picture.ToData(PNG)` on Windows and Linux produces RGBA (4 channels). Force JPEG format:

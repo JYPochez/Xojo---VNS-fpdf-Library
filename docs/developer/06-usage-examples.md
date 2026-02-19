@@ -28,9 +28,6 @@
 // Create a simple A4 document
 Dim pdf As New VNSPDFDocument()
 
-// Add first page
-pdf.AddPage()
-
 // Check for errors
 If pdf.Err() Then
     MsgBox "Error creating PDF: " + pdf.GetError()
@@ -40,21 +37,17 @@ End If
 // Document is ready for content
 ```
 
-## Example 2: Multiple Pages with Different Sizes
+## Example 2: Text Layouts and Font Comparison
+
+Demonstrates Cell, MultiCell, Write methods, core font families (Helvetica, Times, Courier) with all style variants, font size comparison, mixed fonts in flowing text, and TrueType system font auto-loading.
+
+Section 7 loads platform-specific TrueType fonts (Arial, Georgia, Verdana, Trebuchet MS, Palatino on macOS) to verify system font discovery and rendering.
 
 ```xojo
-// Create document with default A4 size
-Dim pdf As New VNSPDFDocument()
-
-// Add first page (A4)
-pdf.AddPage()
-
-// Add more pages
-pdf.AddPage()
-pdf.AddPage()
-
-// Check page count
-MsgBox "Total pages: " + Str(pdf.PageCount)
+// TrueType fonts can be loaded by name - no path needed
+pdf.AddUTF8Font("Verdana")  // Auto-searches system font directories
+pdf.SetFont("verdana", "", 10)
+pdf.Cell(0, 6, "Verdana text rendered from system TrueType font", 0, 1)
 ```
 
 ## Example 3: Landscape Letter Size Document
@@ -67,8 +60,6 @@ Dim pdf As New VNSPDFDocument( _
     VNSPDFModule.ePageFormat.Letter _
 )
 
-pdf.AddPage()
-
 // Page dimensions are now 11 x 8.5 inches
 ```
 
@@ -78,7 +69,6 @@ pdf.AddPage()
 Dim pdf As New VNSPDFDocument()
 
 // Add pages
-pdf.AddPage()
 pdf.AddPage()
 pdf.AddPage()
 
@@ -91,25 +81,20 @@ Dim totalPages As Integer = pdf.PageCount
 MsgBox "Total pages: " + Str(totalPages)
 ```
 
-## Example 5: Error Handling Pattern
+## Example 5: UTF-8 with TrueType Fonts
+
+Loads a TrueType font with Unicode support and renders multilingual text. Uses platform-specific font paths:
+- **macOS**: `/System/Library/Fonts/Supplemental/Arial Unicode.ttf` (fallback: Hiragino, Geneva)
+- **Windows**: `C:\Windows\Fonts\arial.ttf` (fallback: `segoeui.ttf`)
+- **Linux**: `/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf` (fallback: Liberation Sans, FreeSans)
+
+Compression is disabled on Linux/Windows for this example (system zlib may not be available; the Premium Zlib module handles this properly).
 
 ```xojo
-Dim pdf As New VNSPDFDocument()
-
-pdf.AddPage()
-
-// Perform various operations
-// (future: pdf.SetFont, pdf.Cell, etc.)
-
-// Check for accumulated errors
-If pdf.Err() Then
-    // Handle error
-    MsgBox "PDF Generation Error:" + EndOfLine + EndOfLine + pdf.GetError()
-    Return
-End If
-
-// Continue with PDF output
-// (future: pdf.Output())
+// Load a TrueType font by name (auto-searches system directories)
+pdf.AddUTF8Font("Arial")
+pdf.SetFont("arial", "", 12)
+pdf.Cell(0, 7, "English: Hello World!", 0, 1)
 ```
 
 ## Example 6: Unit Conversion
@@ -136,7 +121,6 @@ Dim widthCm As Double = widthMm / 10
 ```xojo
 // Create PDF with images
 Dim pdf As New VNSPDFDocument()
-pdf.AddPage()
 
 // Title
 pdf.SetFont("helvetica", "B", 16)
@@ -170,7 +154,6 @@ pdf.Save(f)
 ```xojo
 // Create PDF with color emoji (Desktop only)
 Dim pdf As New VNSPDFDocument()
-pdf.AddPage()
 
 // Title
 pdf.SetFont("helvetica", "B", 16)
@@ -215,7 +198,6 @@ pdf.Save(f)
 ```xojo
 // Create PDF with gradient examples
 Dim pdf As New VNSPDFDocument()
-pdf.AddPage()
 
 // Title
 pdf.SetFont("helvetica", "B", 16)
@@ -267,7 +249,6 @@ pdf.Save(f)
 ```xojo
 // Create PDF with clipping path examples
 Dim pdf As New VNSPDFDocument()
-pdf.AddPage()
 
 // Title
 pdf.SetFont("helvetica", "B", 16)
@@ -331,7 +312,6 @@ pdf.Save(f)
 ```xojo
 // Create PDF combining gradients and clipping paths
 Dim pdf As New VNSPDFDocument()
-pdf.AddPage()
 
 // Title
 pdf.SetFont("helvetica", "B", 16)
@@ -391,7 +371,6 @@ pdf.Save(f)
 ```xojo
 // Create PDF demonstrating Bezier curves
 Dim pdf As New VNSPDFDocument()
-pdf.AddPage()
 
 // Title
 pdf.SetFont("helvetica", "B", 16)
@@ -480,7 +459,6 @@ pdf.Save(f)
 ```xojo
 // Create PDF demonstrating arrow lines
 Dim pdf As New VNSPDFDocument()
-pdf.AddPage()
 
 // Title
 pdf.SetFont("helvetica", "B", 16)
@@ -610,7 +588,6 @@ This example demonstrates how to use transformation methods to create a rotated 
 ```xojo
 // Create PDF document
 Dim pdf As New VNSPDFDocument()
-pdf.AddPage()
 
 // Example 1: Rotated watermark text
 pdf.SetFont("Helvetica", "B", 50)
@@ -686,7 +663,6 @@ Dim pdf As New VNSPDFDocument(VNSPDFModule.ePageOrientation.Portrait, _
                                VNSPDFModule.ePageUnit.Millimeters, _
                                VNSPDFModule.ePageFormat.A4)
 pdf.SetTitle("Example 17 - Utility Methods")
-pdf.AddPage()
 
 // Section 1: GetVersionString()
 pdf.SetFont("helvetica", "B", 14)
@@ -1032,8 +1008,9 @@ Demonstrates the VNSPDFGraphics wrapper class which provides a Xojo PDFGraphics-
 ```xojo
 // Create VNSPDFDocument with UTF-8 font
 Dim pdf As New VNSPDFDocument()
-pdf.AddUTF8Font("unicode", "", "/path/to/NotoSansSC-Regular.ttf")
-pdf.AddPage()
+// Load font by name (auto-searches system directories) or by explicit path
+pdf.AddUTF8Font("Noto Sans SC")  // Auto-search
+// Or: pdf.AddUTF8Font("unicode", "", "/path/to/NotoSansSC-Regular.ttf")  // Explicit path
 
 // Create the wrapper
 Dim g As New VNSPDFGraphics(pdf)
