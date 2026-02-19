@@ -328,24 +328,14 @@ Protected Class VNSPDFGraphics
 
 	#tag Method, Flags = &h0, Description = 436C6970732064726177696E6720746F207468652073706563696669656420706174682E2043616C6C20436C6970456E64282920746F20726573746F72652E0A
 		Sub ClipToPath(path As VNSPDFGraphicsPath)
-		  // Clips drawing to the specified VNSPDFGraphicsPath polygon.
+		  // Clips drawing to the specified VNSPDFGraphicsPath.
+		  // Supports curves, arcs, rectangles - not just polygons.
 		  // Call ClipEnd() to restore unclipped drawing.
-		  
-		  Dim points() As Point = path.GetPoints()
-		  If points.Count < 3 Then
-		    // Need at least 3 points for a valid clipping region
-		    Return
-		  End If
-		  
-		  // Convert points to Pair array for ClipPolygon (in mm)
-		  Dim pairs() As Pair
-		  For Each pt As Point In points
-		    Dim xMM As Double = pt.X * VNSPDFModule.gkPointsToMM
-		    Dim yMM As Double = pt.Y * VNSPDFModule.gkPointsToMM
-		    pairs.Add(xMM : yMM)
-		  Next
-		  
-		  mPDF.ClipPolygon(pairs, False)
+
+		  If path.IsEmpty Then Return
+
+		  Dim cmds As String = path.ToPDFCommands(mPDF)
+		  mPDF.ClipPath(cmds, False)
 		End Sub
 	#tag EndMethod
 
@@ -741,20 +731,13 @@ Protected Class VNSPDFGraphics
 
 	#tag Method, Flags = &h0
 		Sub DrawPath(path As VNSPDFGraphicsPath, autoClose As Boolean = False)
-		  // Modern API2 method: Draw outlined path from VNSPDFGraphicsPath object
-		  // autoClose: If True, automatically closes the path by connecting last point to first
-		  Dim points() As Point = path.GetPoints()
-		  If points.Count > 0 Then
-		    If autoClose And points.Count > 2 Then
-		      // Add closing point if not already closed
-		      Dim firstPt As Point = points(0)
-		      Dim lastPt As Point = points(points.LastIndex)
-		      If firstPt.X <> lastPt.X Or firstPt.Y <> lastPt.Y Then
-		        points.Add(New Point(firstPt.X, firstPt.Y))
-		      End If
-		    End If
-		    DrawPolygon(points)
-		  End If
+		  // Draw outlined path using PDF path commands
+		  // autoClose: If True, appends close-subpath operator before stroking
+		  If path.IsEmpty Then Return
+
+		  Dim cmds As String = path.ToPDFCommands(mPDF)
+		  If autoClose Then cmds = cmds + "h" + EndOfLine.UNIX
+		  mPDF.RenderPath(cmds, "D")
 		End Sub
 	#tag EndMethod
 
@@ -1350,21 +1333,13 @@ Protected Class VNSPDFGraphics
 
 	#tag Method, Flags = &h0
 		Sub FillPath(path As VNSPDFGraphicsPath, autoClose As Boolean = False)
-		  // Modern API2 method: Draw filled path from VNSPDFGraphicsPath object
-		  // autoClose: If True, automatically closes the path by connecting last point to first
-		  // Note: For filled paths, closing is typically automatic, but autoClose ensures it
-		  Dim points() As Point = path.GetPoints()
-		  If points.Count > 0 Then
-		    If autoClose And points.Count > 2 Then
-		      // Add closing point if not already closed
-		      Dim firstPt As Point = points(0)
-		      Dim lastPt As Point = points(points.LastIndex)
-		      If firstPt.X <> lastPt.X Or firstPt.Y <> lastPt.Y Then
-		        points.Add(New Point(firstPt.X, firstPt.Y))
-		      End If
-		    End If
-		    FillPolygon(points)
-		  End If
+		  // Fill path using PDF path commands
+		  // autoClose: If True, appends close-subpath operator before filling
+		  If path.IsEmpty Then Return
+
+		  Dim cmds As String = path.ToPDFCommands(mPDF)
+		  If autoClose Then cmds = cmds + "h" + EndOfLine.UNIX
+		  mPDF.RenderPath(cmds, "F")
 		End Sub
 	#tag EndMethod
 

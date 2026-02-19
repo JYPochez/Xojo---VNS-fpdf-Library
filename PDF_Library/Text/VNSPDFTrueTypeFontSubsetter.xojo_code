@@ -835,6 +835,8 @@ Protected Class VNSPDFTrueTypeFontSubsetter
 		  Next
 		  // Set checkSumAdjustment to 0
 		  mSubsetHead.UInt32Value(8) = 0
+		  // Force indexToLocFormat to 1 (long/4-byte) since our subset loca always uses 4-byte offsets
+		  mSubsetHead.Int16Value(50) = 1
 		  
 		  // Copy hhea table and update numberOfHMetrics
 		  Dim hheaTableInfo As Dictionary = mTables.Value("hhea")

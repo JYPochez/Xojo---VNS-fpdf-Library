@@ -138,12 +138,11 @@ Protected Class VNSPDFParser
 		    End If
 
 		  ElseIf valueToken = "(" Then
-		    // Literal string
-		    Dim dummy As Integer = reader.ReadByte()  // Skip (
+		    // Literal string - tokenizer consumed '(', reader is positioned after it
 		    valueObj = VNSPDFString.Parse(reader)
 		  ElseIf valueToken = "<" Then
-		    // Hex string
-		    Dim dummy As Integer = reader.ReadByte()  // Skip <
+		    // Hex string - tokenizer already distinguished '<' from '<<'
+		    // Reader is positioned right after '<', at first hex digit
 		    valueObj = VNSPDFHexString.Parse(reader)
 		  ElseIf valueToken = "/" Then
 		    // Name - read the name token

@@ -61,14 +61,11 @@ Inherits VNSPDFType
 		  // Parse stream from: << /Length 123 >> stream...binary data...endstream
 		  // Dictionary is already parsed, now read the stream data
 
-		  System.DebugLog("*** VNSPDFStream.Parse: CALLED ***")
-
 		  Dim reader As VNSPDFStreamReader = tokenizer.GetReader()
 
 		  // Skip to "stream" keyword (should be next token)
 		  Dim streamToken As String = tokenizer.GetNextToken()
 		  If streamToken <> "stream" Then
-		    // Error: expected "stream" keyword
 		    Dim obj As New VNSPDFStream
 		    obj.dictionary = dict
 		    obj.data = New MemoryBlock(0)
@@ -76,13 +73,10 @@ Inherits VNSPDFType
 		  End If
 
 		  // Skip CR and/or LF after "stream"
-		  System.DebugLog("VNSPDFStream.Parse: Reader offset after 'stream' token = " + Str(reader.GetOffset()))
 		  Dim b As Integer = reader.ReadByte()
-		  System.DebugLog("VNSPDFStream.Parse: Byte after 'stream' = 0x" + Hex(b) + " (" + If(b = 10, "LF", If(b = 13, "CR", "other")) + ")")
 		  If b = 13 Then  // CR
 		    Dim nextByte As Integer = reader.ReadByte()
 		    If nextByte <> 10 Then  // LF
-		      // Only CR, push back next byte
 		      Dim offset As Integer = reader.GetOffset()
 		      reader.SetOffset(offset - 1)
 		    End If
@@ -93,19 +87,14 @@ Inherits VNSPDFType
 		    Dim offset As Integer = reader.GetOffset()
 		    reader.SetOffset(offset - 1)
 		  End If
-		  System.DebugLog("VNSPDFStream.Parse: Reader offset before reading stream data = " + Str(reader.GetOffset()))
 
 		  // Get stream length from dictionary
 		  Dim dictValue As Dictionary = dict.value
 		  Dim length As Integer = 0
 		  If dictValue.HasKey("Length") Then
 		    Dim lengthObj As VNSPDFType = dictValue.Value("Length")
-		    System.DebugLog("VNSPDFStream.Parse: lengthObj type = " + Introspection.GetType(lengthObj).Name)
 		    If lengthObj IsA VNSPDFNumeric Then
 		      length = VNSPDFNumeric(lengthObj).value
-		      System.DebugLog("VNSPDFStream.Parse: Stream length (direct) = " + Str(length))
-		    Else
-		      System.DebugLog("VNSPDFStream.Parse: Length is not VNSPDFNumeric - might be indirect reference")
 		    End If
 		  End If
 
@@ -116,15 +105,6 @@ Inherits VNSPDFType
 		    If dataByte = -1 Then Exit For i
 		    streamData.UInt8Value(i) = dataByte
 		  Next
-
-		  // Debug: Log first 4 bytes of stream data
-		  If streamData.Size >= 4 Then
-		    Dim debugBytes As String = ""
-		    For i As Integer = 0 To 3
-		      debugBytes = debugBytes + Hex(streamData.UInt8Value(i)) + " "
-		    Next
-		    System.DebugLog("VNSPDFStream.Parse: First 4 bytes of stream data = " + debugBytes)
-		  End If
 
 		  // Skip to "endstream" keyword
 		  While True

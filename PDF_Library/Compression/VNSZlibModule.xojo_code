@@ -19,12 +19,16 @@ Protected Module VNSZlibModule
 		  #EndIf
 		  
 		  #If Not TargetiOS Then
-		    soft declare function zlibcompress lib kZlibPath alias "compress" (dest as Ptr, ByRef destLen as Uint32, source as CString, sourceLen as UInt32) as Integer
-		    
+		    soft declare function zlibcompress lib kZlibPath alias "compress" (dest as Ptr, ByRef destLen as Uint32, source as Ptr, sourceLen as UInt32) as Int32
+
+		    // Convert string to MemoryBlock to preserve binary data (CString truncates at null bytes)
+		    Dim inputMB As New MemoryBlock(input.Bytes)
+		    inputMB.StringValue(0, input.Bytes) = input
+
 		    dim output as new MemoryBlock(12 + 1.002*input.Bytes)
 		    dim outputSize as UInt32 = output.Size
-		    
-		    mLastErrorCode = zlibcompress(output, outputSize, input, input.Bytes)
+
+		    mLastErrorCode = zlibcompress(output, outputSize, inputMB, input.Bytes)
 		    if mLastErrorCode = 0 then
 		      return output.StringValue(0, outputSize)
 		    else
@@ -82,12 +86,16 @@ Protected Module VNSZlibModule
 		      localBufferSize = 4*input.Bytes
 		    end if
 		    
+		    // Convert string to MemoryBlock to preserve binary data (CString truncates at null bytes)
+		    Dim inputMB As New MemoryBlock(input.Bytes)
+		    inputMB.StringValue(0, input.Bytes) = input
+
 		    do
-		      soft declare function zlibuncompress lib kZlibPath alias "uncompress" (dest as Ptr, ByRef destLen as UInt32, source as CString, sourceLen as Uint32) as Integer
-		      
+		      soft declare function zlibuncompress lib kZlibPath alias "uncompress" (dest as Ptr, ByRef destLen as UInt32, source as Ptr, sourceLen as Uint32) as Int32
+
 		      dim m as new MemoryBlock(localBufferSize)
 		      dim destLength as UInt32 = m.Size
-		      mLastErrorCode = zlibuncompress(m, destLength, input, input.Bytes)
+		      mLastErrorCode = zlibuncompress(m, destLength, inputMB, input.Bytes)
 		      if mLastErrorCode = 0 then
 		        return m.StringValue(0, destLength)
 		      elseIf mLastErrorCode = kZ_BUF_ERROR then

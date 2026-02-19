@@ -10,6 +10,125 @@ Protected Module VNSPDFModule
 		End Function
 	#tag EndMethod
 
+	#tag Method, Flags = &h21, Description = 526563757273697665207365617263682066726F6D206120726F6F74206469726563746F727920666F722066696C6573206D61746368696E6720616E79206F662074686520676976656E2066696C656E616D6573
+		Private Function FindFontInDirectoryRecursive(dirPath As String, fileNames() As String, depth As Integer) As String
+		  // Recursively searches a directory for font files matching the given filenames
+		  // Returns the full native path if found, empty string if not
+		  
+		  Const kMaxDepth As Integer = 4
+		  If depth > kMaxDepth Then Return ""
+		  
+		  Try
+		    Dim dir As FolderItem = New FolderItem(dirPath, FolderItem.PathModes.Native)
+		    If dir = Nil Or Not dir.Exists Or Not dir.IsFolder Then Return ""
+		    
+		    // First check for matching files directly in this directory
+		    For Each fn As String In fileNames
+		      Dim fontFile As FolderItem = dir.Child(fn)
+		      If fontFile <> Nil And fontFile.Exists And Not fontFile.IsFolder Then
+		        Return fontFile.NativePath
+		      End If
+		    Next
+		    
+		    // Then recurse into subdirectories
+		    Dim childCount As Integer = dir.Count
+		    For i As Integer = 1 To childCount
+		      Try
+		        Dim child As FolderItem = dir.ChildAt(i - 1)
+		        If child <> Nil And child.Exists And child.IsFolder Then
+		          Dim result As String = FindFontInDirectoryRecursive(child.NativePath, fileNames, depth + 1)
+		          If result <> "" Then Return result
+		        End If
+		      Catch innerErr As RuntimeException
+		        Continue
+		      End Try
+		    Next
+		    
+		  Catch e As RuntimeException
+		    // Skip inaccessible directories
+		  End Try
+		  
+		  Return ""
+		End Function
+	#tag EndMethod
+
+	#tag Method, Flags = &h1, Description = 536561726368657320706C6174666F726D2D737065636966696320666F6E74206469726563746F7269657320726563757273697665206C7920666F72206120547275655479706520666F6E742066696C65
+		Protected Function FindSystemFontPath(fontName As String, styleSuffix As String = "") As String
+		  // Searches platform-specific font directories recursively for a TrueType font file
+		  // fontName: the font name (e.g. "Verdana", "Georgia")
+		  // styleSuffix: "" for regular, " Bold", " Italic", " Bold Italic"
+		  // Returns the full native path if found, empty string if not
+		  //
+		  // Example usage:
+		  //   Dim path As String = VNSPDFModule.FindSystemFontPath("Verdana")
+		  //   If path <> "" Then pdf.AddUTF8Font("verdana", "", path)
+		  //
+		  // This is called automatically by AddUTF8Font when no file path is provided.
+		  
+		  // Build cache key
+		  If mSystemFontCache = Nil Then mSystemFontCache = New Dictionary
+		  Dim cacheKey As String = fontName + "|" + styleSuffix
+		  If mSystemFontCache.HasKey(cacheKey) Then
+		    Return mSystemFontCache.Value(cacheKey)
+		  End If
+		  
+		  // Build filenames to search for (.ttf and .ttc variants)
+		  Dim fileNames() As String
+		  Dim baseName As String
+		  If styleSuffix <> "" Then
+		    baseName = fontName + styleSuffix
+		  Else
+		    baseName = fontName
+		  End If
+		  fileNames.Add(baseName + ".ttf")
+		  fileNames.Add(baseName + ".ttc")
+		  // Also try lowercase variants (common on Linux)
+		  Dim lowerBase As String = baseName.Lowercase
+		  If lowerBase <> baseName Then
+		    fileNames.Add(lowerBase + ".ttf")
+		    fileNames.Add(lowerBase + ".ttc")
+		  End If
+		  
+		  // Platform-specific font directories (searched recursively)
+		  Dim searchDirs() As String
+		  
+		  #If TargetiOS Then
+		    // iOS: no system font directories to search
+		    // Fonts must be bundled with the app
+		  #ElseIf TargetMacOS Then
+		    searchDirs.Add("/System/Library/Fonts")
+		    searchDirs.Add("/Library/Fonts")
+		    Dim userHome As String = SpecialFolder.UserHome.NativePath
+		    If userHome.Right(1) = "/" Then userHome = userHome.Left(userHome.Length - 1)
+		    searchDirs.Add(userHome + "/Library/Fonts")
+		  #ElseIf TargetWindows Then
+		    searchDirs.Add("C:\Windows\Fonts")
+		    Dim userHome As String = SpecialFolder.UserHome.NativePath
+		    If userHome.Right(1) = "\" Then userHome = userHome.Left(userHome.Length - 1)
+		    searchDirs.Add(userHome + "\AppData\Local\Microsoft\Windows\Fonts")
+		  #ElseIf TargetLinux Then
+		    searchDirs.Add("/usr/share/fonts")
+		    searchDirs.Add("/usr/local/share/fonts")
+		    Dim userHome As String = SpecialFolder.UserHome.NativePath
+		    If userHome.Right(1) = "/" Then userHome = userHome.Left(userHome.Length - 1)
+		    searchDirs.Add(userHome + "/.fonts")
+		    searchDirs.Add(userHome + "/.local/share/fonts")
+		  #EndIf
+		  
+		  For Each dirPath As String In searchDirs
+		    Dim result As String = FindFontInDirectoryRecursive(dirPath, fileNames, 0)
+		    If result <> "" Then
+		      mSystemFontCache.Value(cacheKey) = result
+		      Return result
+		    End If
+		  Next
+		  
+		  // Not found - cache the miss
+		  mSystemFontCache.Value(cacheKey) = ""
+		  Return ""
+		End Function
+	#tag EndMethod
+
 	#tag DelegateDeclaration, Flags = &h0
 		Delegate Sub FooterDelegateLpi(doc As VNSPDFDocument, lastPage As Boolean)
 	#tag EndDelegateDeclaration
@@ -154,25 +273,41 @@ Protected Module VNSPDFModule
 
 	#tag Method, Flags = &h21
 		Private Function GetHelveticaBoldItalicWidths() As Integer()
-		  Return ParseFontMetrics(kHelveticaBoldJSON) // Same as bold
+		  Static cachedWidths() As Integer
+		  If cachedWidths.Count = 0 Then
+		    cachedWidths = ParseFontMetrics(kHelveticaBoldJSON) // Same as bold
+		  End If
+		  Return cachedWidths
 		End Function
 	#tag EndMethod
 
 	#tag Method, Flags = &h21
 		Private Function GetHelveticaBoldWidths() As Integer()
-		  Return ParseFontMetrics(kHelveticaBoldJSON)
+		  Static cachedWidths() As Integer
+		  If cachedWidths.Count = 0 Then
+		    cachedWidths = ParseFontMetrics(kHelveticaBoldJSON)
+		  End If
+		  Return cachedWidths
 		End Function
 	#tag EndMethod
 
 	#tag Method, Flags = &h21
 		Private Function GetHelveticaItalicWidths() As Integer()
-		  Return ParseFontMetrics(kHelveticaJSON) // Same as regular Helvetica
+		  Static cachedWidths() As Integer
+		  If cachedWidths.Count = 0 Then
+		    cachedWidths = ParseFontMetrics(kHelveticaJSON) // Same as regular Helvetica
+		  End If
+		  Return cachedWidths
 		End Function
 	#tag EndMethod
 
 	#tag Method, Flags = &h21
 		Private Function GetHelveticaWidths() As Integer()
-		  Return ParseFontMetrics(kHelveticaJSON)
+		  Static cachedWidths() As Integer
+		  If cachedWidths.Count = 0 Then
+		    cachedWidths = ParseFontMetrics(kHelveticaJSON)
+		  End If
+		  Return cachedWidths
 		End Function
 	#tag EndMethod
 
@@ -208,25 +343,41 @@ Protected Module VNSPDFModule
 
 	#tag Method, Flags = &h21
 		Private Function GetTimesBoldItalicWidths() As Integer()
-		  Return ParseFontMetrics(kTimesJSON) // For simplicity, use same
+		  Static cachedWidths() As Integer
+		  If cachedWidths.Count = 0 Then
+		    cachedWidths = ParseFontMetrics(kTimesJSON) // For simplicity, use same
+		  End If
+		  Return cachedWidths
 		End Function
 	#tag EndMethod
 
 	#tag Method, Flags = &h21
 		Private Function GetTimesBoldWidths() As Integer()
-		  Return ParseFontMetrics(kTimesJSON) // For simplicity, use same
+		  Static cachedWidths() As Integer
+		  If cachedWidths.Count = 0 Then
+		    cachedWidths = ParseFontMetrics(kTimesJSON) // For simplicity, use same
+		  End If
+		  Return cachedWidths
 		End Function
 	#tag EndMethod
 
 	#tag Method, Flags = &h21
 		Private Function GetTimesItalicWidths() As Integer()
-		  Return ParseFontMetrics(kTimesJSON) // For simplicity, use same
+		  Static cachedWidths() As Integer
+		  If cachedWidths.Count = 0 Then
+		    cachedWidths = ParseFontMetrics(kTimesJSON) // For simplicity, use same
+		  End If
+		  Return cachedWidths
 		End Function
 	#tag EndMethod
 
 	#tag Method, Flags = &h21
 		Private Function GetTimesWidths() As Integer()
-		  Return ParseFontMetrics(kTimesJSON)
+		  Static cachedWidths() As Integer
+		  If cachedWidths.Count = 0 Then
+		    cachedWidths = ParseFontMetrics(kTimesJSON)
+		  End If
+		  Return cachedWidths
 		End Function
 	#tag EndMethod
 
@@ -234,8 +385,8 @@ Protected Module VNSPDFModule
 		Delegate Sub HeaderFooterDelegate(doc As VNSPDFDocument)
 	#tag EndDelegateDeclaration
 
-	#tag DelegateDeclaration, Flags = &h0, Description = 50726F677265737320757064617465206465656761746520666F72206C6F6E672D72756E6E696E67206F7065726174696F6E732E0A
-		Delegate Sub ProgressDelegate(percentage As Double)
+	#tag DelegateDeclaration, Flags = &h0, Description = 48544D4C207461672068616E646C65723A2063616C6C6564207768656E206120726567697374657265642074616720697320656E636F756E746572656420647572696E672072656E646572696E67
+		Delegate Sub HTMLTagHandlerDelegate(doc As VNSPDFDocument, token As VNSPDFHTMLToken, isClosing As Boolean)
 	#tag EndDelegateDeclaration
 
 	#tag Method, Flags = &h1, Description = 4368656620696620556E69636F646520636F646520706F696E7420697320616E20656D6F6A692E0A
@@ -274,6 +425,10 @@ Protected Module VNSPDFModule
 		  Return False
 		End Function
 	#tag EndMethod
+
+	#tag DelegateDeclaration, Flags = &h0, Description = 4D61726B646F776E206C696E652068616E646C65723A2063616C6C6564207768656E206120726567697374657265642070726566697820697320666F756E64206174206C696E652073746172742E2052657475726E732048544D4C20737472696E6720746F20696E736572742E
+		Delegate Function MarkdownLineHandlerDelegate(doc As VNSPDFDocument, line As String) As String
+	#tag EndDelegateDeclaration
 
 	#tag Method, Flags = &h1, Description = 436F6E7665727473206D696C6C696D657465727320746F20706F696E74732E0A
 		Protected Function MillimetersToPoints(mm As Double) As Double
@@ -352,11 +507,11 @@ Protected Module VNSPDFModule
 		    
 		    // Extract the array content
 		    Dim startPos As Integer = cwPos + 6 // Position after "Cw":[
-
+		    
 		    // API2 compatible: search for ] in the remainder of the string
 		    Dim remainder As String = jsonData.Middle(startPos)
 		    Dim endPosInRemainder As Integer = remainder.IndexOf("]")
-
+		    
 		    If endPosInRemainder < 0 Then
 		      // Malformed JSON, use defaults
 		      For i As Integer = 0 To 255
@@ -364,7 +519,7 @@ Protected Module VNSPDFModule
 		      Next
 		      Return widths
 		    End If
-
+		    
 		    // Calculate actual end position
 		    Dim arrayStr As String = remainder.Left(endPosInRemainder)
 		    
@@ -402,6 +557,10 @@ Protected Module VNSPDFModule
 		  Return points / gkPointsPerMillimeter
 		End Function
 	#tag EndMethod
+
+	#tag DelegateDeclaration, Flags = &h0, Description = 50726F677265737320757064617465206465656761746520666F72206C6F6E672D72756E6E696E67206F7065726174696F6E732E0A
+		Delegate Sub ProgressDelegate(percentage As Double)
+	#tag EndDelegateDeclaration
 
 	#tag Method, Flags = &h1, Description = 52656E64657220656D6F6A69206173206120636F6C6F7220696D616765207573696E6720706C6174666F726D277320656D6F6A6920666F6E742E0A
 		Protected Function RenderEmojiToImage(emojiChar As String, sizeInPoints As Integer, webSession As Variant = Nil) As Picture
@@ -981,6 +1140,11 @@ Protected Module VNSPDFModule
 	#tag EndNote
 
 
+	#tag Property, Flags = &h21
+		Private mSystemFontCache As Dictionary
+	#tag EndProperty
+
+
 	#tag Constant, Name = gkA3Height, Type = Double, Dynamic = False, Default = \"1190.55", Scope = Public, Description = 41332048656967687420696E20706F696E74732E0A
 	#tag EndConstant
 
@@ -1029,6 +1193,9 @@ Protected Module VNSPDFModule
 	#tag Constant, Name = gkEncryptionRC4_40, Type = Integer, Dynamic = False, Default = \"2", Scope = Public, Description = 456E6372797074696F6E207265766973696F6E20323A205243342D34302028343020626974292C20465245452076657273696F6E2E0A
 	#tag EndConstant
 
+	#tag Constant, Name = gkErrBarcodeNotAvailable, Type = String, Dynamic = False, Default = \"Barcode generation not available on this platform", Scope = Public, Description = 4572726F72206D657373616765207768656E20626172636F64652067656E65726174696F6E206973206E6F7420617661696C61626C65206F6E207468652063757272656E7420706C6174666F726D2E
+	#tag EndConstant
+
 	#tag Constant, Name = gkLegalHeight, Type = Double, Dynamic = False, Default = \"1008", Scope = Public, Description = 4C6567616C2048656967687420696E20706F696E74732E0A
 	#tag EndConstant
 
@@ -1071,10 +1238,16 @@ Protected Module VNSPDFModule
 	#tag Constant, Name = gkVersion, Type = String, Dynamic = False, Default = \"0.3.0", Scope = Public, Description = 564E5320504446204C6962726172792076657273696F6E20737472696E672E0A
 	#tag EndConstant
 
+	#tag Constant, Name = hasPremiumEInvoiceModule, Type = Boolean, Dynamic = False, Default = \"false", Scope = Public, Description = 5072656D69756D206D6F64756C653A20452D496E766F69636520284661637475722D582F5A554746655244292E2053657420746F2054727565207768656E20696E7374616C6C65642E
+	#tag EndConstant
+
 	#tag Constant, Name = hasPremiumEncryptionModule, Type = Boolean, Dynamic = False, Default = \"false", Scope = Public, Description = 5072656D69756D206D6F64756C653A205243342D31323820616E642041455320656E6372797074696F6E2E2053657420746F2054727565207768656E20696E7374616C6C65642E0A
 	#tag EndConstant
 
 	#tag Constant, Name = hasPremiumFormsModule, Type = Boolean, Dynamic = False, Default = \"false", Scope = Public, Description = 5072656D69756D206D6F64756C653A20504446204163726F466F726D7320287465787420666965EFBFBD4732EFBFBD36EFBFBD5636EFBFBD26EFBFBDEFBFBD5732EFBFBD261646EFBFBDEFBFBD27574746EFBFBDEFBFBDEFBFBD574632EFBFBD053657420746EFBFBD472756520776EFBFBD56EFBFBDEFBFBDEFBFBD4616EFBFBD5642
+	#tag EndConstant
+
+	#tag Constant, Name = hasPremiumHTMLModule, Type = Boolean, Dynamic = False, Default = \"false", Scope = Public, Description = 5072656D69756D206D6F64756C653A2048544D4C20616E64204D61726B646F776E20746F2050444620696D706F72742E2053657420746F2054727565207768656E20696E7374616C6C65642E0A
 	#tag EndConstant
 
 	#tag Constant, Name = hasPremiumPDFAModule, Type = Boolean, Dynamic = False, Default = \"false", Scope = Public, Description = 5072656D69756D206D6F64756C653A2050444620412F41636F6D706C69616E63652E204365742074EFBFBD54727565207768656E20696E7374616C6C65642E0A
@@ -1096,6 +1269,34 @@ Protected Module VNSPDFModule
 	#tag EndConstant
 
 
+	#tag Enum, Name = eBarcodeType, Type = Integer, Flags = &h0, Description = 426172636F646520747970657320737570706F7274656420627920746865207072656D69756D20626172636F6465206D6F64756C652E
+		QRCode = 0
+		  Code128 = 1
+		  EAN13 = 2
+		  EAN8 = 3
+		  UPCA = 4
+		  Code39 = 5
+		  ITF = 6
+		  Codabar = 7
+		  DataMatrix = 8
+		PDF417 = 9
+	#tag EndEnum
+
+	#tag Enum, Name = eColumnAlignment, Type = Integer, Flags = &h0, Description = 436F6C756D6E20616C69676E6D656E74206F7074696F6E733A204C6566742C2043656E7465722C2052696768742E
+		Left = 0
+		  Center = 1
+		Right = 2
+	#tag EndEnum
+
+	#tag Enum, Name = eFooterCalcType, Type = Integer, Flags = &h0, Description = 466F6F7465722063616C63756C6174696F6E2074797065733A204E6F6E652C2053756D2C20417665726167652C204D696E696D756D2C204D6178696D756D2C20436F756E742E
+		None = 0
+		  Sum = 1
+		  Average = 2
+		  Minimum = 3
+		  Maximum = 4
+		Count = 5
+	#tag EndEnum
+
 	#tag Enum, Name = ePageFormat, Type = Integer, Flags = &h0
 		A3 = 0
 		  A4 = 1
@@ -1115,6 +1316,22 @@ Protected Module VNSPDFModule
 		  Millimeters = 1
 		  Centimeters = 2
 		Inches = 3
+	#tag EndEnum
+
+	#tag Enum, Name = ePathSegmentType, Type = Integer, Flags = &h0, Description = 50617468207365676D656E7420747970657320666F7220564E535044464772617068696373506174682E
+		MoveTo = 0
+		  LineTo = 1
+		  CubicBezierTo = 2
+		  QuadraticBezierTo = 3
+		  CloseSubpath = 4
+		Rectangle = 5
+	#tag EndEnum
+
+	#tag Enum, Name = eTextAlignment, Type = Integer, Flags = &h0, Description = 5465787420616C69676E6D656E74206F7074696F6E733A204C6566742C2043656E7465722C2052696768742C204A7573746966792E
+		Left = 0
+		  Center = 1
+		  Right = 2
+		Justify = 3
 	#tag EndEnum
 
 

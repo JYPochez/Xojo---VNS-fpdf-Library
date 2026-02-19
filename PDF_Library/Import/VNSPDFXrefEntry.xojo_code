@@ -12,6 +12,14 @@ Protected Class VNSPDFXrefEntry
 		inUse As Boolean
 	#tag EndProperty
 
+	#tag Property, Flags = &h0
+		compressedInStream As Integer = -1
+	#tag EndProperty
+
+	#tag Property, Flags = &h0
+		streamIndex As Integer = 0
+	#tag EndProperty
+
 
 	#tag ViewBehavior
 		#tag ViewProperty

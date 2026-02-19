@@ -32,6 +32,24 @@ Protected Class VNSPDFAttachment
 		End Sub
 	#tag EndMethod
 
+	#tag Method, Flags = &h0, Description = 43726561746573206120564E535044464174746163686D656E742077697468204D494D45207479706520616E642041462072656C6174696F6E7368697020666F72205044462F412D332E
+		Sub Constructor(filename As String, content As String, description As String, mimeType As String, afRelationship As String)
+		  // Create attachment with PDF/A-3 metadata
+		  // filename: The displayed name of the attachment in PDF readers
+		  // content: The file content as a string
+		  // description: Description shown in PDF readers
+		  // mimeType: MIME type (e.g. "application/xml")
+		  // afRelationship: AF relationship (e.g. "Data", "Source", "Alternative")
+
+		  mFilename = filename
+		  mContent = content
+		  mDescription = description
+		  mMimeType = mimeType
+		  mAFRelationship = afRelationship
+		  mObjectNumber = 0
+		End Sub
+	#tag EndMethod
+
 	#tag Method, Flags = &h0, Description = 52657475726E7320746865204D443520636865636B73756D206F662074686520636F6E74656E7420617320686578207374722E0A
 		Function Checksum() As String
 		  // Return the MD5 checksum of the content as hex string
@@ -109,6 +127,38 @@ Protected Class VNSPDFAttachment
 		ObjectNumber As Integer
 	#tag EndComputedProperty
 
+	#tag ComputedProperty, Flags = &h0, Description = 41462072656C6174696F6E73686970207479706520666F72205044462F412D332028652E672E20446174612C20536F757263652C20416C7465726E6174697665292E
+		#tag Getter
+			Get
+			  Return mAFRelationship
+			End Get
+		#tag EndGetter
+		#tag Setter
+			Set
+			  mAFRelationship = value
+			End Set
+		#tag EndSetter
+		AFRelationship As String
+	#tag EndComputedProperty
+
+	#tag ComputedProperty, Flags = &h0, Description = 4D494D45207479706520666F72205044462F412D3320656D6265646465642066696C652028652E672E206170706C69636174696F6E2F786D6C292E
+		#tag Getter
+			Get
+			  Return mMimeType
+			End Get
+		#tag EndGetter
+		#tag Setter
+			Set
+			  mMimeType = value
+			End Set
+		#tag EndSetter
+		MimeType As String
+	#tag EndComputedProperty
+
+	#tag Property, Flags = &h21, Description = 41462072656C6174696F6E73686970207479706520666F72205044462F412D332E
+		Private mAFRelationship As String
+	#tag EndProperty
+
 	#tag Property, Flags = &h21, Description = 54686520636F6E74656E74206F66207468652061747461636865642066696C652E0A
 		Private mContent As String
 	#tag EndProperty
@@ -119,6 +169,10 @@ Protected Class VNSPDFAttachment
 
 	#tag Property, Flags = &h21, Description = 54686520646973706C61796564206E616D65206F662074686520617474616368656D656E7420696E20504446207265616465722E0A
 		Private mFilename As String
+	#tag EndProperty
+
+	#tag Property, Flags = &h21, Description = 4D494D45207479706520666F72205044462F412D3320656D6265646465642066696C652E
+		Private mMimeType As String
 	#tag EndProperty
 
 	#tag Property, Flags = &h21, Description = 496E7465726E616C206F626A656374206E756D62657220616674657220656D62656464696E67202830206966206E6F7420656D62656464656420796574292E0A

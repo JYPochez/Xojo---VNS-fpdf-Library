@@ -206,6 +206,9 @@ Protected Class VNSPDFDocument
 
 	#tag Method, Flags = &h0, Description = 4C6F616473206120547275655479706520666F6E7420666F722055544620737570706F72742E0A
 		Sub AddUTF8Font(family As String, style As String = "", fontFilePath As String = "")
+		  // Save original family name before normalization (needed for font file search)
+		  Dim originalFamily As String = family.Trim
+
 		  // Normalize family name
 		  family = family.Lowercase.Trim
 		  style = style.Uppercase.Trim
@@ -217,13 +220,26 @@ Protected Class VNSPDFDocument
 		  If mFonts.HasKey(fontKey) Then
 		    Return
 		  End If
-		  
-		  // Check if font file path is provided
+
+		  // If no file path provided, search system font directories
 		  If fontFilePath = "" Then
-		    Call SetError("Font file path required for UTF-8 font.")
-		    Return
+		    // Map style to suffix for font file search
+		    Dim styleSuffix As String = ""
+		    If style = "B" Then
+		      styleSuffix = " Bold"
+		    ElseIf style = "I" Then
+		      styleSuffix = " Italic"
+		    ElseIf style = "BI" Then
+		      styleSuffix = " Bold Italic"
+		    End If
+
+		    fontFilePath = VNSPDFModule.FindSystemFontPath(originalFamily, styleSuffix)
+		    If fontFilePath = "" Then
+		      Call SetError("Font not found: " + originalFamily + " " + style + ". Provide a file path or install the font.")
+		      Return
+		    End If
 		  End If
-		  
+
 		  // Try to load the font file
 		  Try
 		    Dim fontFile As FolderItem = New FolderItem(fontFilePath, FolderItem.PathModes.Native)
@@ -903,6 +919,40 @@ Protected Class VNSPDFDocument
 		End Sub
 	#tag EndMethod
 
+	#tag Method, Flags = &h21, Description = 436F6E7665727473206554657874416C69676E6D656E7420656E756D20746F20616C69676E6D656E7420737472696E6720284C2C20432C20522C204A292E
+		Function AlignmentEnumToString(align As VNSPDFModule.eTextAlignment) As String
+		  // Converts eTextAlignment enum to the alignment string used internally
+		  Select Case align
+		  Case VNSPDFModule.eTextAlignment.Left
+		    Return "L"
+		  Case VNSPDFModule.eTextAlignment.Center
+		    Return "C"
+		  Case VNSPDFModule.eTextAlignment.Right
+		    Return "R"
+		  Case VNSPDFModule.eTextAlignment.Justify
+		    Return "J"
+		  Else
+		    Return "L"
+		  End Select
+		End Function
+	#tag EndMethod
+
+	#tag Method, Flags = &h21, Description = 436F6E766572747320616C69676E6D656E7420737472696E6720284C2C20432C20522C204A2920746F206554657874416C69676E6D656E7420656E756D2E
+		Function AlignmentStringToEnum(align As String) As VNSPDFModule.eTextAlignment
+		  // Converts alignment string to eTextAlignment enum
+		  Select Case align.Uppercase
+		  Case "C"
+		    Return VNSPDFModule.eTextAlignment.Center
+		  Case "R"
+		    Return VNSPDFModule.eTextAlignment.Right
+		  Case "J"
+		    Return VNSPDFModule.eTextAlignment.Justify
+		  Else
+		    Return VNSPDFModule.eTextAlignment.Left
+		  End Select
+		End Function
+	#tag EndMethod
+
 	#tag Method, Flags = &h0, Description = 4F75747075747320612063656C6C2028726563745C616E67756C617220617265612920776974682074657874C2B62E
 		Sub Cell(w As Double, h As Double = 0, txt As String = "", border As Variant = 0, ln As Integer = 0, align As String = "", fill As Boolean = False, link As String = "")
 		  #Pragma Unused link
@@ -1122,6 +1172,9 @@ Protected Class VNSPDFDocument
 		      // Center align
 		      strWidth = GetStringWidth(displayText)
 		      dx = (w - strWidth) / 2
+		    ElseIf align = "J" Then
+		      // Justify: left-aligned position, word spacing calculated below
+		      dx = mCellMargin
 		    Else
 		      // Left align (default)
 		      dx = mCellMargin
@@ -1139,20 +1192,74 @@ Protected Class VNSPDFDocument
 		    Dim gPDF As Double = mTextColorG / 255.0
 		    Dim bPDF As Double = mTextColorB / 255.0
 		    cmd = cmd + FormatPDF(rPDF, 3) + " " + FormatPDF(gPDF, 3) + " " + FormatPDF(bPDF, 3) + " rg" + EndOfLine.UNIX
-		    
+
+		    // Detect if we need simulated bold/italic for UTF-8 fonts without B/I variants
+		    Dim simulateBold As Boolean = False
+		    Dim simulateItalic As Boolean = False
+		    If isUTF8 And mFontStyle <> "" Then
+		      Dim styleNoDecor As String = mFontStyle.ReplaceAll("U", "").ReplaceAll("S", "")
+		      If styleNoDecor.IndexOf("B") >= 0 Then simulateBold = True
+		      If styleNoDecor.IndexOf("I") >= 0 Then simulateItalic = True
+		    End If
+
+		    // Simulated bold: set text rendering mode to 2 (fill + stroke) with thin stroke
+		    If simulateBold Then
+		      Dim boldStrokeWidth As Double = mFontSizePt * 0.03
+		      cmd = cmd + FormatPDF(boldStrokeWidth) + " w " + EndOfLine.UNIX
+		      cmd = cmd + FormatPDF(rPDF, 3) + " " + FormatPDF(gPDF, 3) + " " + FormatPDF(bPDF, 3) + " RG " + EndOfLine.UNIX
+		      cmd = cmd + "2 Tr" + EndOfLine.UNIX
+		    End If
+
 		    cmd = cmd + "BT" + EndOfLine.UNIX
-		    
+
 		    // Set font inside text object (REQUIRED in PDF)
 		    If mCurrentFont <> "" And mFonts.HasKey(mCurrentFont) Then
 		      Dim fontInfo As Dictionary = mFonts.Value(mCurrentFont)
 		      Dim fontNum As Integer = fontInfo.Value("number")
 		      cmd = cmd + "/F" + Str(fontNum) + " " + FormatPDF(mFontSizePt) + " Tf" + EndOfLine.UNIX
 		    End If
-		    
-		    cmd = cmd + FormatPDF(txtX) + " " + FormatPDF(txtY) + " Td" + EndOfLine.UNIX
-		    cmd = cmd + encodedText + " Tj" + EndOfLine.UNIX // Hex for TrueType, escaped for core fonts
+
+		    // Justify alignment: calculate and set word spacing inside BT/ET
+		    Dim justifyWordSpacing As Double = 0
+		    If align = "J" And displayText.IndexOf(" ") >= 0 Then
+		      Dim spaceCount As Integer = 0
+		      For jIdx As Integer = 0 To displayText.Length - 1
+		        If displayText.Middle(jIdx, 1) = " " Then spaceCount = spaceCount + 1
+		      Next
+		      If spaceCount > 0 Then
+		        strWidth = GetStringWidth(displayText)
+		        justifyWordSpacing = (w - 2 * mCellMargin - strWidth) / spaceCount
+		        If justifyWordSpacing < 0 Then justifyWordSpacing = 0
+		        cmd = cmd + FormatPDF(justifyWordSpacing * mScaleFactor) + " Tw" + EndOfLine.UNIX
+		      End If
+		    End If
+
+		    // Apply text rise for subscript/superscript (always emit when dirty to ensure 0 Ts resets)
+		    If mTextRiseDirty Then
+		      cmd = cmd + FormatPDF(mTextRise) + " Ts" + EndOfLine.UNIX
+		      If mTextRise = 0.0 Then mTextRiseDirty = False
+		    End If
+
+		    // Position text: use text matrix for simulated italic (shear), otherwise simple Td
+		    If simulateItalic Then
+		      Dim shear As Double = 0.21
+		      cmd = cmd + "1 0 " + FormatPDF(shear) + " 1 " + FormatPDF(txtX) + " " + FormatPDF(txtY) + " Tm" + EndOfLine.UNIX
+		    Else
+		      cmd = cmd + FormatPDF(txtX) + " " + FormatPDF(txtY) + " Td" + EndOfLine.UNIX
+		    End If
+		    cmd = cmd + encodedText + " Tj" + EndOfLine.UNIX
 		    cmd = cmd + "ET" + EndOfLine.UNIX
-		    
+
+		    // Reset word spacing after justify
+		    If justifyWordSpacing > 0 Then
+		      cmd = cmd + "0 Tw" + EndOfLine.UNIX
+		    End If
+
+		    // Reset text rendering mode after simulated bold
+		    If simulateBold Then
+		      cmd = cmd + "0 Tr" + EndOfLine.UNIX
+		    End If
+
 		    // Draw underline if style contains "U"
 		    If mFontStyle.IndexOf("U") >= 0 Then
 		      If mCurrentFont <> "" And mFonts.HasKey(mCurrentFont) Then
@@ -1189,7 +1296,37 @@ Protected Class VNSPDFDocument
 		        cmd = cmd + FormatPDF(txtX + textWidth) + " " + FormatPDF(underlineY) + " l S " + EndOfLine.UNIX
 		      End If
 		    End If
-		    
+
+		    // Draw strikethrough if style contains "S"
+		    If mFontStyle.IndexOf("S") >= 0 Then
+		      If mCurrentFont <> "" And mFonts.HasKey(mCurrentFont) Then
+		        Dim stFontInfo As Dictionary = mFonts.Value(mCurrentFont)
+
+		        // Get underline thickness for line weight (reuse font metric)
+		        Dim stUt As Double = 50   // Default thickness
+		        If stFontInfo.HasKey("ut") Then
+		          stUt = stFontInfo.Value("ut")
+		        End If
+
+		        Dim stThickness As Double = stUt * mFontSizePt / 1000.0 * mUnderlineThickness
+
+		        // Strikethrough Y = middle of text (approximately 30% of font size above baseline)
+		        Dim stOffset As Double = 0.15 * mFontSizePt
+		        Dim stY As Double = txtY + (stOffset * mScaleFactor)
+
+		        // Set line width
+		        cmd = cmd + FormatPDF(stThickness * mScaleFactor) + " w " + EndOfLine.UNIX
+
+		        // Set line color to text color
+		        cmd = cmd + FormatPDF(rPDF, 3) + " " + FormatPDF(gPDF, 3) + " " + FormatPDF(bPDF, 3) + " RG " + EndOfLine.UNIX
+
+		        // Draw strikethrough line
+		        Dim stTextWidth As Double = GetStringWidth(displayText) * mScaleFactor
+		        cmd = cmd + FormatPDF(txtX) + " " + FormatPDF(stY) + " m " + EndOfLine.UNIX
+		        cmd = cmd + FormatPDF(txtX + stTextWidth) + " " + FormatPDF(stY) + " l S " + EndOfLine.UNIX
+		      End If
+		    End If
+
 		    // Restore fill color after text only if cell has fill
 		    If fill Then
 		      Dim rFillPDF As Double = mFillColorR / 255.0
@@ -1198,7 +1335,7 @@ Protected Class VNSPDFDocument
 		      cmd = cmd + FormatPDF(rFillPDF, 3) + " " + FormatPDF(gFillPDF, 3) + " " + FormatPDF(bFillPDF, 3) + " rg" + EndOfLine.UNIX
 		    End If
 		  End If
-		  
+
 		  mBuffer = mBuffer + cmd
 		  
 		  // Update current position based on ln parameter
@@ -1214,6 +1351,13 @@ Protected Class VNSPDFDocument
 		    mCurrentY = mCurrentY + h
 		  End If
 		  
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h0, Description = 4F75747075747320612063656C6C207769746820656E756D2D6261736564207465787420616C69676E6D656E742E2044656C65676174657320746F2043656C6C28292E
+		Sub Cell(w As Double, h As Double, txt As String, border As Variant, ln As Integer, align As VNSPDFModule.eTextAlignment, fill As Boolean = False, link As String = "")
+		  // Enum overload for Cell() - converts alignment enum to string and delegates
+		  Call Cell(w, h, txt, border, ln, AlignmentEnumToString(align), fill, link)
 		End Sub
 	#tag EndMethod
 
@@ -1245,6 +1389,13 @@ Protected Class VNSPDFDocument
 		  // Parameters are identical to Cell() - simply calls Cell()
 		  
 		  Call Cell(w, h, txt, border, ln, align, fill, link)
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h0, Description = 5772617070657220666F722043656C6C466F726D61742829207769746820656E756D2D6261736564207465787420616C69676E6D656E742E
+		Sub CellFormat(w As Double, h As Double, txt As String, border As Variant, ln As Integer, align As VNSPDFModule.eTextAlignment, fill As Boolean, link As String)
+		  // Enum overload for CellFormat() - converts alignment enum to string and delegates
+		  Call CellFormat(w, h, txt, border, ln, AlignmentEnumToString(align), fill, link)
 		End Sub
 	#tag EndMethod
 
@@ -1328,6 +1479,48 @@ Protected Class VNSPDFDocument
 		  Else
 		    Call SetError("Error attempting to end clip operation out of sequence")
 		  End If
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h0, Description = 436C6970732064726177696E6720746F2061207072652D6275696C74207061746820636F6D6D616E6420737472696E672E2043616C6C20436C6970456E64282920746F20726573746F72652E
+		Sub ClipPath(pathCommands As String, outline As Boolean)
+		  // Clips drawing to a pre-built path command string.
+		  // pathCommands: PDF path operators (m, l, c, re, h)
+		  // outline: if True, draws the outline of the clipping path
+		  // Call ClipEnd() to restore unclipped operations.
+
+		  If Err() Then Return
+
+		  mClipNest = mClipNest + 1
+		  Call Put("q")
+		  mBuffer = mBuffer + pathCommands
+		  Call Put("W " + If(outline, "S", "n"))
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h0, Description = 52656E646572732061207072652D6275696C74207061746820636F6D6D616E6420737472696E6720776974682074686520737065636966696564207374796C652028443D647261772C20463D66696C6C2C2044463D626F7468292E
+		Sub RenderPath(pathCommands As String, style As String = "D")
+		  // Renders a pre-built path command string with the specified style.
+		  // pathCommands: PDF path operators (m, l, c, re, h)
+		  // style: "D" = draw (stroke), "F" = fill, "DF" or "FD" = fill and stroke
+
+		  If Err() Then Return
+		  If mPage = 0 Then
+		    Call SetError("Cannot render path: no page added yet.")
+		    Return
+		  End If
+
+		  Dim op As String
+		  Dim styleUpper As String = style.Uppercase
+		  If styleUpper = "F" Then
+		    op = "f"
+		  ElseIf styleUpper = "FD" Or styleUpper = "DF" Then
+		    op = "B"
+		  Else
+		    op = "S"
+		  End If
+
+		  mBuffer = mBuffer + pathCommands + op + EndOfLine.UNIX
 		End Sub
 	#tag EndMethod
 
@@ -2939,9 +3132,9 @@ Protected Class VNSPDFDocument
 	#tag Method, Flags = &h21
 		Private Function GetCoreFontName(family As String, style As String) As String
 		  // Map to actual PDF core font names
-		  // Note: Underline ("U") is a text decoration, not a font variant
-		  // Strip it before looking up the font name
-		  Dim fontStyle As String = style.ReplaceAll("U", "")
+		  // Note: Underline ("U") and Strikethrough ("S") are text decorations, not font variants
+		  // Strip them before looking up the font name
+		  Dim fontStyle As String = style.ReplaceAll("U", "").ReplaceAll("S", "")
 		  
 		  Select Case family
 		  Case "helvetica", "arial"
@@ -3320,6 +3513,30 @@ Protected Class VNSPDFDocument
 		End Sub
 	#tag EndMethod
 
+	#tag Method, Flags = &h0, Description = 52657475726E7320746865206C656674206D617267696E20696E207363616C656420756E6974732E
+		Function GetLeftMargin() As Double
+		  Return mLeftMargin
+		End Function
+	#tag EndMethod
+
+	#tag Method, Flags = &h0, Description = 52657475726E7320746865207269676874206D617267696E20696E207363616C656420756E6974732E
+		Function GetRightMargin() As Double
+		  Return mRightMargin
+		End Function
+	#tag EndMethod
+
+	#tag Method, Flags = &h0, Description = 52657475726E732074686520746F70206D617267696E20696E207363616C656420756E6974732E
+		Function GetTopMargin() As Double
+		  Return mTopMargin
+		End Function
+	#tag EndMethod
+
+	#tag Method, Flags = &h0, Description = 52657475726E732074686520626F74746F6D206D617267696E20696E207363616C656420756E6974732E
+		Function GetBottomMargin() As Double
+		  Return mBottomMargin
+		End Function
+	#tag EndMethod
+
 	#tag Method, Flags = &h0, Description = 52657475726E73207468652063757272656E7420706167652064696D656E73696F6E73202877696474682C20686569676874292E0A
 		Sub GetPageSize(ByRef width As Double, ByRef height As Double)
 		  width = mPageWidth
@@ -3580,6 +3797,29 @@ Protected Class VNSPDFDocument
 		End Function
 	#tag EndMethod
 
+	#tag Method, Flags = &h0, Description = 52657475726E732054727565206966207468652063757272656E7420666F6E742069732061205554463820547275655479706520666F6E74
+		Function IsCurrentFontUTF8() As Boolean
+		  // Returns True if the current font is a UTF8 TrueType font
+		  // Used by HTML renderer to determine text encoding needs
+
+		  If mCurrentFont = "" Then Return False
+		  If Not mFonts.HasKey(mCurrentFont) Then Return False
+
+		  Dim fontInfo As Dictionary = mFonts.Value(mCurrentFont)
+		  Return fontInfo.HasKey("type") And fontInfo.Value("type") = "UTF8"
+		End Function
+	#tag EndMethod
+
+	#tag Method, Flags = &h0, Description = 52657475726e732054727565206966206120666f6e742066616d696c7920686173206265656e206c6f616465642028636f7265206f72205554462d38292e20436865636b7320626173652066616d696c79206e616d6520776974686f7574207374796c65207375666669782e
+		Function HasFont(family As String) As Boolean
+		  // Check if a font family has been loaded (core or UTF-8)
+		  // Checks base family name (without style suffix)
+		  Var key As String = family.Lowercase.Trim
+		  If key = "" Then Return False
+		  Return mFonts <> Nil And mFonts.HasKey(key)
+		End Function
+	#tag EndMethod
+
 	#tag Method, Flags = &h0, Description = 52657475726E73207468652063757272656E7420776F72642073706163696E672E0A
 		Function GetWordSpacing() As Double
 		  // GetWordSpacing returns the current word spacing value.
@@ -3809,19 +4049,14 @@ Protected Class VNSPDFDocument
 		  //
 		  // CREDIT: Fix identified and tested by Geoff Bridges (Windows 11 user, Dec 2025)
 		  //
+		  // Always use JPEG: PNG from Picture.ToData produces RGBA (4 channels) on all platforms
+		  // for programmatically-created pictures (New Picture(w,h)), but PDF expects RGB (3 channels).
+		  // JPEG has no alpha channel by design, so Xojo auto-converts RGBA to RGB.
 		  Dim imageData As MemoryBlock
 		  Try
-		    #If TargetiOS Or TargetWeb Or TargetWindows Or TargetLinux Then
-		      imageData = pic.ToData(Picture.Formats.JPEG, Picture.QualityHigh)
-		    #Else
-		      imageData = pic.ToData(Picture.Formats.PNG)
-		    #EndIf
+		    imageData = pic.ToData(Picture.Formats.JPEG, Picture.QualityHigh)
 		  Catch e As RuntimeException
-		    #If TargetiOS Or TargetWeb Or TargetWindows Or TargetLinux Then
-		      Call SetError("ImageFromPicture: Failed to convert Picture to JPEG - " + e.Message)
-		    #Else
-		      Call SetError("ImageFromPicture: Failed to convert Picture to PNG - " + e.Message)
-		    #EndIf
+		    Call SetError("ImageFromPicture: Failed to convert Picture to JPEG - " + e.Message)
 		    Return
 		  End Try
 		  
@@ -3881,6 +4116,81 @@ Protected Class VNSPDFDocument
 		  Call Put(FormatPDF(wPt) + " 0 0 " + FormatPDF(hPt) + " " + FormatPDF(xPt) + " " + FormatPDF(yPt) + " cm") // Transformation matrix
 		  Call Put("/I" + Str(mImageIndex.Value(key)) + " Do") // Paint image
 		  Call Put("Q") // Restore graphics state
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h0, CompatibilityFlags = (TargetDesktop and (Target32Bit or Target64Bit)) or  (TargetWeb and (Target32Bit or Target64Bit)) or  (TargetiOS and (Target32Bit or Target64Bit)), Description = 44726177206120515220436F6465206F6E20746865205044462070616765207573696E6720586F6A6F206275696C742D696E20426172636F646520636C6173732E204E6F7420617661696C61626C65206F6E20436F6E736F6C652E
+		Sub DrawQRCode(x As Double, y As Double, size As Double, value As String)
+		  // Draw a QR Code on the PDF page using Xojo built-in Barcode class
+		  // x, y: Position in user units
+		  // size: Width and height of the QR code in user units
+		  // value: The string to encode in the QR code
+		  // Note: Not available on Console platform
+
+		  If Err() Then Return
+
+		  If value = "" Then
+		    Call SetError("DrawQRCode: value cannot be empty")
+		    Return
+		  End If
+
+		  // Generate QR code image using Xojo built-in Barcode class
+		  // Use high resolution for print quality (approx 300 DPI at output size)
+		  Dim pixelSize As Integer = Max(600, CType(size * 12, Integer))
+
+		  Dim pic As Picture
+		  Try
+		    pic = Barcode.Image(value, pixelSize, pixelSize, Barcode.Types.QR)
+		  Catch e As RuntimeException
+		    Call SetError("DrawQRCode: " + e.Message)
+		    Return
+		  End Try
+
+		  If pic = Nil Then
+		    Call SetError("DrawQRCode: Failed to generate QR code image")
+		    Return
+		  End If
+
+		  // Embed the barcode image in the PDF
+		  Call ImageFromPicture(pic, x, y, size, size)
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h0, CompatibilityFlags = (TargetDesktop and (Target32Bit or Target64Bit)) or  (TargetWeb and (Target32Bit or Target64Bit)) or  (TargetiOS and (Target32Bit or Target64Bit)), Description = 44726177206120436F646531323820626172636F6465206F6E20746865205044462070616765207573696E6720586F6A6F206275696C742D696E20426172636F646520636C6173732E204E6F7420617661696C61626C65206F6E20436F6E736F6C652E
+		Sub DrawCode128(x As Double, y As Double, w As Double, h As Double, value As String)
+		  // Draw a Code128 barcode on the PDF page using Xojo built-in Barcode class
+		  // x, y: Position in user units
+		  // w: Width of the barcode in user units
+		  // h: Height of the barcode in user units
+		  // value: The string to encode in the barcode
+		  // Note: Not available on Console platform
+
+		  If Err() Then Return
+
+		  If value = "" Then
+		    Call SetError("DrawCode128: value cannot be empty")
+		    Return
+		  End If
+
+		  // Generate Code128 barcode image using Xojo built-in Barcode class
+		  Dim pixelWidth As Integer = Max(800, CType(w * 12, Integer))
+		  Dim pixelHeight As Integer = Max(300, CType(h * 12, Integer))
+
+		  Dim pic As Picture
+		  Try
+		    pic = Barcode.Image(value, pixelWidth, pixelHeight, Barcode.Types.Bar128)
+		  Catch e As RuntimeException
+		    Call SetError("DrawCode128: " + e.Message)
+		    Return
+		  End Try
+
+		  If pic = Nil Then
+		    Call SetError("DrawCode128: Failed to generate Code128 barcode image")
+		    Return
+		  End If
+
+		  // Embed the barcode image in the PDF
+		  Call ImageFromPicture(pic, x, y, w, h)
 		End Sub
 	#tag EndMethod
 
@@ -4440,6 +4750,71 @@ Protected Class VNSPDFDocument
 		End Sub
 	#tag EndMethod
 
+	#tag Method, Flags = &h0, Description = 43726561746573206120636C69636B61626C652061726561206F6E207468652063757272656E7420706167652074686174206E617669676174657320746F20612074617267657420706167652E20436F6E76656E69656E6365207772617070657220666F72204164644C696E6B202B205365744C696E6B202B204C696E6B2E0A
+		Sub AddGoToPageArea(page As Integer, x As Integer, y As Integer, width As Integer, height As Integer, targetY As Integer = 0)
+		  // Creates a clickable area that navigates to a target page
+		  // page: Target page number (1-based)
+		  // x, y: Top-left corner of clickable area on current page (user units)
+		  // width, height: Dimensions of clickable area
+		  // targetY: Y position on target page (0 = top of page)
+
+		  Dim linkID As Integer = AddLink()
+		  Dim dTargetY As Double = targetY
+		  Dim dX As Double = x
+		  Dim dY As Double = y
+		  Dim dW As Double = width
+		  Dim dH As Double = height
+		  SetLink(linkID, dTargetY, page)
+		  Link(dX, dY, dW, dH, linkID)
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h0, Description = 43726561746573206120636C69636B61626C652061726561206F6E207468652063757272656E7420706167652074686174206E617669676174657320746F20612074617267657420706167652E20436F6E76656E69656E6365207772617070657220666F72204164644C696E6B202B205365744C696E6B202B204C696E6B2E0A
+		Sub AddGoToPageArea(page As Integer, x As Double, y As Double, width As Double, height As Double, targetY As Double = 0.0)
+		  // Creates a clickable area that navigates to a target page (Double overload)
+		  // page: Target page number (1-based)
+		  // x, y: Top-left corner of clickable area on current page (user units)
+		  // width, height: Dimensions of clickable area
+		  // targetY: Y position on target page (0 = top of page)
+
+		  Dim linkID As Integer = AddLink()
+		  SetLink(linkID, targetY, page)
+		  Link(x, y, width, height, linkID)
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h0, Description = 586F6A6F20636F6D7061746962696C6974793A2043726561746573206120636C69636B61626C6520617265612074686174206F70656E7320616E2065787465726E616C205044462066696C652E20436F6E76657274732066696C65207061746820746F2066696C653A2F2F2055524C206C696E6B2E0A
+		Sub AddLinkToPDFArea(file As FolderItem, x As Integer, y As Integer, width As Integer, height As Integer)
+		  // Xojo PDFDocument.AddLinkToPDFArea compatible method
+		  // Creates a clickable area that opens an external PDF file
+		  If file = Nil Or Not file.Exists Then
+		    SetError("AddLinkToPDFArea: File does not exist")
+		    Return
+		  End If
+
+		  Dim fileURL As String = "file://" + file.NativePath
+		  Dim dX As Double = x
+		  Dim dY As Double = y
+		  Dim dW As Double = width
+		  Dim dH As Double = height
+		  LinkString(dX, dY, dW, dH, fileURL)
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h0, Description = 586F6A6F20636F6D7061746962696C6974793A2043726561746573206120636C69636B61626C6520617265612074686174206F70656E7320616E2065787465726E616C205044462066696C652E20436F6E76657274732066696C65207061746820746F2066696C653A2F2F2055524C206C696E6B2E0A
+		Sub AddLinkToPDFArea(file As FolderItem, x As Double, y As Double, width As Double, height As Double)
+		  // Xojo PDFDocument.AddLinkToPDFArea compatible method (Double overload)
+		  // Creates a clickable area that opens an external PDF file
+		  If file = Nil Or Not file.Exists Then
+		    SetError("AddLinkToPDFArea: File does not exist")
+		    Return
+		  End If
+
+		  Dim fileURL As String = "file://" + file.NativePath
+		  LinkString(x, y, width, height, fileURL)
+		End Sub
+	#tag EndMethod
+
 	#tag Method, Flags = &h0, Description = 507574732061206C696E6B20746F20616E2065787465726E616C2055524C2E0A
 		Sub LinkString(x As Double, y As Double, w As Double, h As Double, url As String)
 		  // Add an external URL link area on the current page
@@ -4473,6 +4848,38 @@ Protected Class VNSPDFDocument
 		  // Add item and store back
 		  links.Add(linkArea)
 		  mPageLinks.Value(pageKey) = links
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h0, Description = 436F6E76657274732048544D4C20636F6E74656E7420746F205044462E20537570706F72747320706172616772617068732C20626F6C642C206974616C69632C20696D616765732C207461626C65732C206C697374732C2068656164696E67732E205265717569726573207072656D69756D2048544D4C2F4D61726B646F776E20496D706F7274206D6F64756C652E0A
+		Sub LoadHTML(html As String, maxWidth As Double = 0)
+		  // Convert HTML content to PDF using existing FPDF rendering methods
+		  // html: HTML string to convert (supports Summernote/Word HTML with auto-cleaning)
+		  // maxWidth: Maximum content width in user units (0 = use available page width)
+
+		  #If VNSPDFModule.hasPremiumHTMLModule Then
+		    VNSPDFHTMLPremium.LoadHTML(Self, html, maxWidth)
+		  #Else
+		    #Pragma Unused html
+		    #Pragma Unused maxWidth
+		    SetError("LoadHTML requires the premium HTML/Markdown Import module.")
+		  #EndIf
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h0, Description = 436F6E7665727473204D61726B646F776E20636F6E74656E7420746F205044462E20537570706F7274732068656164696E67732C20626F6C642C206974616C69632C206C697374732C20636F646520626C6F636B732C206C696E6B732C20696D616765732E205265717569726573207072656D69756D2048544D4C2F4D61726B646F776E20496D706F7274206D6F64756C652E0A
+		Sub LoadMarkdown(markdown As String, maxWidth As Double = 0)
+		  // Convert Markdown content to PDF using existing FPDF rendering methods
+		  // markdown: Markdown string to convert
+		  // maxWidth: Maximum content width in user units (0 = use available page width)
+
+		  #If VNSPDFModule.hasPremiumHTMLModule Then
+		    VNSPDFHTMLPremium.LoadMarkdown(Self, markdown, maxWidth)
+		  #Else
+		    #Pragma Unused markdown
+		    #Pragma Unused maxWidth
+		    SetError("LoadMarkdown requires the premium HTML/Markdown Import module.")
+		  #EndIf
 		End Sub
 	#tag EndMethod
 
@@ -4599,6 +5006,38 @@ Protected Class VNSPDFDocument
 		  // Create attachment and add annotation
 		  Dim attachment As New VNSPDFAttachment(file.Name, content, description)
 		  AddAttachmentAnnotation(attachment, x, y, width, height)
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h0, Description = 586F6A6F20636F6D7061746962696C6974793A20416464732061206D6F7669652066696C65206174746163686D656E7420616E6E6F746174696F6E2E20456D62656473207468652066696C6520616E642063726561746573206120636C69636B61626C6520616E6E6F746174696F6E2061726561206F6E207468652063757272656E7420706167652E2053616D6520617320416464456D62656464656446696C6520696E7465726E616C6C792E0A
+		Sub AddEmbeddedMovie(file As FolderItem, x As Integer, y As Integer, width As Integer, height As Integer, description As String = "")
+		  // Xojo PDFDocument.AddEmbeddedMovie compatible method
+		  // PDF does not have native movie embedding - embeds as file attachment annotation
+		  AddEmbeddedFile(file, x, y, width, height, description)
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h0, Description = 586F6A6F20636F6D7061746962696C6974793A20416464732061206D6F7669652066696C65206174746163686D656E7420616E6E6F746174696F6E2E20456D62656473207468652066696C6520616E642063726561746573206120636C69636B61626C6520616E6E6F746174696F6E2061726561206F6E207468652063757272656E7420706167652E2053616D6520617320416464456D62656464656446696C6520696E7465726E616C6C792E0A
+		Sub AddEmbeddedMovie(file As FolderItem, x As Double, y As Double, width As Double, height As Double, description As String = "")
+		  // Xojo PDFDocument.AddEmbeddedMovie compatible method (Double overload)
+		  // PDF does not have native movie embedding - embeds as file attachment annotation
+		  AddEmbeddedFile(file, x, y, width, height, description)
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h0, Description = 586F6A6F20636F6D7061746962696C6974793A2041646473206120736F756E642066696C65206174746163686D656E7420616E6E6F746174696F6E2E20456D62656473207468652066696C6520616E642063726561746573206120636C69636B61626C6520616E6E6F746174696F6E2061726561206F6E207468652063757272656E7420706167652E2053616D6520617320416464456D62656464656446696C6520696E7465726E616C6C792E0A
+		Sub AddEmbeddedSound(file As FolderItem, x As Integer, y As Integer, width As Integer, height As Integer, description As String = "")
+		  // Xojo PDFDocument.AddEmbeddedSound compatible method
+		  // PDF does not have native sound embedding - embeds as file attachment annotation
+		  AddEmbeddedFile(file, x, y, width, height, description)
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h0, Description = 586F6A6F20636F6D7061746962696C6974793A2041646473206120736F756E642066696C65206174746163686D656E7420616E6E6F746174696F6E2E20456D62656473207468652066696C6520616E642063726561746573206120636C69636B61626C6520616E6E6F746174696F6E2061726561206F6E207468652063757272656E7420706167652E2053616D6520617320416464456D62656464656446696C6520696E7465726E616C6C792E0A
+		Sub AddEmbeddedSound(file As FolderItem, x As Double, y As Double, width As Double, height As Double, description As String = "")
+		  // Xojo PDFDocument.AddEmbeddedSound compatible method (Double overload)
+		  // PDF does not have native sound embedding - embeds as file attachment annotation
+		  AddEmbeddedFile(file, x, y, width, height, description)
 		End Sub
 	#tag EndMethod
 
@@ -4833,13 +5272,40 @@ Protected Class VNSPDFDocument
 
 		    // Output the cell for this line
 		    // ln=2 moves to left margin of next line, not continuation of current line (GB 14/12/25)
-		    Call Cell(cellWidth, h, lines(i), currentBorder, 2, align, fill)
+		    If align.Uppercase = "J" Then
+		      // Justify: set word spacing for all lines except the last
+		      If i < lines.LastIndex Then
+		        Dim lineWidth As Double = GetStringWidth(lines(i))
+		        Dim spaceCount As Integer = 0
+		        Dim lineText As String = lines(i)
+		        For ci As Integer = 0 To lineText.Length - 1
+		          If lineText.Middle(ci, 1) = " " Then spaceCount = spaceCount + 1
+		        Next
+		        If spaceCount > 0 And lineWidth < wMax Then
+		          Call SetWordSpacing((wMax - lineWidth) / spaceCount)
+		        End If
+		        Call Cell(cellWidth, h, lines(i), currentBorder, 2, "L", fill)
+		        Call SetWordSpacing(0)
+		      Else
+		        // Last line: left-aligned, no extra spacing
+		        Call Cell(cellWidth, h, lines(i), currentBorder, 2, "L", fill)
+		      End If
+		    Else
+		      Call Cell(cellWidth, h, lines(i), currentBorder, 2, align, fill)
+		    End If
 		  Next
 
 		  // Reset position to start of next line after MultiCell (GB 07/01/26)
 		  mCurrentX = mLeftMargin
 		  mCurrentY = mCurrentY + h
 
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h0, Description = 4F7574707574732061206D756C74692D6C696E652063656C6C207769746820656E756D2D6261736564207465787420616C69676E6D656E742E2044656C65676174657320746F204D756C746943656C6C28292E
+		Sub MultiCell(w As Double, h As Double, txt As String, border As Variant, align As VNSPDFModule.eTextAlignment, fill As Boolean = False)
+		  // Enum overload for MultiCell() - converts alignment enum to string and delegates
+		  Call MultiCell(w, h, txt, border, AlignmentEnumToString(align), fill)
 		End Sub
 	#tag EndMethod
 
@@ -5264,6 +5730,18 @@ Protected Class VNSPDFDocument
 		    If namesTree <> "" Then
 		      Call Put("/Names << /EmbeddedFiles " + namesTree + " >>")
 		    End If
+
+		    // PDF/A-3: Add /AF array for attachments with AFRelationship
+		    Dim afRefs() As String
+		    For i As Integer = 0 To mAttachments.LastIndex
+		      Dim att As VNSPDFAttachment = mAttachments(i)
+		      If att.AFRelationship <> "" And att.ObjectNumber > 0 Then
+		        afRefs.Add(Str(att.ObjectNumber) + " 0 R")
+		      End If
+		    Next
+		    If afRefs.Count > 0 Then
+		      Call Put("/AF [" + String.FromArray(afRefs, " ") + "]")
+		    End If
 		  End If
 
 		  // AcroForm (interactive forms) - reference if form fields exist
@@ -5287,7 +5765,7 @@ Protected Class VNSPDFDocument
 		  For i As Integer = 0 To mAttachments.LastIndex
 		    Dim a As VNSPDFAttachment = mAttachments(i)
 		    If a.ObjectNumber > 0 Then
-		      names.Add("(Attachment" + Str(i + 1) + ") " + Str(a.ObjectNumber) + " 0 R")
+		      names.Add("(" + a.Filename + ") " + Str(a.ObjectNumber) + " 0 R")
 		    End If
 		  Next
 
@@ -5326,11 +5804,26 @@ Protected Class VNSPDFDocument
 		  // Write EmbeddedFile stream object
 		  Call NewObj()
 		  Dim streamObjNum As Integer = mObjectNumber - 1
-		  Dim streamDict As String = "<< /Type /EmbeddedFile /Length " + Str(lenCompressed)
+		  Dim streamDict As String = "<< /Type /EmbeddedFile"
+		  // PDF/A-3: Add /Subtype with MIME type when set
+		  If a.MimeType <> "" Then
+		    streamDict = streamDict + " /Subtype /" + a.MimeType.ReplaceAll("/", "#2F")
+		  End If
+		  streamDict = streamDict + " /Length " + Str(lenCompressed)
 		  If useCompression Then
 		    streamDict = streamDict + " /Filter /FlateDecode"
 		  End If
-		  streamDict = streamDict + " /Params << /CheckSum <" + checksum + "> /Size " + Str(lenUncompressed) + " >> >>"
+		  // Build /Params dictionary
+		  Dim paramsDict As String = " /Params << /CheckSum <" + checksum + "> /Size " + Str(lenUncompressed)
+		  // PDF/A-3: Add /ModDate when MimeType is set (required for compliance)
+		  If a.MimeType <> "" Then
+		    Dim now As DateTime = DateTime.Now
+		    Dim modDate As String = "D:" + now.Year.ToString("0000") + now.Month.ToString("00") + now.Day.ToString("00")
+		    modDate = modDate + now.Hour.ToString("00") + now.Minute.ToString("00") + now.Second.ToString("00")
+		    paramsDict = paramsDict + " /ModDate (" + modDate + ")"
+		  End If
+		  paramsDict = paramsDict + " >>"
+		  streamDict = streamDict + paramsDict + " >>"
 		  Call Put(streamDict)
 
 		  // Write stream data
@@ -5343,9 +5836,13 @@ Protected Class VNSPDFDocument
 		  // Write Filespec object
 		  Call NewObj()
 		  a.ObjectNumber = mObjectNumber - 1
-		  Dim filespec As String = "<< /Type /Filespec /F () /UF " + TextString(UTF8ToUTF16BE(a.Filename, True))
+		  Dim filespec As String = "<< /Type /Filespec /F (" + a.Filename + ") /UF " + TextString(UTF8ToUTF16BE(a.Filename, True))
 		  filespec = filespec + " /EF << /F " + Str(streamObjNum) + " 0 R >>"
 		  filespec = filespec + " /Desc " + TextString(UTF8ToUTF16BE(a.Description, True))
+		  // PDF/A-3: Add /AFRelationship when set
+		  If a.AFRelationship <> "" Then
+		    filespec = filespec + " /AFRelationship /" + a.AFRelationship
+		  End If
 		  filespec = filespec + " >>"
 		  Call Put(filespec)
 		  Call Put("endobj")
@@ -6125,6 +6622,7 @@ Protected Class VNSPDFDocument
 		        Call Put("/Type /Font")
 		        Call Put("/Subtype /Type1")
 		        Call Put("/BaseFont /" + fontName)
+		        Call Put("/Encoding /WinAnsiEncoding")
 		        Call Put(">>")
 		      End If
 		    Next
@@ -6478,11 +6976,25 @@ Protected Class VNSPDFDocument
 		  
 		  Call NewObj()
 		  Call Put("<<")
-		  Call Put("/Length " + Str(VNSPDFModule.StringLenB(finalFontData)))
-		  Call Put("/Length1 " + Str(VNSPDFModule.StringLenB(finalFontData)))
+		  Dim originalFontLen As Integer = VNSPDFModule.StringLenB(finalFontData)
+		  // Compress font data if compression is enabled
+		  Dim fontStreamData As String = finalFontData
+		  Dim fontCompressed As Boolean = False
+		  If mCompression Then
+		    Dim compressedFont As String = VNSZlibModule.Compress(finalFontData)
+		    If compressedFont <> "" And compressedFont.Bytes < originalFontLen Then
+		      fontStreamData = compressedFont
+		      fontCompressed = True
+		    End If
+		  End If
+		  Call Put("/Length " + Str(VNSPDFModule.StringLenB(fontStreamData)))
+		  Call Put("/Length1 " + Str(originalFontLen))
+		  If fontCompressed Then
+		    Call Put("/Filter /FlateDecode")
+		  End If
 		  Call Put(">>")
 		  mBuffer = mBuffer + "stream" + EndOfLine.UNIX
-		  mBuffer = mBuffer + finalFontData
+		  mBuffer = mBuffer + fontStreamData
 		  mBuffer = mBuffer + EndOfLine.UNIX  // EOL before endstream (required for PDF/A)
 		  Call Put("endstream")
 		  Call Put("endobj")
@@ -6929,8 +7441,31 @@ Protected Class VNSPDFDocument
 		  imageInfo.Value("i") = imageIndex // Image index for reference in page content
 		  
 		  mImages.Value(imageKey) = imageInfo
-		  
+
 		  Return imageKey
+		End Function
+	#tag EndMethod
+
+	#tag Method, Flags = &h0, Description = 47657420726567697374657265642069616D67652070697865486C2064696D656E73696F6E7320696E2075736572206E756E697473
+		Function GetRegisteredImageSize(imageKey As String, ByRef w As Double, ByRef h As Double) As Boolean
+		  // Returns the registered image dimensions in current user units (mm by default)
+		  // Returns True if image found, False otherwise
+
+		  If Not mImages.HasKey(imageKey) Then
+		    w = 0
+		    h = 0
+		    Return False
+		  End If
+
+		  Dim imageInfo As Dictionary = mImages.Value(imageKey)
+		  Dim pixelW As Integer = imageInfo.Value("width")
+		  Dim pixelH As Integer = imageInfo.Value("height")
+
+		  // Convert pixels to user units (same formula as Image method: assume 96 DPI)
+		  w = (pixelW * 72.0 / 96.0) / mScaleFactor
+		  h = (pixelH * 72.0 / 96.0) / mScaleFactor
+
+		  Return True
 		End Function
 	#tag EndMethod
 
@@ -8067,6 +8602,71 @@ Protected Class VNSPDFDocument
 		End Sub
 	#tag EndMethod
 
+	#tag Method, Flags = &h0, Description = 5265676973746572206120637573746f6d2068616e646c657220666f7220616e2048544d4c207461672e2048616e646c65722069732063616c6c656420647572696e672072656e646572696e6720696e7374656164206f66206275696c742d696e206c6f6769632e
+		Sub RegisterHTMLTagHandler(tagName As String, handler As VNSPDFModule.HTMLTagHandlerDelegate)
+		  If mHTMLTagHandlers = Nil Then mHTMLTagHandlers = New Dictionary
+		  mHTMLTagHandlers.Value(tagName.Lowercase) = handler
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h0, Description = 52656d6f766520612070726576696f75736c7920726567697374657265642048544d4c207461672068616e646c65722e
+		Sub RemoveHTMLTagHandler(tagName As String)
+		  If mHTMLTagHandlers = Nil Then Return
+		  If mHTMLTagHandlers.HasKey(tagName.Lowercase) Then
+		    mHTMLTagHandlers.Remove(tagName.Lowercase)
+		  End If
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h0, Description = 52656d6f766520616c6c20726567697374657265642048544d4c207461672068616e646c6572732e
+		Sub RemoveAllHTMLTagHandlers()
+		  If mHTMLTagHandlers <> Nil Then mHTMLTagHandlers.RemoveAll
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h0, Description = 436865636b206966206120637573746f6d2068616e646c6572206973207265676973746572656420666f722074686520676976656e2048544d4c20746167206e616d652e
+		Function HasHTMLTagHandler(tagName As String) As Boolean
+		  If mHTMLTagHandlers = Nil Then Return False
+		  Return mHTMLTagHandlers.HasKey(tagName.Lowercase)
+		End Function
+	#tag EndMethod
+
+	#tag Method, Flags = &h0, Description = 4765742074686520726567697374657265642068616e646c65722064656c656761746520666f722074686520676976656e2048544d4c20746167206e616d652e
+		Function GetHTMLTagHandler(tagName As String) As VNSPDFModule.HTMLTagHandlerDelegate
+		  If mHTMLTagHandlers = Nil Then Return Nil
+		  If Not mHTMLTagHandlers.HasKey(tagName.Lowercase) Then Return Nil
+		  Return VNSPDFModule.HTMLTagHandlerDelegate(mHTMLTagHandlers.Value(tagName.Lowercase))
+		End Function
+	#tag EndMethod
+
+	#tag Method, Flags = &h0, Description = 5265676973746572206120637573746f6d2068616e646c657220666f722061204d61726b646f776e206c696e65207072656669782e2048616e646c65722069732063616c6c656420647572696e67204d61726b646f776e2d746f2d48544d4c20636f6e76657273696f6e2e
+		Sub RegisterMarkdownHandler(prefix As String, handler As VNSPDFModule.MarkdownLineHandlerDelegate)
+		  If mMarkdownLineHandlers = Nil Then mMarkdownLineHandlers = New Dictionary
+		  mMarkdownLineHandlers.Value(prefix) = handler
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h0, Description = 52656d6f766520612070726576696f75736c792072656769737465726564204d61726b646f776e206c696e652068616e646c65722e
+		Sub RemoveMarkdownHandler(prefix As String)
+		  If mMarkdownLineHandlers = Nil Then Return
+		  If mMarkdownLineHandlers.HasKey(prefix) Then
+		    mMarkdownLineHandlers.Remove(prefix)
+		  End If
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h0, Description = 52656d6f766520616c6c2072656769737465726564204d61726b646f776e206c696e652068616e646c6572732e
+		Sub RemoveAllMarkdownHandlers()
+		  If mMarkdownLineHandlers <> Nil Then mMarkdownLineHandlers.RemoveAll
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h0, Description = 476574207468652064696374696f6e617279206f662072656769737465726564204d61726b646f776e206c696e652068616e646c6572732e205573656420696e7465726e616c6c79206279204d61726b646f776e546f48544d4c2e
+		Function MarkdownLineHandlers() As Dictionary
+		  Return mMarkdownLineHandlers
+		End Function
+	#tag EndMethod
+
 	#tag Method, Flags = &h0, Description = 53657473207468652063757272656E7420706F736974696F6E20746F20746865206C65667420616E6420746F70206D617267696E732028686F6D6520706F736974696F6E292E0A
 		Sub SetHomeXY()
 		  mCurrentY = mTopMargin
@@ -8437,6 +9037,21 @@ Protected Class VNSPDFDocument
 		  mTextColorG = g
 		  mTextColorB = b
 		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h0
+		Sub SetTextRise(rise As Double)
+		  // Sets the text rise in points for subscript (negative) or superscript (positive)
+		  mTextRise = rise
+		  If rise <> 0.0 Then mTextRiseDirty = True
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h0
+		Function GetTextRise() As Double
+		  // Returns the current text rise in points
+		  Return mTextRise
+		End Function
 	#tag EndMethod
 
 	#tag Method, Flags = &h0, Description = 5365747320746865207265686465726E67206D6F6465206F6620666F6C6C6F77696E6720746578742E
@@ -9533,7 +10148,17 @@ Protected Class VNSPDFDocument
 		Private Function UTF8ToCodePoints(utf8String As String) As Integer()
 		  // Decodes a UTF-8 string into an array of Unicode code points
 		  Dim codePoints() As Integer
-		  
+
+		  // CRITICAL: Ensure string has UTF-8 encoding before converting to MemoryBlock
+		  // When String→MemoryBlock, bytes are written in the string's encoding.
+		  // If encoding is Latin-1, characters > U+00FF are lost (replaced with ?).
+		  // If encoding is Nil, raw internal bytes are used (usually UTF-8 in modern Xojo).
+		  If utf8String.Encoding Is Nil Then
+		    utf8String = utf8String.DefineEncoding(Encodings.UTF8)
+		  ElseIf Not (utf8String.Encoding Is Encodings.UTF8) Then
+		    utf8String = utf8String.ConvertEncoding(Encodings.UTF8)
+		  End If
+
 		  // Convert string to MemoryBlock for byte-level access
 		  #If TargetiOS Then
 		    // iOS: Get UTF-8 bytes directly using Bytes property
@@ -9542,7 +10167,7 @@ Protected Class VNSPDFDocument
 		    If byteCount = 0 Then
 		      Return codePoints // Empty string
 		    End If
-		    
+
 		    Dim mb As New MemoryBlock(byteCount)
 		    mb.StringValue(0, byteCount) = utf8String
 		  #Else
@@ -9690,9 +10315,20 @@ Protected Class VNSPDFDocument
 		    Return
 		  End If
 		  
+		  // Ensure UTF-8 encoding for UTF-8 fonts before processing
+		  // This is critical: if text has wrong encoding, UTF8ToCodePoints gets wrong bytes
+		  // and characters > U+00FF are lost (replaced with ?)
+		  If IsCurrentFontUTF8() Then
+		    If txt.Encoding Is Nil Then
+		      txt = txt.DefineEncoding(Encodings.UTF8)
+		    ElseIf Not (txt.Encoding Is Encodings.UTF8) Then
+		      txt = txt.ConvertEncoding(Encodings.UTF8)
+		    End If
+		  End If
+
 		  // Maximum width for text
 		  Dim wMax As Double = mPageWidth - mRightMargin - mCurrentX
-		  
+
 		  // Split text into words
 		  Dim words() As String = txt.Split(" ")
 		  
@@ -9732,24 +10368,17 @@ Protected Class VNSPDFDocument
 		          glyphMapping = fontInfo.Value("glyphMapping")
 		        End If
 		        
-		        // Track used Unicode characters
+		        // Track used Unicode characters AFTER shaping
+		        // Shape Arabic text first (converts to presentation forms)
+		        // This ensures shaped glyph code points are included in font subset
 		        If fontInfo.HasKey("usedRunes") Then
 		          Dim usedRunes As Dictionary = fontInfo.Value("usedRunes")
-		          #If TargetiOS Then
-		            Dim wordLen As Integer = wordWithSpace.Length
-		            For i As Integer = 0 To wordLen - 1
-		              Dim char As String = wordWithSpace.Middle(i, 1)  // iOS: 0-based Middle()
-		              Dim codePoint As Integer = char.Asc
-		              usedRunes.Value(Str(codePoint)) = codePoint
-		            Next
-		          #Else
-		            Dim wordLen As Integer = wordWithSpace.Length
-		            For i As Integer = 1 To wordLen
-		              Dim char As String = wordWithSpace.Middle(i, 1)  // Desktop/Console/Web: 0-based Middle()
-		              Dim codePoint As Integer = char.Asc
-		              usedRunes.Value(Str(codePoint)) = codePoint
-		            Next
-		          #EndIf
+		          Dim shapedWord As String = ShapeArabicText(wordWithSpace)
+		          Dim shapedCodePoints() As Integer = UTF8ToCodePoints(shapedWord)
+		          For i As Integer = 0 To shapedCodePoints.LastIndex
+		            Dim codePoint As Integer = shapedCodePoints(i)
+		            usedRunes.Value(Str(codePoint)) = codePoint
+		          Next
 		        End If
 		      End If
 		    End If
@@ -9774,29 +10403,63 @@ Protected Class VNSPDFDocument
 		    Dim gPDF As Double = mTextColorG / 255.0
 		    Dim bPDF As Double = mTextColorB / 255.0
 		    cmd = cmd + FormatPDF(rPDF, 3) + " " + FormatPDF(gPDF, 3) + " " + FormatPDF(bPDF, 3) + " rg" + EndOfLine.UNIX
-		    
+
+		    // Detect if we need simulated bold/italic for UTF-8 fonts without B/I variants
+		    Dim simulateBold As Boolean = False
+		    Dim simulateItalic As Boolean = False
+		    If isUTF8 And mFontStyle <> "" Then
+		      Dim styleNoDecor As String = mFontStyle.ReplaceAll("U", "").ReplaceAll("S", "")
+		      If styleNoDecor.IndexOf("B") >= 0 Then simulateBold = True
+		      If styleNoDecor.IndexOf("I") >= 0 Then simulateItalic = True
+		    End If
+
+		    // Simulated bold: set text rendering mode to 2 (fill + stroke) with thin stroke
+		    If simulateBold Then
+		      Dim boldStrokeWidth As Double = mFontSizePt * 0.03
+		      cmd = cmd + FormatPDF(boldStrokeWidth) + " w " + EndOfLine.UNIX
+		      cmd = cmd + FormatPDF(rPDF, 3) + " " + FormatPDF(gPDF, 3) + " " + FormatPDF(bPDF, 3) + " RG " + EndOfLine.UNIX
+		      cmd = cmd + "2 Tr" + EndOfLine.UNIX
+		    End If
+
 		    cmd = cmd + "BT" + EndOfLine.UNIX
-		    
+
 		    // Set font inside text object (REQUIRED in PDF)
 		    If mCurrentFont <> "" And mFonts.HasKey(mCurrentFont) Then
 		      Dim fontInfo As Dictionary = mFonts.Value(mCurrentFont)
 		      Dim fontNum As Integer = fontInfo.Value("number")
 		      cmd = cmd + "/F" + Str(fontNum) + " " + FormatPDF(mFontSizePt) + " Tf" + EndOfLine.UNIX
 		    End If
-		    
-		    cmd = cmd + FormatPDF(txtX) + " " + FormatPDF(txtY) + " Td" + EndOfLine.UNIX
-		    cmd = cmd + encodedText + " Tj" + EndOfLine.UNIX // Hex for TrueType, escaped for core fonts
+
+		    // Apply text rise for subscript/superscript (always emit when dirty to ensure 0 Ts resets)
+		    If mTextRiseDirty Then
+		      cmd = cmd + FormatPDF(mTextRise) + " Ts" + EndOfLine.UNIX
+		      If mTextRise = 0.0 Then mTextRiseDirty = False
+		    End If
+
+		    // Position text: use text matrix for simulated italic (shear), otherwise simple Td
+		    If simulateItalic Then
+		      Dim shear As Double = 0.21
+		      cmd = cmd + "1 0 " + FormatPDF(shear) + " 1 " + FormatPDF(txtX) + " " + FormatPDF(txtY) + " Tm" + EndOfLine.UNIX
+		    Else
+		      cmd = cmd + FormatPDF(txtX) + " " + FormatPDF(txtY) + " Td" + EndOfLine.UNIX
+		    End If
+		    cmd = cmd + encodedText + " Tj" + EndOfLine.UNIX
 		    cmd = cmd + "ET" + EndOfLine.UNIX
-		    
+
+		    // Reset text rendering mode after simulated bold
+		    If simulateBold Then
+		      cmd = cmd + "0 Tr" + EndOfLine.UNIX
+		    End If
+
 		    // Draw underline if style contains "U"
 		    If mFontStyle.IndexOf("U") >= 0 Then
 		      If mCurrentFont <> "" And mFonts.HasKey(mCurrentFont) Then
 		        Dim fontInfo As Dictionary = mFonts.Value(mCurrentFont)
-		        
+
 		        // Get underline position and thickness from font metrics
 		        Dim up As Double = -100 // Default underline position
 		        Dim ut As Double = 50   // Default underline thickness
-		        
+
 		        If fontInfo.HasKey("up") Then
 		          up = fontInfo.Value("up")
 		        End If
@@ -9823,9 +10486,30 @@ Protected Class VNSPDFDocument
 		        cmd = cmd + FormatPDF(txtX + wordWidth * mScaleFactor) + " " + FormatPDF(underlineY) + " l S " + EndOfLine.UNIX
 		      End If
 		    End If
-		    
+
+		    // Draw strikethrough if style contains "S"
+		    If mFontStyle.IndexOf("S") >= 0 Then
+		      If mCurrentFont <> "" And mFonts.HasKey(mCurrentFont) Then
+		        Dim stFontInfo As Dictionary = mFonts.Value(mCurrentFont)
+
+		        Dim stUt As Double = 50
+		        If stFontInfo.HasKey("ut") Then
+		          stUt = stFontInfo.Value("ut")
+		        End If
+
+		        Dim stThickness As Double = stUt * mFontSizePt / 1000.0 * mUnderlineThickness
+		        Dim stOffset As Double = 0.15 * mFontSizePt
+		        Dim stY As Double = txtY + (stOffset * mScaleFactor)
+
+		        cmd = cmd + FormatPDF(stThickness * mScaleFactor) + " w " + EndOfLine.UNIX
+		        cmd = cmd + FormatPDF(rPDF, 3) + " " + FormatPDF(gPDF, 3) + " " + FormatPDF(bPDF, 3) + " RG " + EndOfLine.UNIX
+		        cmd = cmd + FormatPDF(txtX) + " " + FormatPDF(stY) + " m " + EndOfLine.UNIX
+		        cmd = cmd + FormatPDF(txtX + wordWidth * mScaleFactor) + " " + FormatPDF(stY) + " l S " + EndOfLine.UNIX
+		      End If
+		    End If
+
 		    mBuffer = mBuffer + cmd
-		    
+
 		    // Update position
 		    mCurrentX = mCurrentX + wordWidth
 		  Next
@@ -9867,13 +10551,39 @@ Protected Class VNSPDFDocument
 		      Call SetLeftMargin(lMargin + (width - lineWidth))
 		      Call Write(lineHeight, lineStr)
 		      Call SetLeftMargin(lMargin)
+		    Case "J"  // Justify
+		      // Don't justify the last line - leave it left-aligned
+		      If lineStr = lines(lines.LastIndex) Then
+		        Call Write(lineHeight, lineStr)
+		      Else
+		        // Count spaces to distribute extra width evenly
+		        Var spaceCount As Integer = 0
+		        For ci As Integer = 0 To lineStr.Length - 1
+		          If lineStr.Middle(ci, 1) = " " Then spaceCount = spaceCount + 1
+		        Next
+		        If spaceCount > 0 And lineWidth < width Then
+		          Var extraSpacing As Double = (width - lineWidth) / spaceCount
+		          Call SetWordSpacing(extraSpacing)
+		          Call Write(lineHeight, lineStr)
+		          Call SetWordSpacing(0)
+		        Else
+		          Call Write(lineHeight, lineStr)
+		        End If
+		      End If
 		    Else  // Left (default)
 		      Call Write(lineHeight, lineStr)
 		    End Select
-		    
+
 		    // Add line break
 		    Call Ln(lineHeight)
 		  Next
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h0, Description = 5772697465732074657874207769746820656E756D2D626173656420616C69676E6D656E742E2044656C65676174657320746F205772697465416C69676E656428292E
+		Sub WriteAligned(width As Double, lineHeight As Double, textStr As String, align As VNSPDFModule.eTextAlignment)
+		  // Enum overload for WriteAligned() - converts alignment enum to string and delegates
+		  Call WriteAligned(width, lineHeight, textStr, AlignmentEnumToString(align))
 		End Sub
 	#tag EndMethod
 
@@ -10169,6 +10879,49 @@ Protected Class VNSPDFDocument
 		Landscape As Boolean
 	#tag EndComputedProperty
 
+	#tag ComputedProperty, Flags = &h0, Description = 586F6A6F20636F6D7061746962696C6974793A2047657473206F72207365747320504446207065726D697373696F6E7320616E6420656E6372797074696F6E2E20416363657074732061205044465065726D697373696F6E73206F626A656374202873616D6520617320586F6A6F20504446446F63756D656E742E5065726D697373696F6E73292E2055736573204145532D3132382077697468207072656D69756D206D6F64756C652C205243342D343020776974686F75742E20466F7220616476616E63656420656E6372797074696F6E206F7074696F6E732C207573652053657450726F74656374696F6E282920696E73746561642E0A
+		#tag Getter
+			Get
+			  Return mPermissionsObj
+			End Get
+		#tag EndGetter
+		#tag Setter
+			Set
+			  // Store the PDFPermissions object
+			  mPermissionsObj = value
+
+			  // Apply encryption using our SetProtection method
+			  // Free version uses RC4-40 encryption (revision 2)
+			  // Premium users who need AES-128 (like Xojo's native PDFDocument)
+			  // should use SetProtection() directly with gkEncryptionAES128
+			  If value <> Nil Then
+			    // Determine encryption revision based on premium availability
+			    Dim encRevision As Integer
+			    #If VNSPDFModule.hasPremiumEncryptionModule Then
+			      encRevision = VNSPDFModule.gkEncryptionAES128
+			    #Else
+			      encRevision = VNSPDFModule.gkEncryptionRC4_40
+			    #EndIf
+
+			    SetProtection( _
+			      value.UserPassword, _
+			      value.OwnerPassword, _
+			      value.AllowPrinting, _
+			      value.AllowModifyingContents, _
+			      value.AllowCopyingContents, _
+			      True, _
+			      True, _
+			      True, _
+			      True, _
+			      value.AllowPrinting, _
+			      encRevision _
+			    )
+			  End If
+			End Set
+		#tag EndSetter
+		Permissions As PDFPermissions
+	#tag EndComputedProperty
+
 	#tag ComputedProperty, Flags = &h0, Description = 586F6A6F20636F6D7061746962696C6974793A20476574732074686520564E5350444647726170686963732077726170706572206F626A6563742E0A
 		#tag Getter
 			Get
@@ -10403,6 +11156,14 @@ Protected Class VNSPDFDocument
 		Private mHeaderHomeMode As Boolean = False
 	#tag EndProperty
 
+	#tag Property, Flags = &h21, Description = 44696374696f6e617279206f66207265676973746572656420637573746f6d2048544d4c207461672068616e646c657273206b65796564206279206c6f7765726361736520746167206e616d652e
+		Private mHTMLTagHandlers As Dictionary
+	#tag EndProperty
+
+	#tag Property, Flags = &h21, Description = 44696374696f6e617279206f662072656769737465726564204d61726b646f776e206c696e652068616e646c657273206b657965642062792070726566697820737472696e672e
+		Private mMarkdownLineHandlers As Dictionary
+	#tag EndProperty
+
 	#tag Property, Flags = &h21
 		Private mImageIndex As Dictionary
 	#tag EndProperty
@@ -10588,6 +11349,10 @@ Protected Class VNSPDFDocument
 	#tag EndProperty
 
 	#tag Property, Flags = &h21
+		Private mPermissionsObj As PDFPermissions
+	#tag EndProperty
+
+	#tag Property, Flags = &h21
 		Private mProducer As String
 	#tag EndProperty
 
@@ -10637,6 +11402,14 @@ Protected Class VNSPDFDocument
 
 	#tag Property, Flags = &h21
 		Private mUnderlineThickness As Double = 1.0
+	#tag EndProperty
+
+	#tag Property, Flags = &h21, Description = 54657874207269736520696E20706F696E747320666F7220737562736372697074202D2F737570657273637269707420282B292072656E646572696E67
+		Private mTextRise As Double = 0.0
+	#tag EndProperty
+
+	#tag Property, Flags = &h21, Description = 547275652069662074657874207269736520776173206576657220736574206E6F6E2D7A65726F2C20736F2077652065616C776179732065697420547320746F20726573657420746F2030
+		Private mTextRiseDirty As Boolean = False
 	#tag EndProperty
 
 	#tag Property, Flags = &h21

@@ -97,10 +97,104 @@ Protected Class VNSPDFReader
 		End Function
 	#tag EndMethod
 
+	#tag Method, Flags = &h0, Description = 5075626C6963206163636573736F7220666F72207468652050444620636174616C6F67206469637469696F6E6172792E
+		Function GetCatalog() As VNSPDFDictionary
+		  // Public accessor for the PDF catalog dictionary
+		  Return mCatalog
+		End Function
+	#tag EndMethod
+
 	#tag Method, Flags = &h0
 		Function GetError() As String
 		  // Get last error message
 		  Return mError
+		End Function
+	#tag EndMethod
+
+	#tag Method, Flags = &h0, Description = 4F70656E206120504446206672616D20696E2D6D656D6F727920737472696E6720646174612E
+		Function OpenData(pdfData As String) As Boolean
+		  // Open a PDF from in-memory string data
+		  mError = ""
+
+		  If pdfData = "" Then
+		    mError = "PDF data is empty"
+		    Return False
+		  End If
+
+		  // Convert string to MemoryBlock and create stream reader
+		  Dim mb As New MemoryBlock(pdfData.Bytes)
+		  mb.StringValue(0, pdfData.Bytes) = pdfData
+		  mReader = New VNSPDFStreamReader(mb)
+
+		  // Parse cross-reference table
+		  Dim xrefReader As New VNSPDFXrefReader
+		  mXref = xrefReader.Parse(mReader)
+		  If mXref = Nil Then
+		    mError = "Failed to parse cross-reference table"
+		    Return False
+		  End If
+
+		  // Get catalog from trailer
+		  If mXref.trailer = Nil Then
+		    mError = "Cross-reference table has no trailer"
+		    Return False
+		  End If
+
+		  Dim trailerDict As Dictionary = mXref.trailer.value
+
+		  // Try both "Root" and "/Root" key formats
+		  Dim rootKey As String = ""
+		  If trailerDict.HasKey("Root") Then
+		    rootKey = "Root"
+		  ElseIf trailerDict.HasKey("/Root") Then
+		    rootKey = "/Root"
+		  Else
+		    mError = "Trailer dictionary missing /Root entry"
+		    Return False
+		  End If
+
+		  // Root is an indirect reference to the catalog
+		  Dim rootRef As VNSPDFType = trailerDict.Value(rootKey)
+		  If Not (rootRef IsA VNSPDFIndirectObjectReference) Then
+		    mError = "Trailer /Root is not an indirect reference"
+		    Return False
+		  End If
+
+		  // Parse catalog object
+		  Dim catalogRef As VNSPDFIndirectObjectReference = VNSPDFIndirectObjectReference(rootRef)
+		  Dim catalogOffset As Int64 = mXref.GetObjectOffset(catalogRef.objectNumber)
+		  If catalogOffset = -1 Then
+		    mError = "Cannot find catalog object offset in xref table"
+		    Return False
+		  End If
+
+		  Dim parser As New VNSPDFParser
+		  parser.SetPDFReader(Self)
+		  Dim catalogObj As VNSPDFType = parser.ParseIndirectObject(mReader, catalogOffset)
+		  If Not (catalogObj IsA VNSPDFDictionary) Then
+		    mError = "Catalog object is not a dictionary"
+		    Return False
+		  End If
+
+		  mCatalog = VNSPDFDictionary(catalogObj)
+
+		  // Build complete page list in visual order
+		  Dim catalogDict As Dictionary = mCatalog.value
+		  If catalogDict.HasKey("Pages") Then
+		    Dim pagesRef As VNSPDFType = catalogDict.Value("Pages")
+		    If pagesRef IsA VNSPDFIndirectObjectReference Then
+		      Dim pagesRefObj As VNSPDFIndirectObjectReference = VNSPDFIndirectObjectReference(pagesRef)
+		      Dim pagesOffset As Int64 = mXref.GetObjectOffset(pagesRefObj.objectNumber)
+		      If pagesOffset <> -1 Then
+		        Dim pagesObj As VNSPDFType = parser.ParseIndirectObject(mReader, pagesOffset)
+		        If pagesObj IsA VNSPDFDictionary Then
+		          BuildPageList(VNSPDFDictionary(pagesObj))
+		        End If
+		      End If
+		    End If
+		  End If
+
+		  Return True
 		End Function
 	#tag EndMethod
 
@@ -109,8 +203,18 @@ Protected Class VNSPDFReader
 		  // Get a PDF object by its object number
 		  // objectNumber: The object number to retrieve
 		  // Returns: The parsed PDF object, or Nil if not found
+		  // Supports both direct objects and compressed objects in object streams (PDF 1.5+)
 
-		  // Get offset from cross-reference table
+		  // Check if this is a compressed object (type 2 xref entry)
+		  Dim entry As VNSPDFXrefEntry = mXref.GetEntry(objectNumber)
+		  If entry = Nil Or Not entry.inUse Then Return Nil
+
+		  If entry.compressedInStream >= 0 Then
+		    // Object is compressed inside an object stream
+		    Return GetObjectFromStream(entry.compressedInStream, entry.streamIndex)
+		  End If
+
+		  // Regular object - get offset from cross-reference table
 		  Dim offset As Int64 = mXref.GetObjectOffset(objectNumber)
 		  If offset = -1 Then
 		    Return Nil
@@ -122,6 +226,124 @@ Protected Class VNSPDFReader
 		  Dim obj As VNSPDFType = parser.ParseIndirectObject(mReader, offset)
 
 		  Return obj
+		End Function
+	#tag EndMethod
+
+	#tag Method, Flags = &h21
+		Private Function GetObjectFromStream(streamObjNumber As Integer, index As Integer) As VNSPDFType
+		  // Extract a compressed object from an object stream (ObjStm)
+		  // Object streams contain multiple objects compressed together
+		  // Format: N 0 obj << /Type /ObjStm /N count /First firstOffset /Length ... >> stream
+		  //   Header pairs: objNum1 offset1 objNum2 offset2 ...
+		  //   Then object data starting at /First offset
+
+		  // Get the object stream itself (must be a regular type 1 object)
+		  Dim streamOffset As Int64 = mXref.GetObjectOffset(streamObjNumber)
+		  If streamOffset = -1 Then Return Nil
+
+		  // Parse the object stream
+		  Dim parser As New VNSPDFParser
+		  parser.SetPDFReader(Self)
+		  Dim streamObj As VNSPDFType = parser.ParseIndirectObject(mReader, streamOffset)
+		  If Not (streamObj IsA VNSPDFStream) Then Return Nil
+
+		  Dim objStream As VNSPDFStream = VNSPDFStream(streamObj)
+		  Dim streamDict As Dictionary = objStream.dictionary.value
+
+		  // Get /N (number of objects) and /First (byte offset of first object data)
+		  Dim nKey As String = "N"
+		  If Not streamDict.HasKey(nKey) Then nKey = "/N"
+		  Dim objectCount As Integer = 0
+		  If streamDict.HasKey(nKey) And streamDict.Value(nKey) IsA VNSPDFNumeric Then
+		    objectCount = CType(VNSPDFNumeric(streamDict.Value(nKey)).value, Integer)
+		  End If
+		  If objectCount <= 0 Or index >= objectCount Then Return Nil
+
+		  Dim firstKey As String = "First"
+		  If Not streamDict.HasKey(firstKey) Then firstKey = "/First"
+		  Dim firstOffset As Integer = 0
+		  If streamDict.HasKey(firstKey) And streamDict.Value(firstKey) IsA VNSPDFNumeric Then
+		    firstOffset = CType(VNSPDFNumeric(streamDict.Value(firstKey)).value, Integer)
+		  End If
+
+		  // Get decoded stream data
+		  Dim decodedData As String = objStream.GetDecodedData()
+		  If decodedData = "" Then Return Nil
+
+		  // Parse header: pairs of (objNumber, byteOffset) relative to /First
+		  // Read header as tokens from the decoded data
+		  Dim headerMB As New MemoryBlock(firstOffset)
+		  headerMB.StringValue(0, firstOffset) = decodedData.Left(firstOffset)
+		  Dim headerReader As New VNSPDFStreamReader(headerMB)
+		  Dim headerTokenizer As New VNSPDFTokenizer(headerReader)
+
+		  Dim objOffsets() As Integer
+		  For i As Integer = 0 To objectCount - 1
+		    Dim objNumToken As String = headerTokenizer.GetNextToken()
+		    Dim objOffToken As String = headerTokenizer.GetNextToken()
+		    If objNumToken = "" Or objOffToken = "" Then Exit For i
+		    objOffsets.Add(Val(objOffToken))
+		  Next
+
+		  If index > objOffsets.LastIndex Then Return Nil
+
+		  // Calculate the start and end of the object data within the stream
+		  Dim objStart As Integer = firstOffset + objOffsets(index)
+		  Dim objEnd As Integer
+		  If index < objOffsets.LastIndex Then
+		    objEnd = firstOffset + objOffsets(index + 1)
+		  Else
+		    objEnd = decodedData.Length
+		  End If
+
+		  If objStart >= decodedData.Length Then Return Nil
+
+		  // Extract the object data and parse it
+		  Dim objData As String = decodedData.Middle(objStart, objEnd - objStart)
+		  Dim objMB As New MemoryBlock(objData.Bytes)
+		  objMB.StringValue(0, objData.Bytes) = objData
+		  Dim objReader As New VNSPDFStreamReader(objMB)
+		  Dim objTokenizer As New VNSPDFTokenizer(objReader)
+
+		  // Parse the first token to determine type
+		  Dim firstToken As String = objTokenizer.GetNextToken()
+		  If firstToken = "" Then Return Nil
+
+		  If firstToken = "<<" Then
+		    // Dictionary
+		    Return VNSPDFDictionary.Parse(objTokenizer)
+		  ElseIf firstToken = "[" Then
+		    // Array
+		    Return VNSPDFArray.Parse(objTokenizer)
+		  ElseIf firstToken = "(" Then
+		    // String
+		    Return VNSPDFString.Parse(objReader)
+		  ElseIf firstToken = "<" Then
+		    // Hex string
+		    Return VNSPDFHexString.Parse(objReader)
+		  ElseIf firstToken = "/" Then
+		    // Name
+		    Dim nameToken As String = objTokenizer.GetNextToken()
+		    Dim nameObj As New VNSPDFName
+		    nameObj.value = nameToken
+		    Return nameObj
+		  ElseIf firstToken = "true" Or firstToken = "false" Then
+		    Return VNSPDFBoolean.Create(firstToken = "true")
+		  ElseIf firstToken = "null" Then
+		    Return New VNSPDFNull
+		  Else
+		    // Number or indirect reference
+		    Dim nextToken As String = objTokenizer.GetNextToken()
+		    Dim thirdToken As String = objTokenizer.GetNextToken()
+		    If thirdToken = "R" Then
+		      Dim ref As New VNSPDFIndirectObjectReference
+		      ref.objectNumber = Val(firstToken)
+		      ref.generation = Val(nextToken)
+		      Return ref
+		    Else
+		      Return VNSPDFNumeric.Create(Val(firstToken))
+		    End If
+		  End If
 		End Function
 	#tag EndMethod
 

@@ -50,21 +50,12 @@ Inherits VNSPDFType
 		      // Nested dictionary
 		      valueObj = VNSPDFDictionary.Parse(tokenizer)
 		    ElseIf valueToken = "(" Then
-		      // Literal string
-		      Dim dummy As Integer = reader.ReadByte()  // Skip (
+		      // Literal string - tokenizer consumed '(', reader is positioned after it
 		      valueObj = VNSPDFString.Parse(reader)
 		    ElseIf valueToken = "<" Then
-		      // Check if it's << (already handled) or hex string
-		      Dim nextChar As String = tokenizer.GetNextToken()
-		      If nextChar = "<" Then
-		        // It's a dictionary
-		        valueObj = VNSPDFDictionary.Parse(tokenizer)
-		      Else
-		        // It's a hex string
-		        tokenizer.PushBack(nextChar)
-		        Dim dummy As Integer = reader.ReadByte()  // Skip <
-		        valueObj = VNSPDFHexString.Parse(reader)
-		      End If
+		      // Hex string - tokenizer already distinguished '<' from '<<'
+		      // Reader is positioned right after '<', at first hex digit
+		      valueObj = VNSPDFHexString.Parse(reader)
 		    ElseIf valueToken = "/" Then
 		      // Name - read the name token
 		      Dim nameToken As String = tokenizer.GetNextToken()

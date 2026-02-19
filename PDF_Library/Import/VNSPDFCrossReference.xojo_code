@@ -22,8 +22,9 @@ Protected Class VNSPDFCrossReference
 	#tag Method, Flags = &h0
 		Function GetObjectOffset(objectNumber As Integer) As Int64
 		  // Get byte offset for object ID
+		  // Returns -1 for free objects or compressed objects (type 2 in xref streams)
 		  Dim entry As VNSPDFXrefEntry = GetEntry(objectNumber)
-		  If entry <> Nil And entry.inUse Then
+		  If entry <> Nil And entry.inUse And entry.compressedInStream = -1 Then
 		    Return entry.offset
 		  Else
 		    Return -1
