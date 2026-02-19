@@ -253,6 +253,27 @@ End
 		  lstExamples.AddRow("Example 26", "Bug Tests: Geoff Bridges Windows bug report tests")
 		  lstExamples.CellTagAt(lstExamples.LastAddedRowIndex, 0) = VNSPDFExamplesModule.kExample26
 
+		  lstExamples.AddRow("Example 27", "HTML Import: Convert HTML file to PDF (Premium)")
+		  lstExamples.CellTagAt(lstExamples.LastAddedRowIndex, 0) = VNSPDFExamplesModule.kExample27
+
+		  lstExamples.AddRow("Example 28", "Markdown Import: Convert Markdown file to PDF (Premium)")
+		  lstExamples.CellTagAt(lstExamples.LastAddedRowIndex, 0) = VNSPDFExamplesModule.kExample28
+
+		  lstExamples.AddRow("Example 29", "GraphicsPath: Curves, arcs, round rectangles, clipping")
+		  lstExamples.CellTagAt(lstExamples.LastAddedRowIndex, 0) = VNSPDFExamplesModule.kExample29
+
+		  lstExamples.AddRow("Example 30", "E-Invoice: Factur-X/ZUGFeRD compliant PDF (Premium)")
+		  lstExamples.CellTagAt(lstExamples.LastAddedRowIndex, 0) = VNSPDFExamplesModule.kExample30
+
+		  lstExamples.AddRow("Example 31", "E-Invoice Checker: Open PDF to check Factur-X/ZUGFeRD conformity (Premium)")
+		  lstExamples.CellTagAt(lstExamples.LastAddedRowIndex, 0) = VNSPDFExamplesModule.kExample31
+
+		  lstExamples.AddRow("Example 32", "Digital Signatures: PAdES-B-B PDF signing + XAdES-BES XML signing (Premium)")
+		  lstExamples.CellTagAt(lstExamples.LastAddedRowIndex, 0) = VNSPDFExamplesModule.kExample32
+
+		  lstExamples.AddRow("Example 33", "Barcodes: QR Code, Code 128, EAN-13, Code 39, ITF, Codabar, PDF417, DataMatrix")
+		  lstExamples.CellTagAt(lstExamples.LastAddedRowIndex, 0) = VNSPDFExamplesModule.kExample33
+
 		  lstExamples.AddRow("Test Zlib", "Premium pure Xojo compression tests")
 		  lstExamples.CellTagAt(lstExamples.LastAddedRowIndex, 0) = VNSPDFExamplesModule.kTestZlib
 
@@ -270,7 +291,7 @@ End
 		    Dim result As Dictionary = VNSPDFExamplesModule.GenerateExample1()
 		    
 		    // Display status
-		    txtOutput.Text = txtOutput.Text + result.Value("status")
+		    txtOutput.Text = txtOutput.Text + result.Value("message")
 		    
 		    // Save PDF if generated successfully
 		    If result.HasKey("pdf") Then
@@ -301,7 +322,7 @@ End
 		  Try
 		    Dim result As Dictionary = VNSPDFExamplesModule.GenerateExample10()
 		    
-		    txtOutput.Text = txtOutput.Text + result.Value("status")
+		    txtOutput.Text = txtOutput.Text + result.Value("message")
 		    
 		    If result.HasKey("pdf") Then
 		      Dim pdfData As String = result.Value("pdf")
@@ -331,7 +352,7 @@ End
 		  Try
 		    Dim result As Dictionary = VNSPDFExamplesModule.GenerateExample11()
 		    
-		    txtOutput.Text = txtOutput.Text + result.Value("status")
+		    txtOutput.Text = txtOutput.Text + result.Value("message")
 		    
 		    If result.HasKey("pdf") Then
 		      Dim pdfData As String = result.Value("pdf")
@@ -361,7 +382,7 @@ End
 		  Try
 		    Dim result As Dictionary = VNSPDFExamplesModule.GenerateExample12()
 		    
-		    txtOutput.Text = txtOutput.Text + result.Value("status")
+		    txtOutput.Text = txtOutput.Text + result.Value("message")
 		    
 		    If result.HasKey("pdf") Then
 		      Dim pdfData As String = result.Value("pdf")
@@ -391,7 +412,7 @@ End
 		  Try
 		    Dim result As Dictionary = VNSPDFExamplesModule.GenerateExample13()
 		    
-		    txtOutput.Text = txtOutput.Text + result.Value("status")
+		    txtOutput.Text = txtOutput.Text + result.Value("message")
 		    
 		    If result.HasKey("pdf") Then
 		      Dim pdfData As String = result.Value("pdf")
@@ -433,7 +454,7 @@ End
 		  Try
 		    Dim result As Dictionary = VNSPDFExamplesModule.GenerateExample15()
 		    
-		    txtOutput.Text = txtOutput.Text + result.Value("status")
+		    txtOutput.Text = txtOutput.Text + result.Value("message")
 		    
 		    If result.HasKey("pdf") Then
 		      Dim pdfData As String = result.Value("pdf")
@@ -463,7 +484,7 @@ End
 		  Try
 		    Dim result As Dictionary = VNSPDFExamplesModule.GenerateExample16()
 		    
-		    txtOutput.Text = txtOutput.Text + result.Value("status")
+		    txtOutput.Text = txtOutput.Text + result.Value("message")
 		    
 		    If result.HasKey("pdf") Then
 		      Dim pdfData As String = result.Value("pdf")
@@ -493,7 +514,7 @@ End
 		  Try
 		    Dim result As Dictionary = VNSPDFExamplesModule.GenerateExample17()
 		    
-		    txtOutput.Text = txtOutput.Text + result.Value("status")
+		    txtOutput.Text = txtOutput.Text + result.Value("message")
 		    
 		    If result.HasKey("pdf") Then
 		      Dim pdfData As String = result.Value("pdf")
@@ -523,7 +544,7 @@ End
 		  Try
 		    Dim result As Dictionary = VNSPDFExamplesModule.GenerateExample18()
 		    
-		    txtOutput.Text = txtOutput.Text + result.Value("status")
+		    txtOutput.Text = txtOutput.Text + result.Value("message")
 		    
 		    If result.HasKey("pdf") Then
 		      Dim pdfData As String = result.Value("pdf")
@@ -553,7 +574,7 @@ End
 		  Try
 		    Dim result As Dictionary = VNSPDFExamplesModule.GenerateExample19()
 		    
-		    txtOutput.Text = txtOutput.Text + result.Value("status")
+		    txtOutput.Text = txtOutput.Text + result.Value("message")
 		    
 		    If result.HasKey("pdf") Then
 		      Dim pdfData As String = result.Value("pdf")
@@ -583,7 +604,7 @@ End
 		  Try
 		    Dim result As Dictionary = VNSPDFExamplesModule.GenerateExample2()
 		    
-		    txtOutput.Text = txtOutput.Text + result.Value("status")
+		    txtOutput.Text = txtOutput.Text + result.Value("message")
 		    
 		    If result.HasKey("pdf") Then
 		      Dim pdfData As String = result.Value("pdf")
@@ -615,6 +636,32 @@ End
 		  UploadDialog = New WebDialogPDFUpload
 		  AddHandler UploadDialog.Dismissed, AddressOf HandlePDFUploadDismissed
 		  UploadDialog.Show()
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h21
+		Private Sub GenerateExample27()
+		  txtOutput.Text = txtOutput.Text + "Generating Example 27: HTML Import..." + EndOfLine
+		  txtOutput.Text = txtOutput.Text + "Opening file upload dialog..." + EndOfLine + EndOfLine
+
+		  // Show text file upload dialog for HTML
+		  TextUploadDialog = New WebDialogTextUpload
+		  mPendingTextUploadExample = 27
+		  AddHandler TextUploadDialog.Dismissed, AddressOf HandleTextUploadDismissed
+		  TextUploadDialog.Show()
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h21
+		Private Sub GenerateExample28()
+		  txtOutput.Text = txtOutput.Text + "Generating Example 28: Markdown Import..." + EndOfLine
+		  txtOutput.Text = txtOutput.Text + "Opening file upload dialog..." + EndOfLine + EndOfLine
+
+		  // Show text file upload dialog for Markdown
+		  TextUploadDialog = New WebDialogTextUpload
+		  mPendingTextUploadExample = 28
+		  AddHandler TextUploadDialog.Dismissed, AddressOf HandleTextUploadDismissed
+		  TextUploadDialog.Show()
 		End Sub
 	#tag EndMethod
 
@@ -655,7 +702,7 @@ End
 		  Try
 		    Dim result As Dictionary = VNSPDFExamplesModule.GenerateExample22()
 
-		    txtOutput.Text = txtOutput.Text + result.Value("status").StringValue
+		    txtOutput.Text = txtOutput.Text + result.Value("message").StringValue
 
 		    If result.HasKey("pdf") Then
 		      Dim pdfData As String = result.Value("pdf").StringValue
@@ -685,7 +732,7 @@ End
 		  Try
 		    Dim result As Dictionary = VNSPDFExamplesModule.GenerateExample23()
 
-		    txtOutput.Text = txtOutput.Text + result.Value("status").StringValue
+		    txtOutput.Text = txtOutput.Text + result.Value("message").StringValue
 
 		    If result.HasKey("pdf") Then
 		      Dim pdfData As String = result.Value("pdf").StringValue
@@ -715,7 +762,7 @@ End
 		  Try
 		    Dim result As Dictionary = VNSPDFExamplesModule.GenerateExample24()
 
-		    txtOutput.Text = txtOutput.Text + result.Value("status").StringValue
+		    txtOutput.Text = txtOutput.Text + result.Value("message").StringValue
 
 		    If result.HasKey("pdf") Then
 		      Dim pdfData As String = result.Value("pdf").StringValue
@@ -770,6 +817,134 @@ End
 	#tag EndMethod
 
 	#tag Method, Flags = &h21
+		Private Sub GenerateExample29()
+		  // Call shared module function - GraphicsPath Features
+		  Dim result As Dictionary = VNSPDFExamplesModule.GenerateExample29()
+
+		  // Display message
+		  If result.HasKey("message") Then
+		    txtOutput.Text = txtOutput.Text + result.Value("message").StringValue
+		  End If
+
+		  // Prepare PDF for download if generated successfully
+		  If result.HasKey("pdf") Then
+		    Dim pdfData As String = result.Value("pdf").StringValue
+		    Dim filename As String = result.Value("filename").StringValue
+
+		    PDFFile = New WebFile
+		    PDFFile.Data = pdfData
+		    PDFFile.MIMEType = "application/pdf"
+		    PDFFile.ForceDownload = False
+		    PDFFile.Filename = filename
+
+		    txtOutput.Text = txtOutput.Text + "Success! PDF will be downloaded." + EndOfLine
+		    Call PDFFile.Download
+		  End If
+
+		  txtOutput.Text = txtOutput.Text + EndOfLine
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h21
+		Private Sub GenerateExample30()
+		  // Call shared module function - E-Invoice (Factur-X/ZUGFeRD)
+		  Dim result As Dictionary = VNSPDFExamplesModule.GenerateExample30()
+
+		  // Display message
+		  If result.HasKey("message") Then
+		    txtOutput.Text = txtOutput.Text + result.Value("message").StringValue
+		  End If
+
+		  // Prepare PDF for download if generated successfully
+		  If result.HasKey("pdf") Then
+		    Dim pdfData As String = result.Value("pdf").StringValue
+		    Dim filename As String = result.Value("filename").StringValue
+
+		    PDFFile = New WebFile
+		    PDFFile.Data = pdfData
+		    PDFFile.MIMEType = "application/pdf"
+		    PDFFile.ForceDownload = False
+		    PDFFile.Filename = filename
+
+		    txtOutput.Text = txtOutput.Text + "Success! PDF will be downloaded." + EndOfLine
+		    Call PDFFile.Download
+		  End If
+
+		  txtOutput.Text = txtOutput.Text + EndOfLine
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h21
+		Private Sub GenerateExample32_Web()
+		  // Call shared module function - Digital Signatures (PAdES + XAdES)
+		  Dim result As Dictionary = VNSPDFExamplesModule.GenerateExample32()
+
+		  // Display message
+		  If result.HasKey("message") Then
+		    txtOutput.Text = txtOutput.Text + result.Value("message").StringValue
+		  End If
+
+		  // Prepare PDF for download if generated successfully
+		  If result.HasKey("pdf") Then
+		    Dim pdfData As String = result.Value("pdf").StringValue
+		    Dim filename As String = result.Value("filename").StringValue
+
+		    PDFFile = New WebFile
+		    PDFFile.Data = pdfData
+		    PDFFile.MIMEType = "application/pdf"
+		    PDFFile.ForceDownload = False
+		    PDFFile.Filename = filename
+
+		    txtOutput.Text = txtOutput.Text + "Success! PDF will be downloaded." + EndOfLine
+		    Call PDFFile.Download
+		  End If
+
+		  txtOutput.Text = txtOutput.Text + EndOfLine
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h21
+		Private Sub GenerateExample33_Web()
+		  // Call shared module function - Barcodes
+		  Dim result As Dictionary = VNSPDFExamplesModule.GenerateExample33_Barcodes()
+
+		  // Display message
+		  If result.HasKey("message") Then
+		    txtOutput.Text = txtOutput.Text + result.Value("message").StringValue
+		  End If
+
+		  // Prepare PDF for download if generated successfully
+		  If result.HasKey("pdf") Then
+		    Dim pdfData As String = result.Value("pdf").StringValue
+		    Dim filename As String = result.Value("filename").StringValue
+
+		    PDFFile = New WebFile
+		    PDFFile.Data = pdfData
+		    PDFFile.MIMEType = "application/pdf"
+		    PDFFile.ForceDownload = False
+		    PDFFile.Filename = filename
+
+		    txtOutput.Text = txtOutput.Text + "Success! PDF will be downloaded." + EndOfLine
+		    Call PDFFile.Download
+		  End If
+
+		  txtOutput.Text = txtOutput.Text + EndOfLine
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h21
+		Private Sub GenerateExample31()
+		  txtOutput.Text = txtOutput.Text + "Example 31: E-Invoice Checker..." + EndOfLine
+		  txtOutput.Text = txtOutput.Text + "Opening file upload dialog..." + EndOfLine + EndOfLine
+
+		  // Show PDF upload dialog for e-invoice checking
+		  UploadDialog = New WebDialogPDFUpload
+		  AddHandler UploadDialog.Dismissed, AddressOf HandleEInvoiceCheckDismissed
+		  UploadDialog.Show()
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h21
 		Private Sub RunTestZlib()
 		  // Run Zlib premium compression tests
 		  txtOutput.Text = txtOutput.Text + "Running Zlib Premium Tests..." + EndOfLine + EndOfLine
@@ -814,7 +989,7 @@ End
 		  Try
 		    Dim result As Dictionary = VNSPDFExamplesModule.GenerateExample3()
 		    
-		    txtOutput.Text = txtOutput.Text + result.Value("status")
+		    txtOutput.Text = txtOutput.Text + result.Value("message")
 		    
 		    If result.HasKey("pdf") Then
 		      Dim pdfData As String = result.Value("pdf")
@@ -844,7 +1019,7 @@ End
 		  Try
 		    Dim result As Dictionary = VNSPDFExamplesModule.GenerateExample4()
 		    
-		    txtOutput.Text = txtOutput.Text + result.Value("status")
+		    txtOutput.Text = txtOutput.Text + result.Value("message")
 		    
 		    If result.HasKey("pdf") Then
 		      Dim pdfData As String = result.Value("pdf")
@@ -874,7 +1049,7 @@ End
 		  Try
 		    Dim result As Dictionary = VNSPDFExamplesModule.GenerateExample5()
 		    
-		    txtOutput.Text = txtOutput.Text + result.Value("status")
+		    txtOutput.Text = txtOutput.Text + result.Value("message")
 		    
 		    If result.HasKey("pdf") Then
 		      Dim pdfData As String = result.Value("pdf")
@@ -904,7 +1079,7 @@ End
 		  Try
 		    Dim result As Dictionary = VNSPDFExamplesModule.GenerateExample6()
 		    
-		    txtOutput.Text = txtOutput.Text + result.Value("status")
+		    txtOutput.Text = txtOutput.Text + result.Value("message")
 		    
 		    If result.HasKey("pdf") Then
 		      Dim pdfData As String = result.Value("pdf")
@@ -934,7 +1109,7 @@ End
 		  Try
 		    Dim result As Dictionary = VNSPDFExamplesModule.GenerateExample7()
 		    
-		    txtOutput.Text = txtOutput.Text + result.Value("status")
+		    txtOutput.Text = txtOutput.Text + result.Value("message")
 		    
 		    If result.HasKey("pdf") Then
 		      Dim pdfData As String = result.Value("pdf")
@@ -964,7 +1139,7 @@ End
 		  Try
 		    Dim result As Dictionary = VNSPDFExamplesModule.GenerateExample8()
 		    
-		    txtOutput.Text = txtOutput.Text + result.Value("status")
+		    txtOutput.Text = txtOutput.Text + result.Value("message")
 		    
 		    If result.HasKey("pdf") Then
 		      Dim pdfData As String = result.Value("pdf")
@@ -994,7 +1169,7 @@ End
 		  Try
 		    Dim result As Dictionary = VNSPDFExamplesModule.GenerateExample9()
 		    
-		    txtOutput.Text = txtOutput.Text + result.Value("status")
+		    txtOutput.Text = txtOutput.Text + result.Value("message")
 		    
 		    If result.HasKey("pdf") Then
 		      Dim pdfData As String = result.Value("pdf")
@@ -1033,7 +1208,7 @@ End
 		    // Call with the uploaded PDF path
 		    Dim result As Dictionary = VNSPDFExamplesModule.GenerateExample20(UploadDialog.UploadedFilePath)
 		    
-		    txtOutput.Text = txtOutput.Text + result.Value("status")
+		    txtOutput.Text = txtOutput.Text + result.Value("message")
 		    
 		    If result.HasKey("pdf") Then
 		      Dim pdfData As String = result.Value("pdf")
@@ -1052,6 +1227,102 @@ End
 		    txtOutput.Text = txtOutput.Text + "Error: " + e.Message + EndOfLine
 		  End Try
 		  
+		  txtOutput.Text = txtOutput.Text + EndOfLine
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h21
+		Private Sub HandleTextUploadDismissed(dialog As WebDialog)
+		  #Pragma Unused dialog
+
+		  // Check if user cancelled
+		  If TextUploadDialog.UserCancelled Then
+		    If mPendingTextUploadExample = 27 Then
+		      txtOutput.Text = txtOutput.Text + "Example 27: Cancelled by user." + EndOfLine + EndOfLine
+		    Else
+		      txtOutput.Text = txtOutput.Text + "Example 28: Cancelled by user." + EndOfLine + EndOfLine
+		    End If
+		    Return
+		  End If
+
+		  // Read text content from uploaded file path
+		  Dim fileContent As String
+		  Try
+		    Dim f As New FolderItem(TextUploadDialog.UploadedFilePath)
+		    Dim tis As TextInputStream = TextInputStream.Open(f)
+		    tis.Encoding = Encodings.UTF8
+		    fileContent = tis.ReadAll()
+		    tis.Close()
+		  Catch e As IOException
+		    txtOutput.Text = txtOutput.Text + "Error reading uploaded file: " + e.Message + EndOfLine + EndOfLine
+		    Return
+		  End Try
+
+		  Try
+		    Dim result As Dictionary
+
+		    If mPendingTextUploadExample = 27 Then
+		      txtOutput.Text = txtOutput.Text + "Generating Example 27: HTML Import from uploaded file..." + EndOfLine
+		      result = VNSPDFExamplesModule.GenerateExample27_HTMLImport(fileContent)
+		    Else
+		      txtOutput.Text = txtOutput.Text + "Generating Example 28: Markdown Import from uploaded file..." + EndOfLine
+		      result = VNSPDFExamplesModule.GenerateExample28_MarkdownImport(fileContent)
+		    End If
+
+		    txtOutput.Text = txtOutput.Text + result.Value("message")
+
+		    If result.HasKey("pdf") Then
+		      Dim pdfData As String = result.Value("pdf")
+		      Dim filename As String = result.Value("filename")
+
+		      PDFFile = New WebFile
+		      PDFFile.Data = pdfData
+		      PDFFile.MIMEType = "application/pdf"
+		      PDFFile.ForceDownload = False
+		      PDFFile.Filename = filename
+
+		      txtOutput.Text = txtOutput.Text + "Success! PDF will be downloaded." + EndOfLine
+		      Call PDFFile.Download
+		    End If
+		  Catch e As RuntimeException
+		    txtOutput.Text = txtOutput.Text + "Error: " + e.Message + EndOfLine
+		  End Try
+
+		  txtOutput.Text = txtOutput.Text + EndOfLine
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h21
+		Private Sub HandleEInvoiceCheckDismissed(dialog As WebDialog)
+		  #Pragma Unused dialog
+
+		  // Check if user cancelled
+		  If UploadDialog.UserCancelled Then
+		    txtOutput.Text = txtOutput.Text + "Example 31: Cancelled by user." + EndOfLine + EndOfLine
+		    Return
+		  End If
+
+		  Try
+		    // Read PDF data from uploaded file
+		    Dim f As New FolderItem(UploadDialog.UploadedFilePath)
+		    Dim bis As BinaryStream = BinaryStream.Open(f)
+		    Dim pdfData As String = bis.Read(bis.Length)
+		    bis.Close()
+
+		    txtOutput.Text = txtOutput.Text + "Checking uploaded PDF for e-invoice conformity..." + EndOfLine
+
+		    // Call the checker method with PDF data
+		    Dim result As Dictionary = VNSPDFExamplesModule.GenerateExample31_CheckEInvoice(pdfData)
+
+		    // Display the results
+		    If result.HasKey("message") Then
+		      txtOutput.Text = txtOutput.Text + result.Value("message").StringValue
+		    End If
+
+		  Catch e As RuntimeException
+		    txtOutput.Text = txtOutput.Text + "Error: " + e.Message + EndOfLine
+		  End Try
+
 		  txtOutput.Text = txtOutput.Text + EndOfLine
 		End Sub
 	#tag EndMethod
@@ -1084,7 +1355,7 @@ End
 		    Dim result As Dictionary = VNSPDFExamplesModule.GenerateExample14(revision, userPassword, ownerPassword, _
 		    allowPrint, allowModify, allowCopy, allowAnnotate, allowFillForms, allowExtract, allowAssemble, allowPrintHighQuality)
 		    
-		    txtOutput.Text = txtOutput.Text + result.Value("status")
+		    txtOutput.Text = txtOutput.Text + result.Value("message")
 		    
 		    If result.HasKey("pdf") Then
 		      Dim pdfData As String = result.Value("pdf")
@@ -1118,6 +1389,14 @@ End
 
 	#tag Property, Flags = &h21
 		Private UploadDialog As WebDialogPDFUpload
+	#tag EndProperty
+
+	#tag Property, Flags = &h21
+		Private TextUploadDialog As WebDialogTextUpload
+	#tag EndProperty
+
+	#tag Property, Flags = &h21
+		Private mPendingTextUploadExample As Integer
 	#tag EndProperty
 
 
@@ -1192,6 +1471,20 @@ End
 		    GenerateExample24()
 		  Case VNSPDFExamplesModule.kExample26
 		    GenerateExample26()
+		  Case VNSPDFExamplesModule.kExample27
+		    GenerateExample27()
+		  Case VNSPDFExamplesModule.kExample28
+		    GenerateExample28()
+		  Case VNSPDFExamplesModule.kExample29
+		    GenerateExample29()
+		  Case VNSPDFExamplesModule.kExample30
+		    GenerateExample30()
+		  Case VNSPDFExamplesModule.kExample31
+		    GenerateExample31()
+		  Case VNSPDFExamplesModule.kExample32
+		    GenerateExample32_Web()
+		  Case VNSPDFExamplesModule.kExample33
+		    GenerateExample33_Web()
 		  Case VNSPDFExamplesModule.kTestZlib
 		    RunTestZlib()
 		  Case VNSPDFExamplesModule.kTestAES

@@ -77,7 +77,7 @@ Begin DesktopWindow WindowMain
       AllowAutoDeactivate=   True
       Bold            =   False
       Cancel          =   False
-      Caption         =   "Run Example"
+      Caption         =   "Run Example (Save to Desktop)"
       Default         =   True
       Enabled         =   True
       FontName        =   "System"
@@ -90,19 +90,50 @@ Begin DesktopWindow WindowMain
       LockBottom      =   False
       LockedInPosition=   False
       LockLeft        =   True
-      LockRight       =   True
+      LockRight       =   False
       LockTop         =   True
       MacButtonStyle  =   0
       Scope           =   0
       TabIndex        =   1
       TabPanelIndex   =   0
       TabStop         =   True
-      Tooltip         =   ""
+      Tooltip         =   "Generate the PDF and save it to the Desktop"
       Top             =   462
       Transparent     =   False
       Underline       =   False
       Visible         =   True
-      Width           =   860
+      Width           =   420
+   End
+   Begin DesktopButton btnPreviewExample
+      AllowAutoDeactivate=   True
+      Bold            =   False
+      Cancel          =   False
+      Caption         =   "Preview Example"
+      Default         =   False
+      Enabled         =   True
+      FontName        =   "System"
+      FontSize        =   0.0
+      FontUnit        =   0
+      Height          =   32
+      Index           =   -2147483648
+      Italic          =   False
+      Left            =   460
+      LockBottom      =   False
+      LockedInPosition=   False
+      LockLeft        =   False
+      LockRight       =   True
+      LockTop         =   True
+      MacButtonStyle  =   0
+      Scope           =   0
+      TabIndex        =   3
+      TabPanelIndex   =   0
+      TabStop         =   True
+      Tooltip         =   "Generate the PDF and show a preview with Save/Print options"
+      Top             =   462
+      Transparent     =   False
+      Underline       =   False
+      Visible         =   True
+      Width           =   420
    End
    Begin DesktopTextArea txtOutput
       AllowAutoDeactivate=   True
@@ -239,12 +270,33 @@ End
 		  
 		  lstExamples.AddRow("Example 23", "File Attachments: Document-level and page annotations")
 		  lstExamples.CellTagAt(lstExamples.LastAddedRowIndex, 0) = VNSPDFExamplesModule.kExample23
-
+		  
 		  lstExamples.AddRow("Example 24", "PDF Forms: All 9 control types (Premium)")
 		  lstExamples.CellTagAt(lstExamples.LastAddedRowIndex, 0) = VNSPDFExamplesModule.kExample24
-
+		  
 		  lstExamples.AddRow("Example 26", "Bug Tests: Geoff Bridges Windows bug report tests")
 		  lstExamples.CellTagAt(lstExamples.LastAddedRowIndex, 0) = VNSPDFExamplesModule.kExample26
+		  
+		  lstExamples.AddRow("Example 27", "HTML Import: Convert HTML file to PDF (Premium)")
+		  lstExamples.CellTagAt(lstExamples.LastAddedRowIndex, 0) = VNSPDFExamplesModule.kExample27
+		  
+		  lstExamples.AddRow("Example 28", "Markdown Import: Convert Markdown file to PDF (Premium)")
+		  lstExamples.CellTagAt(lstExamples.LastAddedRowIndex, 0) = VNSPDFExamplesModule.kExample28
+		  
+		  lstExamples.AddRow("Example 29", "GraphicsPath: Curves, arcs, round rectangles, clipping")
+		  lstExamples.CellTagAt(lstExamples.LastAddedRowIndex, 0) = VNSPDFExamplesModule.kExample29
+		  
+		  lstExamples.AddRow("Example 30", "E-Invoice: Factur-X/ZUGFeRD compliant PDF (Premium)")
+		  lstExamples.CellTagAt(lstExamples.LastAddedRowIndex, 0) = VNSPDFExamplesModule.kExample30
+		  
+		  lstExamples.AddRow("Example 31", "E-Invoice Checker: Open PDF to check Factur-X/ZUGFeRD conformity (Premium)")
+		  lstExamples.CellTagAt(lstExamples.LastAddedRowIndex, 0) = VNSPDFExamplesModule.kExample31
+		  
+		  lstExamples.AddRow("Example 32", "Digital Signatures: PAdES-B-B PDF signing + XAdES-BES XML signing (Premium)")
+		  lstExamples.CellTagAt(lstExamples.LastAddedRowIndex, 0) = VNSPDFExamplesModule.kExample32
+
+		  lstExamples.AddRow("Example 33", "Barcodes: QR Code, Code 128, EAN-13, Code 39, ITF, Codabar, PDF417, DataMatrix")
+		  lstExamples.CellTagAt(lstExamples.LastAddedRowIndex, 0) = VNSPDFExamplesModule.kExample33
 
 		  lstExamples.AddRow("Test Zlib", "Premium pure Xojo compression tests")
 		  lstExamples.CellTagAt(lstExamples.LastAddedRowIndex, 0) = VNSPDFExamplesModule.kTestZlib
@@ -261,7 +313,7 @@ End
 		  Dim result As Dictionary = VNSPDFExamplesModule.GenerateExample1()
 		  
 		  // Display status
-		  txtOutput.Text = txtOutput.Text + result.Value("status").StringValue
+		  txtOutput.Text = txtOutput.Text + result.Value("message").StringValue
 		  
 		  // Save to file if successful
 		  If result.HasKey("pdf") Then
@@ -287,7 +339,7 @@ End
 		  Dim result As Dictionary = VNSPDFExamplesModule.GenerateExample10()
 		  
 		  // Display status
-		  txtOutput.Text = txtOutput.Text + result.Value("status")
+		  txtOutput.Text = txtOutput.Text + result.Value("message")
 		  
 		  // Save PDF if generated successfully
 		  If result.HasKey("pdf") Then
@@ -316,7 +368,7 @@ End
 		  Dim result As Dictionary = VNSPDFExamplesModule.GenerateExample11()
 		  
 		  // Display status
-		  txtOutput.Text = txtOutput.Text + result.Value("status")
+		  txtOutput.Text = txtOutput.Text + result.Value("message")
 		  
 		  // Save PDF if generated successfully
 		  If result.HasKey("pdf") Then
@@ -345,7 +397,7 @@ End
 		  Dim result As Dictionary = VNSPDFExamplesModule.GenerateExample12()
 		  
 		  // Display status
-		  txtOutput.Text = txtOutput.Text + result.Value("status")
+		  txtOutput.Text = txtOutput.Text + result.Value("message")
 		  
 		  // Save PDF if generated successfully
 		  If result.HasKey("pdf") Then
@@ -374,7 +426,7 @@ End
 		  Dim result As Dictionary = VNSPDFExamplesModule.GenerateExample13()
 		  
 		  // Display status
-		  txtOutput.Text = txtOutput.Text + result.Value("status")
+		  txtOutput.Text = txtOutput.Text + result.Value("message")
 		  
 		  // Save PDF if generated successfully
 		  If result.HasKey("pdf") Then
@@ -431,7 +483,7 @@ End
 		    allowPrint, allowModify, allowCopy, allowAnnotate, allowFillForms, allowExtract, allowAssemble, allowPrintHighQuality)
 		    
 		    // Display status
-		    txtOutput.Text = txtOutput.Text + result.Value("status")
+		    txtOutput.Text = txtOutput.Text + result.Value("message")
 		    
 		    // Save PDF if generated successfully
 		    If result.HasKey("pdf") Then
@@ -466,7 +518,7 @@ End
 		  Dim result As Dictionary = VNSPDFExamplesModule.GenerateExample15()
 		  
 		  // Display status
-		  txtOutput.Text = txtOutput.Text + result.Value("status")
+		  txtOutput.Text = txtOutput.Text + result.Value("message")
 		  
 		  // Save PDF if generated successfully
 		  If result.HasKey("pdf") Then
@@ -495,7 +547,7 @@ End
 		  Dim result As Dictionary = VNSPDFExamplesModule.GenerateExample16()
 		  
 		  // Display status
-		  txtOutput.Text = txtOutput.Text + result.Value("status")
+		  txtOutput.Text = txtOutput.Text + result.Value("message")
 		  
 		  // Save PDF if generated successfully
 		  If result.HasKey("pdf") Then
@@ -524,7 +576,7 @@ End
 		  Dim result As Dictionary = VNSPDFExamplesModule.GenerateExample17()
 		  
 		  // Display status
-		  txtOutput.Text = txtOutput.Text + result.Value("status")
+		  txtOutput.Text = txtOutput.Text + result.Value("message")
 		  
 		  // Save PDF if generated successfully
 		  If result.HasKey("pdf") Then
@@ -553,7 +605,7 @@ End
 		  Dim result As Dictionary = VNSPDFExamplesModule.GenerateExample18()
 		  
 		  // Display status
-		  txtOutput.Text = txtOutput.Text + result.Value("status")
+		  txtOutput.Text = txtOutput.Text + result.Value("message")
 		  
 		  // Save PDF if generated successfully
 		  If result.HasKey("pdf") Then
@@ -582,7 +634,7 @@ End
 		  Dim result As Dictionary = VNSPDFExamplesModule.GenerateExample19()
 		  
 		  // Display status
-		  txtOutput.Text = txtOutput.Text + result.Value("status")
+		  txtOutput.Text = txtOutput.Text + result.Value("message")
 		  
 		  // Save PDF if generated successfully
 		  If result.HasKey("pdf") Then
@@ -611,7 +663,7 @@ End
 		  Dim result As Dictionary = VNSPDFExamplesModule.GenerateExample2()
 		  
 		  // Display status
-		  txtOutput.Text = txtOutput.Text + result.Value("status")
+		  txtOutput.Text = txtOutput.Text + result.Value("message")
 		  
 		  // Save PDF if generated successfully
 		  If result.HasKey("pdf") Then
@@ -651,7 +703,7 @@ End
 		  Dim result As Dictionary = VNSPDFExamplesModule.GenerateExample20(selectedFile.NativePath)
 		  
 		  // Display status
-		  txtOutput.Text = txtOutput.Text + result.Value("status")
+		  txtOutput.Text = txtOutput.Text + result.Value("message")
 		  
 		  // Save PDF if generated successfully
 		  If result.HasKey("pdf") Then
@@ -680,7 +732,7 @@ End
 		  Dim result As Dictionary = VNSPDFExamplesModule.GenerateExample21()
 		  
 		  // Display status
-		  txtOutput.Text = txtOutput.Text + result.Value("status")
+		  txtOutput.Text = txtOutput.Text + result.Value("message")
 		  
 		  // Save PDF if generated successfully
 		  If result.HasKey("pdf") Then
@@ -709,7 +761,7 @@ End
 		  Dim result As Dictionary = VNSPDFExamplesModule.GenerateExample22()
 		  
 		  // Display status
-		  txtOutput.Text = txtOutput.Text + result.Value("status")
+		  txtOutput.Text = txtOutput.Text + result.Value("message")
 		  
 		  // Note: Example 22 generates TWO PDFs (native Xojo and wrapper)
 		  // Both are saved by the shared module function
@@ -725,7 +777,7 @@ End
 		  Dim result As Dictionary = VNSPDFExamplesModule.GenerateExample23()
 		  
 		  // Display status
-		  txtOutput.Text = txtOutput.Text + result.Value("status").StringValue
+		  txtOutput.Text = txtOutput.Text + result.Value("message").StringValue
 		  
 		  // Save PDF if generated successfully
 		  If result.HasKey("pdf") Then
@@ -754,7 +806,7 @@ End
 		  Dim result As Dictionary = VNSPDFExamplesModule.GenerateExample24()
 		  
 		  // Display status
-		  txtOutput.Text = txtOutput.Text + result.Value("status").StringValue
+		  txtOutput.Text = txtOutput.Text + result.Value("message").StringValue
 		  
 		  // Save PDF if generated successfully
 		  If result.HasKey("pdf") Then
@@ -781,19 +833,19 @@ End
 		Private Sub GenerateExample26()
 		  // Call shared module function - Bug Tests
 		  Dim result As Dictionary = VNSPDFExamplesModule.GenerateExample26_BugTests()
-
+		  
 		  // Display message (contains all status info)
 		  If result.HasKey("message") Then
 		    txtOutput.Text = txtOutput.Text + result.Value("message").StringValue
 		  End If
-
+		  
 		  // Save PDF to desktop if generated successfully
 		  If result.HasKey("success") And result.Value("success").BooleanValue And result.HasKey("pdf") Then
 		    Dim pdfData As String = result.Value("pdf").StringValue
 		    Dim filename As String = result.Value("filename").StringValue
 		    Dim desktop As FolderItem = SpecialFolder.Desktop
 		    Dim pdfFile As FolderItem = desktop.Child(filename)
-
+		    
 		    Try
 		      Dim stream As BinaryStream = BinaryStream.Create(pdfFile, True)
 		      stream.Write(pdfData)
@@ -807,18 +859,41 @@ End
 		  Else
 		    txtOutput.Text = txtOutput.Text + "Test generation failed." + EndOfLine
 		  End If
-
+		  
 		  txtOutput.Text = txtOutput.Text + EndOfLine
 		End Sub
 	#tag EndMethod
 
 	#tag Method, Flags = &h21
-		Private Sub GenerateExample3()
-		  // Call shared module function
-		  Dim result As Dictionary = VNSPDFExamplesModule.GenerateExample3()
+		Private Sub GenerateExample27()
+		  // Show file picker to choose HTML file
+		  Dim dlg As New OpenFileDialog
+		  dlg.Title = "Choose HTML file to import"
+		  dlg.Filter = "HTML Files (*.html;*.htm)|*.html;*.htm|All Files (*.*)|*.*"
+		  
+		  Dim selectedFile As FolderItem = dlg.ShowModal()
+		  If selectedFile = Nil Then
+		    txtOutput.Text = txtOutput.Text + "Example 27: Cancelled - No HTML file selected" + EndOfLine + EndOfLine
+		    Return
+		  End If
+		  
+		  // Read file content
+		  Dim htmlContent As String
+		  Try
+		    Dim tis As TextInputStream = TextInputStream.Open(selectedFile)
+		    tis.Encoding = Encodings.UTF8
+		    htmlContent = tis.ReadAll()
+		    tis.Close()
+		  Catch e As IOException
+		    txtOutput.Text = txtOutput.Text + "Error reading file: " + e.Message + EndOfLine + EndOfLine
+		    Return
+		  End Try
+		  
+		  // Call shared module function with file content
+		  Dim result As Dictionary = VNSPDFExamplesModule.GenerateExample27_HTMLImport(htmlContent)
 		  
 		  // Display status
-		  txtOutput.Text = txtOutput.Text + result.Value("status")
+		  txtOutput.Text = txtOutput.Text + result.Value("message")
 		  
 		  // Save PDF if generated successfully
 		  If result.HasKey("pdf") Then
@@ -842,12 +917,253 @@ End
 	#tag EndMethod
 
 	#tag Method, Flags = &h21
+		Private Sub GenerateExample28()
+		  // Show file picker to choose Markdown file
+		  Dim dlg As New OpenFileDialog
+		  dlg.Title = "Choose Markdown file to import"
+		  dlg.Filter = "Markdown Files (*.md;*.markdown)|*.md;*.markdown|Text Files (*.txt)|*.txt|All Files (*.*)|*.*"
+		  
+		  Dim selectedFile As FolderItem = dlg.ShowModal()
+		  If selectedFile = Nil Then
+		    txtOutput.Text = txtOutput.Text + "Example 28: Cancelled - No Markdown file selected" + EndOfLine + EndOfLine
+		    Return
+		  End If
+		  
+		  // Read file content
+		  Dim mdContent As String
+		  Try
+		    Dim tis As TextInputStream = TextInputStream.Open(selectedFile)
+		    tis.Encoding = Encodings.UTF8
+		    mdContent = tis.ReadAll()
+		    tis.Close()
+		  Catch e As IOException
+		    txtOutput.Text = txtOutput.Text + "Error reading file: " + e.Message + EndOfLine + EndOfLine
+		    Return
+		  End Try
+		  
+		  // Call shared module function with file content
+		  Dim result As Dictionary = VNSPDFExamplesModule.GenerateExample28_MarkdownImport(mdContent)
+		  
+		  // Display status
+		  txtOutput.Text = txtOutput.Text + result.Value("message")
+		  
+		  // Save PDF if generated successfully
+		  If result.HasKey("pdf") Then
+		    Dim pdfData As String = result.Value("pdf")
+		    Dim filename As String = result.Value("filename")
+		    Dim desktop As FolderItem = SpecialFolder.Desktop
+		    Dim pdfFile As FolderItem = desktop.Child(filename)
+		    
+		    Try
+		      Dim stream As BinaryStream = BinaryStream.Create(pdfFile, True)
+		      stream.Write(pdfData)
+		      stream.Close()
+		      txtOutput.Text = txtOutput.Text + "Success! PDF saved to: " + pdfFile.NativePath + EndOfLine
+		    Catch e As IOException
+		      txtOutput.Text = txtOutput.Text + "Error saving PDF: " + e.Message + EndOfLine
+		    End Try
+		  End If
+		  
+		  txtOutput.Text = txtOutput.Text + EndOfLine
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h21
+		Private Sub GenerateExample29()
+		  // Call shared module function - GraphicsPath Features
+		  Dim result As Dictionary = VNSPDFExamplesModule.GenerateExample29()
+		  
+		  // Display status
+		  If result.HasKey("message") Then
+		    txtOutput.Text = txtOutput.Text + result.Value("message").StringValue
+		  End If
+		  
+		  // Save PDF to desktop if generated successfully
+		  If result.HasKey("pdf") Then
+		    Dim pdfData As String = result.Value("pdf").StringValue
+		    Dim filename As String = result.Value("filename").StringValue
+		    Dim desktop As FolderItem = SpecialFolder.Desktop
+		    Dim pdfFile As FolderItem = desktop.Child(filename)
+		    
+		    Try
+		      Dim stream As BinaryStream = BinaryStream.Create(pdfFile, True)
+		      stream.Write(pdfData)
+		      stream.Close()
+		      txtOutput.Text = txtOutput.Text + "PDF saved to Desktop: " + pdfFile.NativePath + EndOfLine
+		    Catch e As IOException
+		      txtOutput.Text = txtOutput.Text + "Error saving PDF to desktop: " + e.Message + EndOfLine
+		    End Try
+		  End If
+		  
+		  txtOutput.Text = txtOutput.Text + EndOfLine
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h21
+		Private Sub GenerateExample3()
+		  // Call shared module function
+		  Dim result As Dictionary = VNSPDFExamplesModule.GenerateExample3()
+		  
+		  // Display status
+		  txtOutput.Text = txtOutput.Text + result.Value("message")
+		  
+		  // Save PDF if generated successfully
+		  If result.HasKey("pdf") Then
+		    Dim pdfData As String = result.Value("pdf")
+		    Dim filename As String = result.Value("filename")
+		    Dim desktop As FolderItem = SpecialFolder.Desktop
+		    Dim pdfFile As FolderItem = desktop.Child(filename)
+		    
+		    Try
+		      Dim stream As BinaryStream = BinaryStream.Create(pdfFile, True)
+		      stream.Write(pdfData)
+		      stream.Close()
+		      txtOutput.Text = txtOutput.Text + "Success! PDF saved to: " + pdfFile.NativePath + EndOfLine
+		    Catch e As IOException
+		      txtOutput.Text = txtOutput.Text + "Error saving PDF: " + e.Message + EndOfLine
+		    End Try
+		  End If
+		  
+		  txtOutput.Text = txtOutput.Text + EndOfLine
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h21
+		Private Sub GenerateExample30()
+		  // Call shared module function - E-Invoice (Factur-X/ZUGFeRD)
+		  Dim result As Dictionary = VNSPDFExamplesModule.GenerateExample30()
+		  
+		  // Display status
+		  If result.HasKey("message") Then
+		    txtOutput.Text = txtOutput.Text + result.Value("message").StringValue
+		  End If
+		  
+		  // Save PDF to desktop if generated successfully
+		  If result.HasKey("pdf") Then
+		    Dim pdfData As String = result.Value("pdf").StringValue
+		    Dim filename As String = result.Value("filename").StringValue
+		    Dim desktop As FolderItem = SpecialFolder.Desktop
+		    Dim pdfFile As FolderItem = desktop.Child(filename)
+		    
+		    Try
+		      Dim stream As BinaryStream = BinaryStream.Create(pdfFile, True)
+		      stream.Write(pdfData)
+		      stream.Close()
+		      txtOutput.Text = txtOutput.Text + "PDF saved to Desktop: " + pdfFile.NativePath + EndOfLine
+		    Catch e As IOException
+		      txtOutput.Text = txtOutput.Text + "Error saving PDF to desktop: " + e.Message + EndOfLine
+		    End Try
+		  End If
+		  
+		  txtOutput.Text = txtOutput.Text + EndOfLine
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h21
+		Private Sub GenerateExample31()
+		  // Open file dialog for PDF
+		  Dim dlg As New OpenFileDialog
+		  dlg.Title = "Select a PDF file to check for e-invoice conformity"
+		  dlg.Filter = "PDF Files (*.pdf)|*.pdf|All Files (*.*)|*.*"
+		  
+		  Dim f As FolderItem = dlg.ShowModal(Self)
+		  If f = Nil Or Not f.Exists Then
+		    txtOutput.Text = txtOutput.Text + "Example 31: No file selected." + EndOfLine + EndOfLine
+		    Return
+		  End If
+		  
+		  // Read PDF data
+		  Dim pdfData As String
+		  Try
+		    Dim bs As BinaryStream = BinaryStream.Open(f)
+		    pdfData = bs.Read(bs.Length)
+		    bs.Close()
+		  Catch e As IOException
+		    txtOutput.Text = txtOutput.Text + "Error reading PDF file: " + e.Message + EndOfLine + EndOfLine
+		    Return
+		  End Try
+		  
+		  // Call shared module function to check e-invoice conformity
+		  Dim result As Dictionary = VNSPDFExamplesModule.GenerateExample31_CheckEInvoice(pdfData)
+		  
+		  // Display results
+		  If result.HasKey("message") Then
+		    txtOutput.Text = txtOutput.Text + result.Value("message").StringValue
+		  End If
+		  
+		  txtOutput.Text = txtOutput.Text + EndOfLine
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h21
+		Private Sub GenerateExample33_Desktop()
+		  // Call shared module function - Barcodes
+		  Dim result As Dictionary = VNSPDFExamplesModule.GenerateExample33_Barcodes()
+
+		  // Display status
+		  If result.HasKey("message") Then
+		    txtOutput.Text = txtOutput.Text + result.Value("message").StringValue
+		  End If
+
+		  // Save PDF to desktop if generated successfully
+		  If result.HasKey("pdf") Then
+		    Dim pdfData As String = result.Value("pdf").StringValue
+		    Dim filename As String = result.Value("filename").StringValue
+		    Dim desktop As FolderItem = SpecialFolder.Desktop
+		    Dim pdfFile As FolderItem = desktop.Child(filename)
+
+		    Try
+		      Dim stream As BinaryStream = BinaryStream.Create(pdfFile, True)
+		      stream.Write(pdfData)
+		      stream.Close()
+		      txtOutput.Text = txtOutput.Text + "PDF saved to Desktop: " + pdfFile.NativePath + EndOfLine
+		    Catch e As IOException
+		      txtOutput.Text = txtOutput.Text + "Error saving PDF to desktop: " + e.Message + EndOfLine
+		    End Try
+		  End If
+
+		  txtOutput.Text = txtOutput.Text + EndOfLine
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h21
+		Private Sub GenerateExample32_Desktop()
+		  // Call shared module function - Digital Signatures (PAdES + XAdES)
+		  Dim result As Dictionary = VNSPDFExamplesModule.GenerateExample32()
+		  
+		  // Display status
+		  If result.HasKey("message") Then
+		    txtOutput.Text = txtOutput.Text + result.Value("message").StringValue
+		  End If
+		  
+		  // Save PDF to desktop if generated successfully
+		  If result.HasKey("pdf") Then
+		    Dim pdfData As String = result.Value("pdf").StringValue
+		    Dim filename As String = result.Value("filename").StringValue
+		    Dim desktop As FolderItem = SpecialFolder.Desktop
+		    Dim pdfFile As FolderItem = desktop.Child(filename)
+		    
+		    Try
+		      Dim stream As BinaryStream = BinaryStream.Create(pdfFile, True)
+		      stream.Write(pdfData)
+		      stream.Close()
+		      txtOutput.Text = txtOutput.Text + "PDF saved to Desktop: " + pdfFile.NativePath + EndOfLine
+		    Catch e As IOException
+		      txtOutput.Text = txtOutput.Text + "Error saving PDF to desktop: " + e.Message + EndOfLine
+		    End Try
+		  End If
+		  
+		  txtOutput.Text = txtOutput.Text + EndOfLine
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h21
 		Private Sub GenerateExample4()
 		  // Call shared module function
 		  Dim result As Dictionary = VNSPDFExamplesModule.GenerateExample4()
 		  
 		  // Display status
-		  txtOutput.Text = txtOutput.Text + result.Value("status")
+		  txtOutput.Text = txtOutput.Text + result.Value("message")
 		  
 		  // Save PDF if generated successfully
 		  If result.HasKey("pdf") Then
@@ -876,7 +1192,7 @@ End
 		  Dim result As Dictionary = VNSPDFExamplesModule.GenerateExample5()
 		  
 		  // Display status
-		  txtOutput.Text = txtOutput.Text + result.Value("status")
+		  txtOutput.Text = txtOutput.Text + result.Value("message")
 		  
 		  // Save PDF if generated successfully
 		  If result.HasKey("pdf") Then
@@ -905,7 +1221,7 @@ End
 		  Dim result As Dictionary = VNSPDFExamplesModule.GenerateExample5Xojo()
 		  
 		  // Display status
-		  txtOutput.Text = txtOutput.Text + result.Value("status")
+		  txtOutput.Text = txtOutput.Text + result.Value("message")
 		  
 		  // Save PDF if generated successfully
 		  If result.HasKey("pdf") Then
@@ -934,7 +1250,7 @@ End
 		  Dim result As Dictionary = VNSPDFExamplesModule.GenerateExample6()
 		  
 		  // Display status
-		  txtOutput.Text = txtOutput.Text + result.Value("status")
+		  txtOutput.Text = txtOutput.Text + result.Value("message")
 		  
 		  // Save PDF if generated successfully
 		  If result.HasKey("pdf") Then
@@ -963,7 +1279,7 @@ End
 		  Dim result As Dictionary = VNSPDFExamplesModule.GenerateExample7()
 		  
 		  // Display status
-		  txtOutput.Text = txtOutput.Text + result.Value("status")
+		  txtOutput.Text = txtOutput.Text + result.Value("message")
 		  
 		  // Save PDF if generated successfully
 		  If result.HasKey("pdf") Then
@@ -992,7 +1308,7 @@ End
 		  Dim result As Dictionary = VNSPDFExamplesModule.GenerateExample8()
 		  
 		  // Display status
-		  txtOutput.Text = txtOutput.Text + result.Value("status")
+		  txtOutput.Text = txtOutput.Text + result.Value("message")
 		  
 		  // Save PDF if generated successfully
 		  If result.HasKey("pdf") Then
@@ -1021,7 +1337,7 @@ End
 		  Dim result As Dictionary = VNSPDFExamplesModule.GenerateExample9()
 		  
 		  // Display status
-		  txtOutput.Text = txtOutput.Text + result.Value("status")
+		  txtOutput.Text = txtOutput.Text + result.Value("message")
 		  
 		  // Save PDF if generated successfully
 		  If result.HasKey("pdf") Then
@@ -1041,6 +1357,242 @@ End
 		  End If
 		  
 		  txtOutput.Text = txtOutput.Text + EndOfLine
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h21
+		Private Sub PreviewExample()
+		  // Check if a row is selected
+		  If lstExamples.SelectedRowIndex < 0 Then
+		    txtOutput.Text = txtOutput.Text + "Please select an example from the list." + EndOfLine
+		    Return
+		  End If
+		  
+		  // Get the example number from the row tag
+		  Dim exampleNum As Variant = lstExamples.CellTagAt(lstExamples.SelectedRowIndex, 0)
+		  
+		  If exampleNum = Nil Then
+		    txtOutput.Text = txtOutput.Text + "Error: Invalid example selection." + EndOfLine
+		    Return
+		  End If
+		  
+		  Dim result As Dictionary
+		  
+		  Select Case exampleNum
+		  Case VNSPDFExamplesModule.kExample1
+		    result = VNSPDFExamplesModule.GenerateExample1()
+		    ShowPreviewForResult(result)
+		    
+		  Case VNSPDFExamplesModule.kExample2
+		    result = VNSPDFExamplesModule.GenerateExample2()
+		    ShowPreviewForResult(result)
+		    
+		  Case VNSPDFExamplesModule.kExample3
+		    result = VNSPDFExamplesModule.GenerateExample3()
+		    ShowPreviewForResult(result)
+		    
+		  Case VNSPDFExamplesModule.kExample4
+		    result = VNSPDFExamplesModule.GenerateExample4()
+		    ShowPreviewForResult(result)
+		    
+		  Case VNSPDFExamplesModule.kExample5
+		    result = VNSPDFExamplesModule.GenerateExample5()
+		    ShowPreviewForResult(result)
+		    
+		  Case VNSPDFExamplesModule.kExample5Xojo
+		    result = VNSPDFExamplesModule.GenerateExample5Xojo()
+		    ShowPreviewForResult(result)
+		    
+		  Case VNSPDFExamplesModule.kExample6
+		    result = VNSPDFExamplesModule.GenerateExample6()
+		    ShowPreviewForResult(result)
+		    
+		  Case VNSPDFExamplesModule.kExample7
+		    result = VNSPDFExamplesModule.GenerateExample7()
+		    ShowPreviewForResult(result)
+		    
+		  Case VNSPDFExamplesModule.kExample8
+		    result = VNSPDFExamplesModule.GenerateExample8()
+		    ShowPreviewForResult(result)
+		    
+		  Case VNSPDFExamplesModule.kExample9
+		    result = VNSPDFExamplesModule.GenerateExample9()
+		    ShowPreviewForResult(result)
+		    
+		  Case VNSPDFExamplesModule.kExample10
+		    result = VNSPDFExamplesModule.GenerateExample10()
+		    ShowPreviewForResult(result)
+		    
+		  Case VNSPDFExamplesModule.kExample11
+		    result = VNSPDFExamplesModule.GenerateExample11()
+		    ShowPreviewForResult(result)
+		    
+		  Case VNSPDFExamplesModule.kExample12
+		    result = VNSPDFExamplesModule.GenerateExample12()
+		    ShowPreviewForResult(result)
+		    
+		  Case VNSPDFExamplesModule.kExample13
+		    result = VNSPDFExamplesModule.GenerateExample13()
+		    ShowPreviewForResult(result)
+		    
+		  Case VNSPDFExamplesModule.kExample14
+		    // Encryption example - needs interactive dialog first
+		    Dim dlg As New SecurityDialog
+		    dlg.ShowModal()
+		    
+		    If Not dlg.UserCancelled Then
+		      result = VNSPDFExamplesModule.GenerateExample14( _
+		      dlg.EncryptionRevision, dlg.UserPassword, dlg.OwnerPassword, _
+		      dlg.AllowPrint, dlg.AllowModify, dlg.AllowCopy, dlg.AllowAnnotations, _
+		      dlg.AllowFillForms, dlg.AllowExtract, dlg.AllowAssemble, dlg.AllowPrintHighQuality)
+		      ShowPreviewForResult(result)
+		    Else
+		      txtOutput.Text = txtOutput.Text + "Example 14 cancelled by user" + EndOfLine + EndOfLine
+		    End If
+		    
+		  Case VNSPDFExamplesModule.kExample15
+		    result = VNSPDFExamplesModule.GenerateExample15()
+		    ShowPreviewForResult(result)
+		    
+		  Case VNSPDFExamplesModule.kExample16
+		    result = VNSPDFExamplesModule.GenerateExample16()
+		    ShowPreviewForResult(result)
+		    
+		  Case VNSPDFExamplesModule.kExample17
+		    result = VNSPDFExamplesModule.GenerateExample17()
+		    ShowPreviewForResult(result)
+		    
+		  Case VNSPDFExamplesModule.kExample18
+		    result = VNSPDFExamplesModule.GenerateExample18()
+		    ShowPreviewForResult(result)
+		    
+		  Case VNSPDFExamplesModule.kExample19
+		    result = VNSPDFExamplesModule.GenerateExample19()
+		    ShowPreviewForResult(result)
+		    
+		  Case VNSPDFExamplesModule.kExample20
+		    // PDF import - needs file picker
+		    Dim dlgOpen As New OpenFileDialog
+		    dlgOpen.Title = "Choose PDF file to import"
+		    dlgOpen.Filter = "PDF Files (*.pdf)|*.pdf|All Files (*.*)|*.*"
+		    
+		    Dim selectedFile As FolderItem = dlgOpen.ShowModal()
+		    If selectedFile = Nil Then
+		      txtOutput.Text = txtOutput.Text + "Example 20: Cancelled - No PDF selected" + EndOfLine + EndOfLine
+		      Return
+		    End If
+		    
+		    result = VNSPDFExamplesModule.GenerateExample20(selectedFile.NativePath)
+		    ShowPreviewForResult(result)
+		    
+		  Case VNSPDFExamplesModule.kExample21
+		    result = VNSPDFExamplesModule.GenerateExample21()
+		    ShowPreviewForResult(result)
+		    
+		  Case VNSPDFExamplesModule.kExample22
+		    result = VNSPDFExamplesModule.GenerateExample22()
+		    ShowPreviewForResult(result)
+		    
+		  Case VNSPDFExamplesModule.kExample23
+		    result = VNSPDFExamplesModule.GenerateExample23()
+		    ShowPreviewForResult(result)
+		    
+		  Case VNSPDFExamplesModule.kExample24
+		    result = VNSPDFExamplesModule.GenerateExample24()
+		    ShowPreviewForResult(result)
+		    
+		  Case VNSPDFExamplesModule.kExample26
+		    result = VNSPDFExamplesModule.GenerateExample26_BugTests()
+		    If result.HasKey("message") Then
+		      txtOutput.Text = txtOutput.Text + result.Value("message").StringValue
+		    End If
+		    If result.HasKey("success") And result.Value("success").BooleanValue And result.HasKey("pdf") Then
+		      ShowPreviewForResult(result)
+		    End If
+		    
+		  Case VNSPDFExamplesModule.kExample27
+		    // HTML Import - needs file picker
+		    Dim dlgHtml As New OpenFileDialog
+		    dlgHtml.Title = "Choose HTML file to import"
+		    dlgHtml.Filter = "HTML Files (*.html;*.htm)|*.html;*.htm|All Files (*.*)|*.*"
+		    
+		    Dim htmlFile As FolderItem = dlgHtml.ShowModal()
+		    If htmlFile = Nil Then
+		      txtOutput.Text = txtOutput.Text + "Example 27: Cancelled - No HTML file selected" + EndOfLine + EndOfLine
+		      Return
+		    End If
+		    
+		    Dim htmlContent As String
+		    Try
+		      Dim tis As TextInputStream = TextInputStream.Open(htmlFile)
+		      tis.Encoding = Encodings.UTF8
+		      htmlContent = tis.ReadAll()
+		      tis.Close()
+		    Catch e As IOException
+		      txtOutput.Text = txtOutput.Text + "Error reading file: " + e.Message + EndOfLine + EndOfLine
+		      Return
+		    End Try
+		    
+		    result = VNSPDFExamplesModule.GenerateExample27_HTMLImport(htmlContent)
+		    ShowPreviewForResult(result)
+		    
+		  Case VNSPDFExamplesModule.kExample28
+		    // Markdown Import - needs file picker
+		    Dim dlgMd As New OpenFileDialog
+		    dlgMd.Title = "Choose Markdown file to import"
+		    dlgMd.Filter = "Markdown Files (*.md;*.markdown)|*.md;*.markdown|Text Files (*.txt)|*.txt|All Files (*.*)|*.*"
+		    
+		    Dim mdFile As FolderItem = dlgMd.ShowModal()
+		    If mdFile = Nil Then
+		      txtOutput.Text = txtOutput.Text + "Example 28: Cancelled - No Markdown file selected" + EndOfLine + EndOfLine
+		      Return
+		    End If
+		    
+		    Dim mdContent As String
+		    Try
+		      Dim tisMd As TextInputStream = TextInputStream.Open(mdFile)
+		      tisMd.Encoding = Encodings.UTF8
+		      mdContent = tisMd.ReadAll()
+		      tisMd.Close()
+		    Catch e As IOException
+		      txtOutput.Text = txtOutput.Text + "Error reading file: " + e.Message + EndOfLine + EndOfLine
+		      Return
+		    End Try
+		    
+		    result = VNSPDFExamplesModule.GenerateExample28_MarkdownImport(mdContent)
+		    ShowPreviewForResult(result)
+		    
+		  Case VNSPDFExamplesModule.kExample29
+		    result = VNSPDFExamplesModule.GenerateExample29()
+		    ShowPreviewForResult(result)
+		    
+		  Case VNSPDFExamplesModule.kExample30
+		    result = VNSPDFExamplesModule.GenerateExample30()
+		    ShowPreviewForResult(result)
+		    
+		  Case VNSPDFExamplesModule.kExample31
+		    GenerateExample31()
+		    Return  // No PDF to preview - this example just checks an existing PDF
+		    
+		  Case VNSPDFExamplesModule.kExample32
+		    result = VNSPDFExamplesModule.GenerateExample32()
+		    ShowPreviewForResult(result)
+
+		  Case VNSPDFExamplesModule.kExample33
+		    result = VNSPDFExamplesModule.GenerateExample33_Barcodes()
+		    ShowPreviewForResult(result)
+
+		  Case VNSPDFExamplesModule.kTestZlib
+		    RunTestZlib()
+		    txtOutput.Text = txtOutput.Text + "(Tests have no PDF to preview)" + EndOfLine + EndOfLine
+		    
+		  Case VNSPDFExamplesModule.kTestAES
+		    RunTestAES()
+		    txtOutput.Text = txtOutput.Text + "(Tests have no PDF to preview)" + EndOfLine + EndOfLine
+		    
+		  Else
+		    txtOutput.Text = txtOutput.Text + "Unknown example number: " + exampleNum.StringValue + EndOfLine
+		  End Select
 		End Sub
 	#tag EndMethod
 
@@ -1076,6 +1628,37 @@ End
 		    txtOutput.Text = txtOutput.Text + EndOfLine + "ALL ZLIB TESTS PASSED!" + EndOfLine
 		  Else
 		    txtOutput.Text = txtOutput.Text + EndOfLine + "SOME ZLIB TESTS FAILED!" + EndOfLine
+		  End If
+		  
+		  txtOutput.Text = txtOutput.Text + EndOfLine
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h21
+		Private Sub ShowPreviewForResult(result As Dictionary)
+		  // Helper: shows a preview window for a generated PDF result dictionary
+		  // The dictionary must contain "pdf" and "filename" keys
+		  
+		  If result = Nil Then Return
+		  
+		  // Display status
+		  If result.HasKey("status") Then
+		    txtOutput.Text = txtOutput.Text + result.Value("status").StringValue
+		  End If
+		  
+		  If result.HasKey("pdf") Then
+		    Dim pdfData As String = result.Value("pdf").StringValue
+		    Dim filename As String = "document.pdf"
+		    If result.HasKey("filename") Then
+		      filename = result.Value("filename").StringValue
+		    End If
+		    
+		    txtOutput.Text = txtOutput.Text + "Opening preview for: " + filename + EndOfLine
+		    
+		    // Show in preview window
+		    VNSPDFPreviewWindow.ShowPreview(pdfData, filename)
+		  Else
+		    txtOutput.Text = txtOutput.Text + "No PDF data generated." + EndOfLine
 		  End If
 		  
 		  txtOutput.Text = txtOutput.Text + EndOfLine
@@ -1156,6 +1739,20 @@ End
 		    GenerateExample24()
 		  Case VNSPDFExamplesModule.kExample26
 		    GenerateExample26()
+		  Case VNSPDFExamplesModule.kExample27
+		    GenerateExample27()
+		  Case VNSPDFExamplesModule.kExample28
+		    GenerateExample28()
+		  Case VNSPDFExamplesModule.kExample29
+		    GenerateExample29()
+		  Case VNSPDFExamplesModule.kExample30
+		    GenerateExample30()
+		  Case VNSPDFExamplesModule.kExample31
+		    GenerateExample31()
+		  Case VNSPDFExamplesModule.kExample32
+		    GenerateExample32_Desktop()
+		  Case VNSPDFExamplesModule.kExample33
+		    GenerateExample33_Desktop()
 		  Case VNSPDFExamplesModule.kTestZlib
 		    RunTestZlib()
 		  Case VNSPDFExamplesModule.kTestAES
@@ -1163,6 +1760,13 @@ End
 		  Else
 		    txtOutput.Text = txtOutput.Text + "Unknown example number: " + exampleNum.StringValue + EndOfLine
 		  End Select
+		End Sub
+	#tag EndEvent
+#tag EndEvents
+#tag Events btnPreviewExample
+	#tag Event
+		Sub Pressed()
+		  PreviewExample()
 		End Sub
 	#tag EndEvent
 #tag EndEvents

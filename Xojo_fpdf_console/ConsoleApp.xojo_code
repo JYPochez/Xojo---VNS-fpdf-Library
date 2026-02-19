@@ -92,11 +92,26 @@ Inherits ConsoleApplication
 		  Print("  26. Test AES")
 		  Print("      Premium pure Xojo encryption tests")
 		  Print("")
+		  Print("  29. GraphicsPath")
+		  Print("      Curves, arcs, round rectangles, clipping")
+		  Print("")
+		  Print("  30. E-Invoice (Premium)")
+		  Print("      Factur-X/ZUGFeRD compliant PDF with CII XML")
+		  Print("")
+		  Print("  31. E-Invoice Checker (Premium)")
+		  Print("      Check PDF for e-invoice conformity")
+		  Print("")
+		  Print("  32. Digital Signatures (Premium)")
+		  Print("      PAdES-B-B PDF signing + XAdES-BES XML signing")
+		  Print("")
+		  Print("  33. Barcodes")
+		  Print("      QR Code, Code 128, EAN-13, Code 39, ITF, Codabar, PDF417, DataMatrix")
+		  Print("")
 		  Print("  0. Exit")
 		  Print("")
 
 		  While True
-		    StdOut.Write("Enter example number (0-26): ")
+		    StdOut.Write("Enter example number (0-32): ")
 		    Dim input As String = Input
 		    Dim choice As Integer = Val(input.Trim)
 
@@ -181,6 +196,21 @@ Inherits ConsoleApplication
 		    Case VNSPDFExamplesModule.kExample26
 		      GenerateExample(VNSPDFExamplesModule.kExample26)
 
+		    Case VNSPDFExamplesModule.kExample29
+		      GenerateExample(VNSPDFExamplesModule.kExample29)
+
+		    Case VNSPDFExamplesModule.kExample30
+		      GenerateExample(VNSPDFExamplesModule.kExample30)
+
+		    Case VNSPDFExamplesModule.kExample31
+		      GenerateExample(VNSPDFExamplesModule.kExample31)
+
+		    Case VNSPDFExamplesModule.kExample32
+		      GenerateExample(VNSPDFExamplesModule.kExample32)
+
+		    Case VNSPDFExamplesModule.kExample33
+		      GenerateExample(VNSPDFExamplesModule.kExample33)
+
 		    Case VNSPDFExamplesModule.kTestZlib
 		      RunTest("Zlib")
 
@@ -188,7 +218,7 @@ Inherits ConsoleApplication
 		      RunTest("AES")
 
 		    Else
-		      Print("Invalid choice. Please enter 0-26.")
+		      Print("Invalid choice. Please enter 0-32.")
 		      Print("")
 		    End Select
 		  Wend
@@ -255,13 +285,44 @@ Inherits ConsoleApplication
 		    result = VNSPDFExamplesModule.GenerateExample22()
 		  Case kExample23
 		    result = VNSPDFExamplesModule.GenerateExample23()
+		  Case kExample24
+		    result = VNSPDFExamplesModule.GenerateExample24()
+		  Case kExample26
+		    result = VNSPDFExamplesModule.GenerateExample26_BugTests()
+		  Case kExample29
+		    result = VNSPDFExamplesModule.GenerateExample29()
+		  Case kExample30
+		    result = VNSPDFExamplesModule.GenerateExample30()
+		  Case kExample32
+		    result = VNSPDFExamplesModule.GenerateExample32()
+		  Case kExample33
+		    result = VNSPDFExamplesModule.GenerateExample33_Barcodes()
+		  Case kExample31
+		    // E-Invoice Checker - read PDF file
+		    Print("Enter path to PDF file (or press Enter for default example30 PDF):")
+		    Dim pdfPath As String = Input
+		    If pdfPath = "" Then
+		      Dim desktop As FolderItem = SpecialFolder.Desktop
+		      pdfPath = desktop.Child("example30_einvoice.pdf").NativePath
+		    End If
+		    Dim pdfFile As FolderItem = New FolderItem(pdfPath, FolderItem.PathModes.Native)
+		    If pdfFile = Nil Or Not pdfFile.Exists Then
+		      Print("File not found: " + pdfPath)
+		      Print("")
+		      Return
+		    Else
+		      Dim bs As BinaryStream = BinaryStream.Open(pdfFile)
+		      Dim pdfData As String = bs.Read(bs.Length)
+		      bs.Close
+		      result = VNSPDFExamplesModule.GenerateExample31_CheckEInvoice(pdfData)
+		    End If
 		  Else
 		    Print("Invalid example number")
 		    Return
 		  End Select
 
 		  // Display status messages
-		  Print(result.Value("status").StringValue)
+		  Print(result.Value("message").StringValue)
 
 		  // Save PDF if successful
 		  If result.HasKey("pdf") Then

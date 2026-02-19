@@ -251,8 +251,8 @@ End
 		    result = VNSPDFExamplesModule.GenerateExample20(sourcePath)
 
 		    // Prepend source info to status message
-		    If result <> Nil And result.HasKey("status") Then
-		      result.Value("status") = sourceInfo + result.Value("status")
+		    If result <> Nil And result.HasKey("message") Then
+		      result.Value("message") = sourceInfo + result.Value("message")
 		    End If
 		  Case VNSPDFExamplesModule.kExample21
 		    result = VNSPDFExamplesModule.GenerateExample21()
@@ -264,6 +264,52 @@ End
 		    result = VNSPDFExamplesModule.GenerateExample24()
 		  Case VNSPDFExamplesModule.kExample26
 		    result = VNSPDFExamplesModule.GenerateExample26_BugTests()
+		  Case VNSPDFExamplesModule.kExample27
+		    Dim htmlContent As String = "<h1>HTML Import Test</h1>" + _
+		      "<p>This is a <b>bold</b> and <i>italic</i> test from iOS.</p>" + _
+		      "<h2>Features</h2>" + _
+		      "<ul><li>Headings</li><li>Bold and italic</li><li>Lists</li><li>Links</li></ul>" + _
+		      "<p>Visit <a href=""https://www.verynicesw.fr"">VeryNiceSW</a> for more info.</p>" + _
+		      "<table border=""1""><tr><th>Item</th><th>Price</th></tr>" + _
+		      "<tr><td>Widget</td><td>9.99</td></tr>" + _
+		      "<tr><td>Gadget</td><td>19.99</td></tr></table>"
+		    result = VNSPDFExamplesModule.GenerateExample27_HTMLImport(htmlContent)
+		  Case VNSPDFExamplesModule.kExample28
+		    Dim mdContent As String = "# Markdown Import Test" + EndOfLine + EndOfLine + _
+		      "This is a **bold** and *italic* test from iOS." + EndOfLine + EndOfLine + _
+		      "## Features" + EndOfLine + EndOfLine + _
+		      "- Headings" + EndOfLine + _
+		      "- Bold and italic" + EndOfLine + _
+		      "- Lists" + EndOfLine + _
+		      "- Code blocks" + EndOfLine + EndOfLine + _
+		      "```" + EndOfLine + _
+		      "Dim pdf As New VNSPDFDocument" + EndOfLine + _
+		      "pdf.LoadMarkdown(content)" + EndOfLine + _
+		      "```" + EndOfLine + EndOfLine + _
+		      "| Column A | Column B |" + EndOfLine + _
+		      "|----------|----------|" + EndOfLine + _
+		      "| Cell 1   | Cell 2   |" + EndOfLine + _
+		      "| Cell 3   | Cell 4   |" + EndOfLine
+		    result = VNSPDFExamplesModule.GenerateExample28_MarkdownImport(mdContent)
+		  Case VNSPDFExamplesModule.kExample29
+		    result = VNSPDFExamplesModule.GenerateExample29()
+		  Case VNSPDFExamplesModule.kExample30
+		    result = VNSPDFExamplesModule.GenerateExample30()
+		  Case VNSPDFExamplesModule.kExample31
+		    // Try to read example30 PDF from documents folder
+		    Dim docsFolder As FolderItem = SpecialFolder.Documents
+		    Dim pdfFile As FolderItem = docsFolder.Child("example30_einvoice.pdf")
+		    Dim pdfData As String = ""
+		    If pdfFile <> Nil And pdfFile.Exists Then
+		      Dim bs As BinaryStream = BinaryStream.Open(pdfFile)
+		      pdfData = bs.Read(bs.Length)
+		      bs.Close
+		    End If
+		    result = VNSPDFExamplesModule.GenerateExample31_CheckEInvoice(pdfData)
+		  Case VNSPDFExamplesModule.kExample32
+		    result = VNSPDFExamplesModule.GenerateExample32()
+		  Case VNSPDFExamplesModule.kExample33
+		    result = VNSPDFExamplesModule.GenerateExample33_Barcodes()
 		  Case VNSPDFExamplesModule.kTestZlib
 		    // Test Zlib - special test, not a PDF example
 		    result = VNSPDFExamplesModule.TestZlib()
@@ -298,10 +344,10 @@ End
 		  // Check if result is nil
 		  If result = Nil Then
 		    msg = "ERROR: Example " + Str(exampleNumber) + " returned Nil" + EndOfLine
-		  ElseIf Not result.HasKey("status") Then
+		  ElseIf Not result.HasKey("message") Then
 		    msg = "ERROR: Result has no 'status' key" + EndOfLine
 		  Else
-		    msg = result.Value("status")
+		    msg = result.Value("message")
 		    
 		    // Check if there's an error in the result
 		    If result.HasKey("error") Then
