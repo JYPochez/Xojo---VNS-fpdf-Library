@@ -1,5 +1,15 @@
 # Version History - VNS E-Invoicer
 
+## v1.0.1 (2026-02-20)
+
+### Bug Fixes
+- **Fix zlib crash on macOS ARM64**: Compiled app crashed (SIGSEGV) when decompressing PDF streams in Check Folder. Root cause: zlib declares used UInt32 for destLen/sourceLen but macOS LP64 `unsigned long` is 8 bytes. The 8-byte write to a 4-byte ByRef variable corrupted the stack. Fixed by using UInt64 on macOS/Linux, UInt32 on Windows.
+
+### Architecture
+- **Per-project premium constants**: Premium feature flags (hasPremiumVNS*) moved from shared VNSPDFModule to per-project module (VNS_E_Invoicer_Premium_Constants), preventing cross-project conflicts when compiling different configurations.
+
+---
+
 ## v1.0.0 (2026-02-18)
 
 ### Build & Distribution
