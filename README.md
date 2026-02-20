@@ -48,8 +48,6 @@ Xojo_fpdf is a pure Xojo implementation for creating PDF documents programmatica
 
 All premium modules are delivered as **full, unencrypted source code** - same transparency as the free version!
 
-All premium modules are delivered as **full, unencrypted source code** - same transparency as the free version!
-
 ## Installation
 
 1. Open your Xojo project (Desktop, Web, iOS, or Console)
@@ -740,3 +738,4 @@ For bugs, feature requests, or questions, please contact jypochez@verynicesw.fr
 ---
 
 **Note**: This library is production-ready (v1.2).
+
