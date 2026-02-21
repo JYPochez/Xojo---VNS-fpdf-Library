@@ -193,7 +193,7 @@ Protected Module VNSPDFExamplesModule
 	#tag EndMethod
 
 	#tag Method, Flags = &h21, Description = 437573746f6d2048544d4c207461672068616e646c657220666f7220636f6d70616e792d6865616465722e2052656e64657273206c61726765206e6176792d626c756520626f6c642068656164696e672e
-		Private Sub HandleCompanyHeader(doc As VNSPDFDocument, token As VNSPDFHTMLToken, isClosing As Boolean)
+		Private Sub HandleCompanyHeader(doc As VNSPDFDocument, token As Object, isClosing As Boolean)
 		  If Not isClosing Then
 		    // Opening: set large navy-blue bold font
 		    // Text content between open/close tags will be rendered by the normal text pipeline
@@ -211,14 +211,17 @@ Protected Module VNSPDFExamplesModule
 	#tag EndMethod
 
 	#tag Method, Flags = &h21, Description = 437573746f6d2048544d4c207461672068616e646c657220666f7220616c6572742d626f782e2052656e6465727320636f6c6f72656420616c65727420776974682074797065206174747269627574652e
-		Private Sub HandleAlertBox(doc As VNSPDFDocument, token As VNSPDFHTMLToken, isClosing As Boolean)
+		Private Sub HandleAlertBox(doc As VNSPDFDocument, token As Object, isClosing As Boolean)
 		  If Not isClosing Then
 		    // Opening: set colored text and write prefix based on type attribute
 		    // Text content between open/close tags will be rendered by the normal text pipeline
 		    Dim alertType As String = ""
-		    If token.TagAttributes <> Nil And token.TagAttributes.HasKey("type") Then
-		      alertType = token.TagAttributes.Value("type")
-		    End If
+		    #If VNSPDFModule.hasPremiumHTMLModule Then
+		      Dim htmlToken As VNSPDFHTMLToken = VNSPDFHTMLToken(token)
+		      If htmlToken.TagAttributes <> Nil And htmlToken.TagAttributes.HasKey("type") Then
+		        alertType = htmlToken.TagAttributes.Value("type")
+		      End If
+		    #EndIf
 
 		    Dim prefix As String
 		    Select Case alertType
@@ -250,7 +253,7 @@ Protected Module VNSPDFExamplesModule
 	#tag EndMethod
 
 	#tag Method, Flags = &h21, Description = 437573746f6d2048544d4c207461672068616e646c657220666f7220706167652d627265616b2e20466f726365732061206e65772050444620706167652e
-		Private Sub HandlePageBreak(doc As VNSPDFDocument, token As VNSPDFHTMLToken, isClosing As Boolean)
+		Private Sub HandlePageBreak(doc As VNSPDFDocument, token As Object, isClosing As Boolean)
 		  // Self-closing tag: force a new page
 		  If Not isClosing Then
 		    doc.AddPage
@@ -260,7 +263,7 @@ Protected Module VNSPDFExamplesModule
 	#tag EndMethod
 
 	#tag Method, Flags = &h21, Description = 437573746f6d2048544d4c207461672068616e646c657220666f7220686967686c696768742e2052656e64657273207465787420776974682079656c6c6f77206261636b67726f756e642e
-		Private Sub HandleHighlight(doc As VNSPDFDocument, token As VNSPDFHTMLToken, isClosing As Boolean)
+		Private Sub HandleHighlight(doc As VNSPDFDocument, token As Object, isClosing As Boolean)
 		  If Not isClosing Then
 		    // Opening: set yellow fill for background highlight effect
 		    doc.SetFillColor(255, 255, 0)
@@ -275,13 +278,16 @@ Protected Module VNSPDFExamplesModule
 	#tag EndMethod
 
 	#tag Method, Flags = &h21, Description = 437573746f6d2048544d4c207461672068616e646c657220666f72207369676e61747572652d6c696e652e2052656e64657273207369676e6174757265206c696e652077697468206c6162656c2e
-		Private Sub HandleSignatureLine(doc As VNSPDFDocument, token As VNSPDFHTMLToken, isClosing As Boolean)
+		Private Sub HandleSignatureLine(doc As VNSPDFDocument, token As Object, isClosing As Boolean)
 		  // Self-closing tag: render a signature line with label
 		  If Not isClosing Then
 		    Dim label As String = ""
-		    If token.TagAttributes <> Nil And token.TagAttributes.HasKey("label") Then
-		      label = token.TagAttributes.Value("label")
-		    End If
+		    #If VNSPDFModule.hasPremiumHTMLModule Then
+		      Dim htmlToken As VNSPDFHTMLToken = VNSPDFHTMLToken(token)
+		      If htmlToken.TagAttributes <> Nil And htmlToken.TagAttributes.HasKey("label") Then
+		        label = htmlToken.TagAttributes.Value("label")
+		      End If
+		    #EndIf
 
 		    doc.Ln(10)
 		    Dim leftM As Double
@@ -12839,6 +12845,7 @@ Protected Module VNSPDFExamplesModule
 
 	#tag Method, Flags = &h21, Description = 4275696C64206120736B656C6574616C2073656C662D7369676E656420582E353039207465737420636572746966696361746520666F722064656D6F20707572706F7365732E
 		Private Function BuildTestCertificate(privateKeyHex As String, publicKeyHex As String) As MemoryBlock
+		  #If VNSPDFModule.hasPremiumEncryptionModule Then
 		  // Build a minimal self-signed X.509 certificate for testing
 		  // This is NOT a production-quality certificate generator
 		  // For production, use openssl or a CA-issued certificate
@@ -12912,11 +12919,17 @@ Protected Module VNSPDFExamplesModule
 		    tbsCertificate, signatureAlg, signatureBitString)
 
 		  Return VNSASN1.EncodeSequence(certContent)
+		  #Else
+		    #Pragma Unused privateKeyHex
+		    #Pragma Unused publicKeyHex
+		    Return Nil
+		  #EndIf
 		End Function
 	#tag EndMethod
 
 	#tag Method, Flags = &h21
 		Private Function BuildX509Name(commonName As String, organization As String, country As String) As MemoryBlock
+		  #If VNSPDFModule.hasPremiumEncryptionModule Then
 		  // Build an X.509 Name: SEQUENCE of SET of SEQUENCE of { OID, value }
 
 		  // CN (2.5.4.3)
@@ -12938,6 +12951,12 @@ Protected Module VNSPDFExamplesModule
 		  Dim cSet As MemoryBlock = VNSASN1.EncodeSet(cAttr)
 
 		  Return VNSASN1.EncodeSequence(VNSASN1.ConcatMemoryBlocks(cSet, oSet, cnSet))
+		  #Else
+		    #Pragma Unused commonName
+		    #Pragma Unused organization
+		    #Pragma Unused country
+		    Return Nil
+		  #EndIf
 		End Function
 	#tag EndMethod
 

@@ -386,7 +386,7 @@ Protected Module VNSPDFModule
 	#tag EndDelegateDeclaration
 
 	#tag DelegateDeclaration, Flags = &h0, Description = 48544D4C207461672068616E646C65723A2063616C6C6564207768656E206120726567697374657265642074616720697320656E636F756E746572656420647572696E672072656E646572696E67
-		Delegate Sub HTMLTagHandlerDelegate(doc As VNSPDFDocument, token As VNSPDFHTMLToken, isClosing As Boolean)
+		Delegate Sub HTMLTagHandlerDelegate(doc As VNSPDFDocument, token As Object, isClosing As Boolean)
 	#tag EndDelegateDeclaration
 
 	#tag Method, Flags = &h1, Description = 4368656620696620556E69636F646520636F646520706F696E7420697320616E20656D6F6A692E0A
