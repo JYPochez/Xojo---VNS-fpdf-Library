@@ -8,6 +8,7 @@ WebView=WebPageMain;WebPageMain.xojo_code;&h0000000018FD1FFF;&h0000000000000000;
 WebView=WebDialogPDFUpload;WebDialogPDFUpload.xojo_code;&h00000000DEADBEEF;&h0000000000000000;false
 WebView=WebDialogTextUpload;WebDialogTextUpload.xojo_code;&h30A5655027B13301;&h0000000000000000;false
 WebView=WebDialogSecurity;WebDialogSecurity.xojo_code;&h00000000CAFEF00D;&h0000000000000000;false
+Module=Xojo_fpdf_web_free_Premium_Constants;Xojo_fpdf_web_free_Premium_Constants.xojo_code;&hFFFFFFFFDD010004;&h0000000000000000;false
 BuildSteps=Build Automation;../Build Automation.xojo_code;&h0000000046A67FFF;&h0000000000000000;false
 Folder=PDF_Library;../PDF_Library;&h000000001ABCDEF0;&h0000000000000000;false
 Module=VNSPDFModule;../PDF_Library/VNSPDFModule.xojo_code;&h000000002BCDEF01;&h000000001ABCDEF0;false
