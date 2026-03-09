@@ -3,6 +3,7 @@ RBProjectVersion=2025.021
 MinIDEVersion=20070100
 OrigIDEVersion=20250201
 Class=ConsoleApp;ConsoleApp.xojo_code;&h000000000DF827FF;&h0000000000000000;false
+Module=xojo_consolepdf_free_Premium_Constants;xojo_consolepdf_free_Premium_Constants.xojo_code;&hFFFFFFFFDD010006;&h0000000000000000;false
 BuildSteps=Build Automation;../Build Automation.xojo_code;&h000000002544CFFF;&h0000000000000000;false
 Folder=PDF_Library;../PDF_Library;&h000000007D4ADFFF;&h0000000000000000;false
 Module=VNSPDFModule;../PDF_Library/VNSPDFModule.xojo_code;&h0000000043DD97FF;&h000000007D4ADFFF;false
