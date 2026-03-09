@@ -398,7 +398,31 @@ Text with    multiple   spaces    between    words.
 
 ---
 
-## 21. Test Summary
+## 21. External & Local Images
+
+Tests loading images from local file paths and HTTP URLs (not just base64 data URIs).
+
+### Local Image (same folder as Markdown)
+
+Image loaded from `Test.pdf.jpg`:
+
+![Test image](Test.pdf.jpg)
+
+### HTTP URL Image
+
+Image loaded from an external URL:
+
+![HTML5 Badge](https://www.w3.org/html/logo/downloads/HTML5_Badge_64.png)
+
+### Bad URL (should be skipped silently)
+
+![Missing image](https://example.com/nonexistent-image-12345.png)
+
+If you see this text, the bad URL was skipped correctly.
+
+---
+
+## 22. Test Summary
 
 | Test Category      | Syntax Tested                    | Expected Result      |
 |--------------------|----------------------------------|----------------------|
@@ -409,6 +433,7 @@ Text with    multiple   spaces    between    words.
 | Tables             | pipe syntax with header          | Grid with borders    |
 | Links              | `[text](url)`                    | Clickable text       |
 | Images             | `![alt](base64)`                 | Embedded images      |
+| External images    | `![alt](file)`, `![alt](url)`    | Loaded from file/URL |
 | Blockquotes        | > text                           | Indented blocks      |
 | Horizontal rules   | ---                              | Full-width lines     |
 | Unicode            | Multi-script text                | Correct rendering    |
