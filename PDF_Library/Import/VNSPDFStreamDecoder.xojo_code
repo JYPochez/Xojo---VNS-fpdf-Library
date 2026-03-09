@@ -52,57 +52,38 @@ Protected Class VNSPDFStreamDecoder
 	#tag Method, Flags = &h21
 		Private Function DecodeFlateDecode(compressedData As MemoryBlock) As String
 		  // Decode FlateDecode (zlib/deflate) compressed stream
-		  // This is the most common compression filter in PDF files
-		  // PDF can use either zlib format (with header) or raw DEFLATE
-		  // Check first two bytes to determine format
+		  // Strategy: try native zlib first (handles all zlib-wrapped formats),
+		  // then fall back to raw DEFLATE via premium module if needed.
+		  // The zlib CMF byte can be 0x08-0x78 (not just 0x78), so header detection
+		  // is unreliable — let native zlib decide.
 
 		  If compressedData = Nil Or compressedData.Size < 2 Then
 		    mError = "FlateDecode: Data too short"
 		    Return ""
 		  End If
 
-		  // Check for zlib header (0x78 followed by 0x01, 0x5E, 0x9C, or 0xDA)
-		  // Read directly from MemoryBlock to avoid string encoding issues
-		  Dim byte1 As Integer = compressedData.UInt8Value(0)
-		  Dim byte2 As Integer = compressedData.UInt8Value(1)
-
-		  Dim hasZlibHeader As Boolean = False
-		  If byte1 = &h78 Then  // First byte indicates zlib
-		    If byte2 = &h01 Or byte2 = &h5E Or byte2 = &h9C Or byte2 = &hDA Then
-		      hasZlibHeader = True
-		    End If
-		  End If
-
 		  Dim result As String
 
-		  If hasZlibHeader Then
-		    // Standard zlib format - use VNSZlibModule.Uncompress
-		    // Convert MemoryBlock to String for system zlib
-		    Dim zlibData As String = compressedData.StringValue(0, compressedData.Size)
-		    result = VNSZlibModule.Uncompress(zlibData)
-		    If VNSZlibModule.LastErrorCode <> VNSZlibModule.kZ_OK Then
-		      mError = "FlateDecode error (zlib): " + Str(VNSZlibModule.LastErrorCode)
-		      Return ""
-		    End If
-		  Else
-		    // Raw DEFLATE format (no zlib wrapper) - common in PDF files
-		    #If VNSPDFModule.hasPremiumZlibModule Then
-		      // Use Premium pure Xojo raw DEFLATE decompressor
-		      Dim inflater As New VNSZlibPremiumInflate
-		      result = inflater.DecompressRawDeflate(compressedData)
-
-		      If result = "" Then
-		        mError = "FlateDecode error: Raw DEFLATE decompression failed (Premium module)"
-		        Return ""
-		      End If
-		    #Else
-		      // Premium module not available
-		      mError = "FlateDecode error: PDF uses raw DEFLATE format. This requires the Premium Zlib module. Set VNSPDFModule.hasPremiumZlibModule = True to enable."
-		      Return ""
-		    #EndIf
+		  // Try native zlib first (handles zlib-wrapped streams with any valid header)
+		  Dim zlibData As String = compressedData.StringValue(0, compressedData.Size)
+		  result = VNSZlibModule.Uncompress(zlibData)
+		  If VNSZlibModule.LastErrorCode = VNSZlibModule.kZ_OK And result <> "" Then
+		    Return result
 		  End If
 
-		  Return result
+		  // Native zlib failed — try raw DEFLATE (no zlib wrapper) via premium module
+		  #If hasPremiumVNSZlibModule Then
+		    Dim inflater As New VNSZlibPremiumInflate
+		    result = inflater.DecompressRawDeflate(compressedData)
+		    If result <> "" Then
+		      Return result
+		    End If
+		    mError = "FlateDecode error: Both zlib (" + Str(VNSZlibModule.LastErrorCode) + ") and raw DEFLATE decompression failed"
+		    Return ""
+		  #Else
+		    mError = "FlateDecode error (zlib): " + Str(VNSZlibModule.LastErrorCode)
+		    Return ""
+		  #EndIf
 		End Function
 	#tag EndMethod
 

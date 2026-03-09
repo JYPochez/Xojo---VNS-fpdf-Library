@@ -192,6 +192,30 @@ Protected Module VNSPDFExamplesModule
 		End Sub
 	#tag EndMethod
 
+	#tag Method, Flags = &h21, Description = 52657475726E7320696E737472756374696F6E7320666F7220656E61626C696E672070726D69756D206D6F64756C65732E
+		Private Function GetPremiumEnablingInstructions(constantNames() As String) As String
+		  // Returns standardized instructions for enabling premium modules
+		  // constantNames: array of constant names to enable (e.g., "hasPremiumVNSEncryptionModule")
+
+		  Dim kInstructionHeader As String = "ENABLING PREMIUM MODULE"
+		  If constantNames.LastIndex > 0 Then kInstructionHeader = kInstructionHeader + "S"
+		  kInstructionHeader = kInstructionHeader + ":"
+
+		  Dim txt As String = kInstructionHeader + EndOfLine
+		  txt = txt + "========================" + EndOfLine
+		  txt = txt + "1. Open your project's Premium Constants module" + EndOfLine
+		  txt = txt + "   (e.g. Xojo_fpdf_premium_Premium_Constants.xojo_code)" + EndOfLine
+
+		  For i As Integer = 0 To constantNames.LastIndex
+		    txt = txt + Str(i + 2) + ". Set " + constantNames(i) + " = True" + EndOfLine
+		  Next
+
+		  txt = txt + Str(constantNames.LastIndex + 3) + ". Rebuild your project" + EndOfLine
+
+		  Return txt
+		End Function
+	#tag EndMethod
+
 	#tag Method, Flags = &h21, Description = 437573746f6d2048544d4c207461672068616e646c657220666f7220636f6d70616e792d6865616465722e2052656e64657273206c61726765206e6176792d626c756520626f6c642068656164696e672e
 		Private Sub HandleCompanyHeader(doc As VNSPDFDocument, token As Object, isClosing As Boolean)
 		  If Not isClosing Then
@@ -216,7 +240,7 @@ Protected Module VNSPDFExamplesModule
 		    // Opening: set colored text and write prefix based on type attribute
 		    // Text content between open/close tags will be rendered by the normal text pipeline
 		    Dim alertType As String = ""
-		    #If VNSPDFModule.hasPremiumHTMLModule Then
+		    #If hasPremiumVNSHTMLModule Then
 		      Dim htmlToken As VNSPDFHTMLToken = VNSPDFHTMLToken(token)
 		      If htmlToken.TagAttributes <> Nil And htmlToken.TagAttributes.HasKey("type") Then
 		        alertType = htmlToken.TagAttributes.Value("type")
@@ -282,7 +306,7 @@ Protected Module VNSPDFExamplesModule
 		  // Self-closing tag: render a signature line with label
 		  If Not isClosing Then
 		    Dim label As String = ""
-		    #If VNSPDFModule.hasPremiumHTMLModule Then
+		    #If hasPremiumVNSHTMLModule Then
 		      Dim htmlToken As VNSPDFHTMLToken = VNSPDFHTMLToken(token)
 		      If htmlToken.TagAttributes <> Nil And htmlToken.TagAttributes.HasKey("label") Then
 		        label = htmlToken.TagAttributes.Value("label")
@@ -2368,7 +2392,7 @@ Protected Module VNSPDFExamplesModule
 		  Call pdf2.SetProtection("user123", "owner456", True, True, True, True, True, True, True, True, VNSPDFModule.gkEncryptionRC4_128)
 		  
 		  If pdf2.Err() Then
-		    // Expected: Should fail because hasPremiumEncryptionModule = False
+		    // Expected: Should fail because hasPremiumVNSEncryptionModule = False
 		    Dim errorMsg As String = pdf2.GetError()
 		    
 		    // Check if it's the expected error message about premium module
@@ -2399,16 +2423,7 @@ Protected Module VNSPDFExamplesModule
 		  statusText = statusText + EndOfLine
 		  
 		  // ===== Instructions for enabling premium module =====
-		  statusText = statusText + "ENABLING PREMIUM ENCRYPTION MODULE:" + EndOfLine
-		  statusText = statusText + "===================================" + EndOfLine
-		  statusText = statusText + "To enable RC4-128 and AES encryption (revisions 3-6):" + EndOfLine + EndOfLine
-		  statusText = statusText + "1. Open: PDF_Library/VNSPDFModule.xojo_code" + EndOfLine
-		  statusText = statusText + "2. Find the constant: hasPremiumEncryptionModule" + EndOfLine
-		  statusText = statusText + "3. Change Default from ""False"" to ""True""" + EndOfLine
-		  statusText = statusText + "4. Rebuild your project" + EndOfLine + EndOfLine
-		  statusText = statusText + "The constant should look like this when enabled:" + EndOfLine
-		  statusText = statusText + "#tag Constant, Name = hasPremiumEncryptionModule, Type = Boolean," + EndOfLine
-		  statusText = statusText + "    Dynamic = False, Default = ""True"", Scope = Public" + EndOfLine + EndOfLine
+		  statusText = statusText + GetPremiumEnablingInstructions(Array("hasPremiumVNSEncryptionModule")) + EndOfLine
 		  statusText = statusText + "After enabling, RC4-128 (revision 3) will work, and you can" + EndOfLine
 		  statusText = statusText + "test it by running this example again." + EndOfLine + EndOfLine
 		  
@@ -2431,7 +2446,7 @@ Protected Module VNSPDFExamplesModule
 
 	#tag Method, Flags = &h0
 		Function GenerateExample19() As Dictionary
-		  #If VNSPDFModule.hasPremiumTableModule Then
+		  #If hasPremiumVNSTableModule Then
 		    // Example 19: Table Generation (Premium Feature)
 		    // Demonstrates SimpleTable, ImprovedTable, and FancyTable with optional grand footers
 		    
@@ -2442,9 +2457,9 @@ Protected Module VNSPDFExamplesModule
 		    statusText = statusText + "========================================" + EndOfLine + EndOfLine
 		    
 		    // Check if table module is available
-		    #If Not VNSPDFModule.hasPremiumTableModule Then
-		      statusText = statusText + "✗ SKIPPED: Table generation requires premium Table module" + EndOfLine
-		      statusText = statusText + "Set VNSPDFModule.hasPremiumTableModule = True to enable" + EndOfLine + EndOfLine
+		    #If Not hasPremiumVNSTableModule Then
+		      statusText = statusText + "✗ SKIPPED: Table generation requires premium Table module." + EndOfLine + EndOfLine
+		      statusText = statusText + GetPremiumEnablingInstructions(Array("hasPremiumVNSTableModule")) + EndOfLine
 		      result.Value("success") = False
 		      result.Value("message") = statusText
 		      result.Value("filename") = ""
@@ -2935,16 +2950,9 @@ Protected Module VNSPDFExamplesModule
 		      
 		      // Configure grand footer style
 		      footerConfig.GrandStyle = New VNSPDFTableFooterStyle
-		      // iOS uses Color.RGB() method, Desktop/Web/Console use RGB() function
-		      #If TargetiOS Then
-		        footerConfig.GrandStyle.BackgroundColor = Color.RGB(52, 73, 94)  // Dark blue
-		        footerConfig.GrandStyle.TextColor = Color.RGB(255, 255, 255)  // White
-		        footerConfig.GrandStyle.BorderColor = Color.RGB(0, 0, 0)
-		      #Else
-		        footerConfig.GrandStyle.BackgroundColor = RGB(52, 73, 94)  // Dark blue
-		        footerConfig.GrandStyle.TextColor = RGB(255, 255, 255)  // White
-		        footerConfig.GrandStyle.BorderColor = RGB(0, 0, 0)
-		      #EndIf
+		      footerConfig.GrandStyle.BackgroundColor = Color.RGB(52, 73, 94)  // Dark blue
+		      footerConfig.GrandStyle.TextColor = Color.RGB(255, 255, 255)  // White
+		      footerConfig.GrandStyle.BorderColor = Color.RGB(0, 0, 0)
 		      footerConfig.GrandStyle.FontStyle = "B"
 		      footerConfig.GrandStyle.CellHeight = 7.0
 		      
@@ -3018,15 +3026,9 @@ Protected Module VNSPDFExamplesModule
 		      
 		      // Configure grand footer style
 		      footerConfig7.GrandStyle = New VNSPDFTableFooterStyle
-		      #If TargetiOS Then
-		        footerConfig7.GrandStyle.BackgroundColor = Color.RGB(44, 62, 80)  // Dark gray
-		        footerConfig7.GrandStyle.TextColor = Color.RGB(255, 255, 255)  // White
-		        footerConfig7.GrandStyle.BorderColor = Color.RGB(0, 0, 0)
-		      #Else
-		        footerConfig7.GrandStyle.BackgroundColor = RGB(44, 62, 80)  // Dark gray
-		        footerConfig7.GrandStyle.TextColor = RGB(255, 255, 255)  // White
-		        footerConfig7.GrandStyle.BorderColor = RGB(0, 0, 0)
-		      #EndIf
+		      footerConfig7.GrandStyle.BackgroundColor = Color.RGB(44, 62, 80)  // Dark gray
+		      footerConfig7.GrandStyle.TextColor = Color.RGB(255, 255, 255)  // White
+		      footerConfig7.GrandStyle.BorderColor = Color.RGB(0, 0, 0)
 		      footerConfig7.GrandStyle.FontStyle = "B"
 		      footerConfig7.GrandStyle.CellHeight = 8.0
 		      
@@ -3106,29 +3108,17 @@ Protected Module VNSPDFExamplesModule
 		      
 		      // Configure intermediate footer style (lighter)
 		      footerConfig8.IntermediateStyle = New VNSPDFTableFooterStyle
-		      #If TargetiOS Then
-		        footerConfig8.IntermediateStyle.BackgroundColor = Color.RGB(149, 165, 166)  // Medium gray
-		        footerConfig8.IntermediateStyle.TextColor = Color.RGB(255, 255, 255)  // White
-		        footerConfig8.IntermediateStyle.BorderColor = Color.RGB(0, 0, 0)
-		      #Else
-		        footerConfig8.IntermediateStyle.BackgroundColor = RGB(149, 165, 166)  // Medium gray
-		        footerConfig8.IntermediateStyle.TextColor = RGB(255, 255, 255)  // White
-		        footerConfig8.IntermediateStyle.BorderColor = RGB(0, 0, 0)
-		      #EndIf
+		      footerConfig8.IntermediateStyle.BackgroundColor = Color.RGB(149, 165, 166)  // Medium gray
+		      footerConfig8.IntermediateStyle.TextColor = Color.RGB(255, 255, 255)  // White
+		      footerConfig8.IntermediateStyle.BorderColor = Color.RGB(0, 0, 0)
 		      footerConfig8.IntermediateStyle.FontStyle = "B"
 		      footerConfig8.IntermediateStyle.CellHeight = 6.5
 		      
 		      // Configure grand footer style (darker)
 		      footerConfig8.GrandStyle = New VNSPDFTableFooterStyle
-		      #If TargetiOS Then
-		        footerConfig8.GrandStyle.BackgroundColor = Color.RGB(44, 62, 80)  // Dark gray
-		        footerConfig8.GrandStyle.TextColor = Color.RGB(255, 255, 255)  // White
-		        footerConfig8.GrandStyle.BorderColor = Color.RGB(0, 0, 0)
-		      #Else
-		        footerConfig8.GrandStyle.BackgroundColor = RGB(44, 62, 80)  // Dark gray
-		        footerConfig8.GrandStyle.TextColor = RGB(255, 255, 255)  // White
-		        footerConfig8.GrandStyle.BorderColor = RGB(0, 0, 0)
-		      #EndIf
+		      footerConfig8.GrandStyle.BackgroundColor = Color.RGB(44, 62, 80)  // Dark gray
+		      footerConfig8.GrandStyle.TextColor = Color.RGB(255, 255, 255)  // White
+		      footerConfig8.GrandStyle.BorderColor = Color.RGB(0, 0, 0)
 		      footerConfig8.GrandStyle.FontStyle = "B"
 		      footerConfig8.GrandStyle.CellHeight = 8.0
 		      
@@ -3223,29 +3213,17 @@ Protected Module VNSPDFExamplesModule
 		      
 		      // Configure intermediate footer style (lighter blue-gray)
 		      footerConfig9.IntermediateStyle = New VNSPDFTableFooterStyle
-		      #If TargetiOS Then
-		        footerConfig9.IntermediateStyle.BackgroundColor = Color.RGB(149, 165, 166)  // Medium gray
-		        footerConfig9.IntermediateStyle.TextColor = Color.RGB(255, 255, 255)  // White
-		        footerConfig9.IntermediateStyle.BorderColor = Color.RGB(0, 0, 0)
-		      #Else
-		        footerConfig9.IntermediateStyle.BackgroundColor = RGB(149, 165, 166)  // Medium gray
-		        footerConfig9.IntermediateStyle.TextColor = RGB(255, 255, 255)  // White
-		        footerConfig9.IntermediateStyle.BorderColor = RGB(0, 0, 0)
-		      #EndIf
+		      footerConfig9.IntermediateStyle.BackgroundColor = Color.RGB(149, 165, 166)  // Medium gray
+		      footerConfig9.IntermediateStyle.TextColor = Color.RGB(255, 255, 255)  // White
+		      footerConfig9.IntermediateStyle.BorderColor = Color.RGB(0, 0, 0)
 		      footerConfig9.IntermediateStyle.FontStyle = "B"
 		      footerConfig9.IntermediateStyle.CellHeight = 6.5
 		      
 		      // Configure grand footer style (dark blue-gray)
 		      footerConfig9.GrandStyle = New VNSPDFTableFooterStyle
-		      #If TargetiOS Then
-		        footerConfig9.GrandStyle.BackgroundColor = Color.RGB(44, 62, 80)  // Dark gray
-		        footerConfig9.GrandStyle.TextColor = Color.RGB(255, 255, 255)  // White
-		        footerConfig9.GrandStyle.BorderColor = Color.RGB(0, 0, 0)
-		      #Else
-		        footerConfig9.GrandStyle.BackgroundColor = RGB(44, 62, 80)  // Dark gray
-		        footerConfig9.GrandStyle.TextColor = RGB(255, 255, 255)  // White
-		        footerConfig9.GrandStyle.BorderColor = RGB(0, 0, 0)
-		      #EndIf
+		      footerConfig9.GrandStyle.BackgroundColor = Color.RGB(44, 62, 80)  // Dark gray
+		      footerConfig9.GrandStyle.TextColor = Color.RGB(255, 255, 255)  // White
+		      footerConfig9.GrandStyle.BorderColor = Color.RGB(0, 0, 0)
 		      footerConfig9.GrandStyle.FontStyle = "B"
 		      footerConfig9.GrandStyle.CellHeight = 8.0
 		      
@@ -3492,78 +3470,83 @@ Protected Module VNSPDFExamplesModule
 		    statusText = statusText + "✓ Unicode text table generated" + EndOfLine
 
 		    // ===== Example 13: Pictures and Barcodes in Cells =====
-		    pdf.AddPage()
+		    #If hasPremiumVNSEInvoiceModule Then
+		      pdf.AddPage()
 
-		    Call pdf.SetFont("helvetica", "B", 14)
-		    Call pdf.Cell(0, 8, "13. Barcodes in Table Cells", 0, 1)
-		    Call pdf.Ln(2)
+		      Call pdf.SetFont("helvetica", "B", 14)
+		      Call pdf.Cell(0, 8, "13. Barcodes in Table Cells", 0, 1)
+		      Call pdf.Ln(2)
 
-		    Call pdf.SetFont("helvetica", "", 10)
-		    Call pdf.MultiCell(0, 5, "Table cells can contain various barcode types via SetCellBarcode(). QR Code and Code128 are free (Xojo core Barcode class). All other types (EAN-13, EAN-8, Code 39, ITF, Codabar, DataMatrix, PDF417) require the premium E-Invoice module for vector rendering.", 0, "L")
-		    Call pdf.Ln(3)
+		      Call pdf.SetFont("helvetica", "", 10)
+		      Call pdf.MultiCell(0, 5, "Table cells can contain various barcode types via SetCellBarcode(). QR Code and Code128 are free (Xojo core Barcode class). All other types (EAN-13, EAN-8, Code 39, ITF, Codabar, DataMatrix, PDF417) require the premium E-Invoice module for vector rendering.", 0, "L")
+		      Call pdf.Ln(3)
 
-		    Dim manualTable4 As New VNSPDFManualTable(14.0)
-		    manualTable4.AddColumn("Barcode Type", 35.0, VNSPDFModule.eColumnAlignment.Left)
-		    manualTable4.AddColumn("Value", 40.0, VNSPDFModule.eColumnAlignment.Left)
-		    manualTable4.AddColumn("Rendered", 55.0, VNSPDFModule.eColumnAlignment.Center)
-		    manualTable4.AddColumn("2D Code", 30.0, VNSPDFModule.eColumnAlignment.Center)
+		      Dim manualTable4 As New VNSPDFManualTable(14.0)
+		      manualTable4.AddColumn("Barcode Type", 35.0, VNSPDFModule.eColumnAlignment.Left)
+		      manualTable4.AddColumn("Value", 40.0, VNSPDFModule.eColumnAlignment.Left)
+		      manualTable4.AddColumn("Rendered", 55.0, VNSPDFModule.eColumnAlignment.Center)
+		      manualTable4.AddColumn("2D Code", 30.0, VNSPDFModule.eColumnAlignment.Center)
 
-		    // Row 0: Code128 + QR (FREE)
-		    manualTable4.AddRow(Array("Code 128 (Free)", "VNS-PDF-001", "", ""))
-		    manualTable4.SetCellStyle(0, 0, "", "B", 0, Color.RGB(0, 128, 0))
-		    manualTable4.SetCellBarcode(0, 2, VNSPDFModule.eBarcodeType.Code128, "VNS-PDF-001", 2.0, 2.0)
-		    manualTable4.SetCellBarcode(0, 3, VNSPDFModule.eBarcodeType.QRCode, "VNS-PDF-001", 1.0, 1.0)
+		      // Row 0: Code128 + QR (FREE)
+		      manualTable4.AddRow(Array("Code 128 (Free)", "VNS-PDF-001", "", ""))
+		      manualTable4.SetCellStyle(0, 0, "", "B", 0, Color.RGB(0, 128, 0))
+		      manualTable4.SetCellBarcode(0, 2, VNSPDFModule.eBarcodeType.Code128, "VNS-PDF-001", 2.0, 2.0)
+		      manualTable4.SetCellBarcode(0, 3, VNSPDFModule.eBarcodeType.QRCode, "VNS-PDF-001", 1.0, 1.0)
 
-		    // Row 1: QR Code (FREE)
-		    manualTable4.AddRow(Array("QR Code (Free)", "https://vnspdf.com", "", ""))
-		    manualTable4.SetCellStyle(1, 0, "", "B", 0, Color.RGB(0, 128, 0))
-		    manualTable4.SetCellBarcode(1, 2, VNSPDFModule.eBarcodeType.QRCode, "https://vnspdf.com", 1.0, 1.0)
-		    manualTable4.SetCellBarcode(1, 3, VNSPDFModule.eBarcodeType.DataMatrix, "vnspdf.com", 1.0, 1.0)
+		      // Row 1: QR Code (FREE)
+		      manualTable4.AddRow(Array("QR Code (Free)", "https://vnspdf.com", "", ""))
+		      manualTable4.SetCellStyle(1, 0, "", "B", 0, Color.RGB(0, 128, 0))
+		      manualTable4.SetCellBarcode(1, 2, VNSPDFModule.eBarcodeType.QRCode, "https://vnspdf.com", 1.0, 1.0)
+		      manualTable4.SetCellBarcode(1, 3, VNSPDFModule.eBarcodeType.DataMatrix, "vnspdf.com", 1.0, 1.0)
 
-		    // Row 2: EAN-13 (PREMIUM)
-		    manualTable4.AddRow(Array("EAN-13 (Premium)", "5901234123457", "", ""))
-		    manualTable4.SetCellStyle(2, 0, "", "B", 0, Color.RGB(192, 0, 0))
-		    manualTable4.SetCellBarcode(2, 2, VNSPDFModule.eBarcodeType.EAN13, "5901234123457", 2.0, 1.0)
-		    manualTable4.SetCellBarcode(2, 3, VNSPDFModule.eBarcodeType.QRCode, "5901234123457", 1.0, 1.0)
+		      // Row 2: EAN-13 (PREMIUM)
+		      manualTable4.AddRow(Array("EAN-13 (Premium)", "5901234123457", "", ""))
+		      manualTable4.SetCellStyle(2, 0, "", "B", 0, Color.RGB(192, 0, 0))
+		      manualTable4.SetCellBarcode(2, 2, VNSPDFModule.eBarcodeType.EAN13, "5901234123457", 2.0, 1.0)
+		      manualTable4.SetCellBarcode(2, 3, VNSPDFModule.eBarcodeType.QRCode, "5901234123457", 1.0, 1.0)
 
-		    // Row 3: Code 39 (PREMIUM)
-		    manualTable4.AddRow(Array("Code 39 (Premium)", "HELLO-39", "", ""))
-		    manualTable4.SetCellStyle(3, 0, "", "B", 0, Color.RGB(192, 0, 0))
-		    manualTable4.SetCellBarcode(3, 2, VNSPDFModule.eBarcodeType.Code39, "HELLO-39", 2.0, 2.0)
-		    manualTable4.SetCellBarcode(3, 3, VNSPDFModule.eBarcodeType.DataMatrix, "HELLO39", 1.0, 1.0)
+		      // Row 3: Code 39 (PREMIUM)
+		      manualTable4.AddRow(Array("Code 39 (Premium)", "HELLO-39", "", ""))
+		      manualTable4.SetCellStyle(3, 0, "", "B", 0, Color.RGB(192, 0, 0))
+		      manualTable4.SetCellBarcode(3, 2, VNSPDFModule.eBarcodeType.Code39, "HELLO-39", 2.0, 2.0)
+		      manualTable4.SetCellBarcode(3, 3, VNSPDFModule.eBarcodeType.DataMatrix, "HELLO39", 1.0, 1.0)
 
-		    // Row 4: EAN-8 (PREMIUM)
-		    manualTable4.AddRow(Array("EAN-8 (Premium)", "96385074", "", ""))
-		    manualTable4.SetCellStyle(4, 0, "", "B", 0, Color.RGB(192, 0, 0))
-		    manualTable4.SetCellBarcode(4, 2, VNSPDFModule.eBarcodeType.EAN8, "96385074", 2.0, 1.0)
-		    manualTable4.SetCellBarcode(4, 3, VNSPDFModule.eBarcodeType.DataMatrix, "96385074", 1.0, 1.0)
+		      // Row 4: EAN-8 (PREMIUM)
+		      manualTable4.AddRow(Array("EAN-8 (Premium)", "96385074", "", ""))
+		      manualTable4.SetCellStyle(4, 0, "", "B", 0, Color.RGB(192, 0, 0))
+		      manualTable4.SetCellBarcode(4, 2, VNSPDFModule.eBarcodeType.EAN8, "96385074", 2.0, 1.0)
+		      manualTable4.SetCellBarcode(4, 3, VNSPDFModule.eBarcodeType.DataMatrix, "96385074", 1.0, 1.0)
 
-		    // Row 5: ITF (PREMIUM)
-		    manualTable4.AddRow(Array("ITF (Premium)", "1234567890", "", ""))
-		    manualTable4.SetCellStyle(5, 0, "", "B", 0, Color.RGB(192, 0, 0))
-		    manualTable4.SetCellBarcode(5, 2, VNSPDFModule.eBarcodeType.ITF, "1234567890", 2.0, 2.0)
-		    manualTable4.SetCellBarcode(5, 3, VNSPDFModule.eBarcodeType.QRCode, "ITF:1234567890", 1.0, 1.0)
+		      // Row 5: ITF (PREMIUM)
+		      manualTable4.AddRow(Array("ITF (Premium)", "1234567890", "", ""))
+		      manualTable4.SetCellStyle(5, 0, "", "B", 0, Color.RGB(192, 0, 0))
+		      manualTable4.SetCellBarcode(5, 2, VNSPDFModule.eBarcodeType.ITF, "1234567890", 2.0, 2.0)
+		      manualTable4.SetCellBarcode(5, 3, VNSPDFModule.eBarcodeType.QRCode, "ITF:1234567890", 1.0, 1.0)
 
-		    // Row 6: Codabar (PREMIUM)
-		    manualTable4.AddRow(Array("Codabar (Premium)", "A12345B", "", ""))
-		    manualTable4.SetCellStyle(6, 0, "", "B", 0, Color.RGB(192, 0, 0))
-		    manualTable4.SetCellBarcode(6, 2, VNSPDFModule.eBarcodeType.Codabar, "A12345B", 2.0, 2.0)
-		    manualTable4.SetCellBarcode(6, 3, VNSPDFModule.eBarcodeType.QRCode, "A12345B", 1.0, 1.0)
+		      // Row 6: Codabar (PREMIUM)
+		      manualTable4.AddRow(Array("Codabar (Premium)", "A12345B", "", ""))
+		      manualTable4.SetCellStyle(6, 0, "", "B", 0, Color.RGB(192, 0, 0))
+		      manualTable4.SetCellBarcode(6, 2, VNSPDFModule.eBarcodeType.Codabar, "A12345B", 2.0, 2.0)
+		      manualTable4.SetCellBarcode(6, 3, VNSPDFModule.eBarcodeType.QRCode, "A12345B", 1.0, 1.0)
 
-		    // Row 7: DataMatrix (PREMIUM)
-		    manualTable4.AddRow(Array("DataMatrix (Premium)", "DM-TEST-42", "", ""))
-		    manualTable4.SetCellStyle(7, 0, "", "B", 0, Color.RGB(192, 0, 0))
-		    manualTable4.SetCellBarcode(7, 2, VNSPDFModule.eBarcodeType.DataMatrix, "DM-TEST-42", 1.0, 1.0)
-		    manualTable4.SetCellBarcode(7, 3, VNSPDFModule.eBarcodeType.QRCode, "DM-TEST-42", 1.0, 1.0)
+		      // Row 7: DataMatrix (PREMIUM)
+		      manualTable4.AddRow(Array("DataMatrix (Premium)", "DM-TEST-42", "", ""))
+		      manualTable4.SetCellStyle(7, 0, "", "B", 0, Color.RGB(192, 0, 0))
+		      manualTable4.SetCellBarcode(7, 2, VNSPDFModule.eBarcodeType.DataMatrix, "DM-TEST-42", 1.0, 1.0)
+		      manualTable4.SetCellBarcode(7, 3, VNSPDFModule.eBarcodeType.QRCode, "DM-TEST-42", 1.0, 1.0)
 
-		    manualTable4.mAlternateRowColors = True
-		    manualTable4.mBorderStyle = "1"
+		      manualTable4.mAlternateRowColors = True
+		      manualTable4.mBorderStyle = "1"
 
-		    Call pdf.SetFont("helvetica", "", 8)
-		    manualTable4.Render(pdf)
-		    Call pdf.Ln(5)
+		      Call pdf.SetFont("helvetica", "", 8)
+		      manualTable4.Render(pdf)
+		      Call pdf.Ln(5)
 
-		    statusText = statusText + "✓ Barcodes table generated (Code128, EAN-13, Code39, EAN-8, ITF, Codabar, QR, DataMatrix)" + EndOfLine
+		      statusText = statusText + "✓ Barcodes table generated (Code128, EAN-13, Code39, EAN-8, ITF, Codabar, QR, DataMatrix)" + EndOfLine
+		    #Else
+		      statusText = statusText + "✗ SKIPPED: Barcodes in table cells requires premium E-Invoice/Barcode module." + EndOfLine
+		      statusText = statusText + GetPremiumEnablingInstructions(Array("hasPremiumVNSEInvoiceModule")) + EndOfLine
+		    #EndIf
 
 		    // ===== Example 14: Multi-Page Manual Table =====
 		    pdf.AddPage()
@@ -3793,7 +3776,7 @@ Protected Module VNSPDFExamplesModule
 		    // Table module not available in free version
 		    Dim result As New Dictionary
 		    result.Value("success") = False
-		    result.Value("message") = "Example 19 requires Premium Table Module" + EndOfLine + "Table generation features are available in the premium version only."
+		    result.Value("message") = "Example 19 requires Premium Table Module." + EndOfLine + EndOfLine + GetPremiumEnablingInstructions(Array("hasPremiumVNSTableModule"))
 		    Return result
 		  #EndIf
 		End Function
@@ -4156,6 +4139,142 @@ Protected Module VNSPDFExamplesModule
 		    pdf.SetTextColor(100, 100, 100)
 		    pdf.Cell(0, 5, "Note: The last line of justified text is always left-aligned, following standard typographic convention.", 0, 1)
 		    pdf.SetTextColor(0, 0, 0)
+
+		    // ---- Section 9: Color Object Overloads ----
+		    pdf.AddPage()
+		    pdf.SetFont("helvetica", "B", 16)
+		    pdf.Cell(0, 10, "Text Layout Examples (continued)", 0, 1, "C")
+		    pdf.Ln(5)
+
+		    pdf.SetFont("helvetica", "B", 12)
+		    pdf.Cell(0, 8, "9. Color Object Overloads (Set/Get Color with Xojo Color):", 0, 1)
+		    pdf.Ln(2)
+
+		    pdf.SetFont("helvetica", "", 9)
+		    pdf.SetTextColor(100, 100, 100)
+		    pdf.Cell(0, 5, "Tests SetTextColor(Color), SetFillColor(Color), SetDrawColor(Color) and their Get counterparts.", 0, 1)
+		    pdf.SetTextColor(0, 0, 0)
+		    pdf.Ln(3)
+
+		    // 9a. SetTextColor with Color object
+		    Dim kColorTestLabel9a As String = "9a. SetTextColor(Color) - text should appear in distinct colors:"
+		    pdf.SetFont("helvetica", "B", 10)
+		    pdf.Cell(0, 7, kColorTestLabel9a, 0, 1)
+		    pdf.Ln(1)
+
+		    pdf.SetFont("helvetica", "", 11)
+		    pdf.SetTextColor(Color.RGB(255, 0, 0))
+		    pdf.Cell(0, 7, "This text should be RED (255, 0, 0)", 0, 1)
+		    pdf.SetTextColor(Color.RGB(0, 128, 0))
+		    pdf.Cell(0, 7, "This text should be GREEN (0, 128, 0)", 0, 1)
+		    pdf.SetTextColor(Color.RGB(0, 0, 255))
+		    pdf.Cell(0, 7, "This text should be BLUE (0, 0, 255)", 0, 1)
+		    pdf.SetTextColor(Color.RGB(255, 128, 0))
+		    pdf.Cell(0, 7, "This text should be ORANGE (255, 128, 0)", 0, 1)
+		    pdf.SetTextColor(Color.RGB(128, 0, 128))
+		    pdf.Cell(0, 7, "This text should be PURPLE (128, 0, 128)", 0, 1)
+		    pdf.SetTextColor(0, 0, 0)
+		    pdf.Ln(3)
+
+		    // 9b. SetFillColor with Color object
+		    Dim kColorTestLabel9b As String = "9b. SetFillColor(Color) - cells should have colored backgrounds:"
+		    pdf.SetFont("helvetica", "B", 10)
+		    pdf.Cell(0, 7, kColorTestLabel9b, 0, 1)
+		    pdf.Ln(1)
+
+		    pdf.SetFont("helvetica", "", 10)
+		    pdf.SetFillColor(Color.RGB(255, 200, 200))
+		    pdf.Cell(60, 7, "Light Red fill", 1, 0, "C", True)
+		    pdf.SetFillColor(Color.RGB(200, 255, 200))
+		    pdf.Cell(60, 7, "Light Green fill", 1, 0, "C", True)
+		    pdf.SetFillColor(Color.RGB(200, 200, 255))
+		    pdf.Cell(60, 7, "Light Blue fill", 1, 1, "C", True)
+		    pdf.SetFillColor(Color.RGB(255, 255, 200))
+		    pdf.Cell(60, 7, "Light Yellow fill", 1, 0, "C", True)
+		    pdf.SetFillColor(Color.RGB(255, 200, 255))
+		    pdf.Cell(60, 7, "Light Magenta fill", 1, 0, "C", True)
+		    pdf.SetFillColor(Color.RGB(200, 255, 255))
+		    pdf.Cell(60, 7, "Light Cyan fill", 1, 1, "C", True)
+		    pdf.Ln(3)
+
+		    // 9c. SetDrawColor with Color object
+		    Dim kColorTestLabel9c As String = "9c. SetDrawColor(Color) - borders should appear in distinct colors:"
+		    pdf.SetFont("helvetica", "B", 10)
+		    pdf.Cell(0, 7, kColorTestLabel9c, 0, 1)
+		    pdf.Ln(1)
+
+		    pdf.SetFont("helvetica", "", 10)
+		    pdf.SetLineWidth(1.0)
+		    pdf.SetDrawColor(Color.RGB(255, 0, 0))
+		    pdf.Rect(10, pdf.GetY, 40, 12, "D")
+		    pdf.SetXY(12, pdf.GetY + 2)
+		    pdf.Cell(36, 8, "Red border", 0, 0)
+
+		    pdf.SetDrawColor(Color.RGB(0, 128, 0))
+		    pdf.Rect(55, pdf.GetY - 2, 40, 12, "D")
+		    pdf.SetXY(57, pdf.GetY - 2)
+		    pdf.Cell(36, 8, "Green border", 0, 0)
+
+		    pdf.SetDrawColor(Color.RGB(0, 0, 255))
+		    pdf.Rect(100, pdf.GetY, 40, 12, "D")
+		    pdf.SetXY(102, pdf.GetY)
+		    pdf.Cell(36, 8, "Blue border", 0, 0)
+
+		    pdf.SetDrawColor(0, 0, 0)
+		    pdf.SetLineWidth(0.2)
+		    pdf.SetY(pdf.GetY + 15)
+		    pdf.Ln(3)
+
+		    // 9d. GetTextColor / GetFillColor / GetDrawColor roundtrip test
+		    Dim kColorTestLabel9d As String = "9d. Get*Color() roundtrip - set a Color, get it back, verify match:"
+		    pdf.SetFont("helvetica", "B", 10)
+		    pdf.Cell(0, 7, kColorTestLabel9d, 0, 1)
+		    pdf.Ln(1)
+
+		    pdf.SetFont("helvetica", "", 10)
+
+		    // Test GetTextColor roundtrip
+		    pdf.SetTextColor(Color.RGB(200, 50, 100))
+		    Dim gotTextColor As Color = pdf.GetTextColor
+		    Dim kTextColorPass As String = "GetTextColor: Set (200, 50, 100) -> Got (" + Str(gotTextColor.Red) + ", " + Str(gotTextColor.Green) + ", " + Str(gotTextColor.Blue) + ")"
+		    If gotTextColor.Red = 200 And gotTextColor.Green = 50 And gotTextColor.Blue = 100 Then
+		      pdf.SetTextColor(0, 128, 0)
+		      pdf.Cell(0, 7, kTextColorPass + " PASS", 0, 1)
+		    Else
+		      pdf.SetTextColor(255, 0, 0)
+		      pdf.Cell(0, 7, kTextColorPass + " FAIL", 0, 1)
+		    End If
+
+		    // Test GetFillColor roundtrip
+		    pdf.SetTextColor(0, 0, 0)
+		    pdf.SetFillColor(Color.RGB(50, 150, 250))
+		    Dim gotFillColor As Color = pdf.GetFillColor
+		    Dim kFillColorPass As String = "GetFillColor: Set (50, 150, 250) -> Got (" + Str(gotFillColor.Red) + ", " + Str(gotFillColor.Green) + ", " + Str(gotFillColor.Blue) + ")"
+		    If gotFillColor.Red = 50 And gotFillColor.Green = 150 And gotFillColor.Blue = 250 Then
+		      pdf.SetTextColor(0, 128, 0)
+		      pdf.Cell(0, 7, kFillColorPass + " PASS", 0, 1)
+		    Else
+		      pdf.SetTextColor(255, 0, 0)
+		      pdf.Cell(0, 7, kFillColorPass + " FAIL", 0, 1)
+		    End If
+
+		    // Test GetDrawColor roundtrip
+		    pdf.SetTextColor(0, 0, 0)
+		    pdf.SetDrawColor(Color.RGB(100, 200, 75))
+		    Dim gotDrawColor As Color = pdf.GetDrawColor
+		    Dim kDrawColorPass As String = "GetDrawColor: Set (100, 200, 75) -> Got (" + Str(gotDrawColor.Red) + ", " + Str(gotDrawColor.Green) + ", " + Str(gotDrawColor.Blue) + ")"
+		    If gotDrawColor.Red = 100 And gotDrawColor.Green = 200 And gotDrawColor.Blue = 75 Then
+		      pdf.SetTextColor(0, 128, 0)
+		      pdf.Cell(0, 7, kDrawColorPass + " PASS", 0, 1)
+		    Else
+		      pdf.SetTextColor(255, 0, 0)
+		      pdf.Cell(0, 7, kDrawColorPass + " FAIL", 0, 1)
+		    End If
+
+		    // Reset colors
+		    pdf.SetTextColor(0, 0, 0)
+		    pdf.SetFillColor(255, 255, 255)
+		    pdf.SetDrawColor(0, 0, 0)
 
 		    // Generate PDF
 		    Dim pdfData As String = pdf.Output()
@@ -7105,14 +7224,14 @@ Protected Module VNSPDFExamplesModule
 		  // 2. example24_vnspdf.pdf - VNS implementation with forms
 		  //
 		  // Demonstrates migration ease and feature parity
-		  // REQUIRES: Premium Forms Module (hasPremiumFormsModule = True)
+		  // REQUIRES: Premium Forms Module (hasPremiumVNSFormsModule = True)
 
 		  Dim result As New Dictionary
 		  Dim statusText As String = "Generating Example 24: PDF Forms Comparison..." + EndOfLine
 
-		  #If Not VNSPDFModule.hasPremiumFormsModule Then
-		    statusText = statusText + "PDF Forms require the Premium Forms Module." + EndOfLine
-		    statusText = statusText + "Set VNSPDFModule.hasPremiumFormsModule = True to enable." + EndOfLine
+		  #If Not hasPremiumVNSFormsModule Then
+		    statusText = statusText + "PDF Forms require the Premium Forms Module." + EndOfLine + EndOfLine
+		    statusText = statusText + GetPremiumEnablingInstructions(Array("hasPremiumVNSFormsModule")) + EndOfLine
 		    result.Value("success") = False
 		    result.Value("passed") = False
 		    result.Value("message") = statusText
@@ -7120,7 +7239,7 @@ Protected Module VNSPDFExamplesModule
 		    Return result
 		  #EndIf
 
-		  #If VNSPDFModule.hasPremiumFormsModule Then
+		  #If hasPremiumVNSFormsModule Then
 		    #If TargetDesktop Then
 		      // ============================================================
 		      // PART 1: Generate PDF using native Xojo PDFDocument
@@ -7185,11 +7304,53 @@ Protected Module VNSPDFExamplesModule
 		        g.DrawText("Phone", 75, y)
 		        y = y + 40
 
+		        // Combo box
+		        g.DrawText("Country:", 50, y)
+		        Dim cb2 As New PDFComboBox(1, 120, y - 15, 150, 20, "country", "France", "Germany", "United Kingdom", "United States")
+		        cb2.SelectedRowIndex = 0
+		        xojoPDF.AddControl(cb2)
+		        y = y + 30
+
+		        // List box
+		        g.DrawText("Interests:", 50, y)
+		        Dim lbVals() As String = Array("Technology", "Science", "Arts", "Sports")
+		        Dim lb1 As New PDFListBox(1, 120, y - 15, 150, 60, "interests", lbVals)
+		        lb1.SelectedRowIndex = 1
+		        xojoPDF.AddControl(lb1)
+		        y = y + 70
+
+		        // Popup menu
+		        g.DrawText("Priority:", 50, y)
+		        Dim pm1 As New PDFPopupMenu(1, 120, y - 15, 150, 20, "priority", "Low", "Normal", "High", "Critical")
+		        pm1.SelectedRowIndex = 1
+		        xojoPDF.AddControl(pm1)
+		        y = y + 30
+
 		        // Text area
 		        g.DrawText("Comments:", 50, y)
 		        Dim ta1 As New PDFTextArea(1, 50, y + 10, 300, 80, "comments")
 		        ta1.Text = "Enter your comments here..."
 		        xojoPDF.AddControl(ta1)
+		        y = y + 100
+
+		        // Signature field
+		        g.DrawText("Signature:", 50, y)
+		        Dim sig1 As New PDFSignature(1, 50, y + 10, 150, 40, "signature1")
+		        xojoPDF.AddControl(sig1)
+		        y = y + 60
+
+		        // Buttons
+		        Dim resetBtn As New PDFButton(1, 50, y, 70, 22, "resetBtn", "Reset")
+		        xojoPDF.AddControl(resetBtn)
+
+		        Dim submitBtn As New PDFButton(1, 130, y, 70, 22, "submitBtn", "Submit")
+		        submitBtn.Action = PDFButton.Actions.SendForm
+		        submitBtn.URL = "https://httpbin.org/post"
+		        xojoPDF.AddControl(submitBtn)
+
+		        Dim urlBtn As New PDFButton(1, 210, y, 85, 22, "urlBtn", "Visit Website")
+		        urlBtn.URL = "https://example.com"
+		        xojoPDF.AddControl(urlBtn)
 
 		        // Save native Xojo PDF to Desktop
 		        Dim desktop As FolderItem = SpecialFolder.Desktop
@@ -7284,6 +7445,34 @@ Protected Module VNSPDFExamplesModule
 		      statusText = statusText + "✓ Added radio buttons" + EndOfLine
 		      vY = vY + 14
 
+		      // Combo box
+		      pdf.SetXY(17, vY)
+		      pdf.Cell(25, 6, "Country:", 0, 0)
+		      Dim vnsCombo As New PDFComboBox(1, CType(pdf.GetX() * 2.83, Integer), CType((vY - 0.5) * 2.83, Integer), CType(53 * 2.83, Integer), CType(7 * 2.83, Integer), "country", "France", "Germany", "United Kingdom", "United States")
+		      vnsCombo.SelectedRowIndex = 0
+		      pdf.AddControl(vnsCombo)
+		      statusText = statusText + "✓ Added combo box" + EndOfLine
+		      vY = vY + 11
+
+		      // List box
+		      pdf.SetXY(17, vY)
+		      pdf.Cell(25, 6, "Interests:", 0, 0)
+		      Dim lbValues() As String = Array("Technology", "Science", "Arts", "Sports")
+		      Dim vnsLb As New PDFListBox(1, CType(pdf.GetX() * 2.83, Integer), CType((vY - 0.5) * 2.83, Integer), CType(53 * 2.83, Integer), CType(21 * 2.83, Integer), "interests", lbValues)
+		      vnsLb.SelectedRowIndex = 1
+		      pdf.AddControl(vnsLb)
+		      statusText = statusText + "✓ Added list box" + EndOfLine
+		      vY = vY + 25
+
+		      // Popup menu
+		      pdf.SetXY(17, vY)
+		      pdf.Cell(25, 6, "Priority:", 0, 0)
+		      Dim vnsPm As New PDFPopupMenu(1, CType(pdf.GetX() * 2.83, Integer), CType((vY - 0.5) * 2.83, Integer), CType(53 * 2.83, Integer), CType(7 * 2.83, Integer), "priority", "Low", "Normal", "High", "Critical")
+		      vnsPm.SelectedRowIndex = 1
+		      pdf.AddControl(vnsPm)
+		      statusText = statusText + "✓ Added popup menu" + EndOfLine
+		      vY = vY + 11
+
 		      // Text area
 		      pdf.SetXY(17, vY)
 		      pdf.Cell(0, 6, "Comments:", 0, 1)
@@ -7292,6 +7481,34 @@ Protected Module VNSPDFExamplesModule
 		      vnsTa.FontSize = 10
 		      pdf.AddControl(vnsTa)
 		      statusText = statusText + "✓ Added text area" + EndOfLine
+		      vY = vY + 35
+
+		      // Signature field placeholder
+		      pdf.SetXY(17, vY)
+		      pdf.Cell(0, 6, "Signature:", 0, 1)
+		      Dim vnsSig As New PDFSignature(1, CType(17.7 * 2.83, Integer), CType((vY + 3.5) * 2.83, Integer), CType(53 * 2.83, Integer), CType(14 * 2.83, Integer), "signature1")
+		      pdf.AddControl(vnsSig)
+		      statusText = statusText + "✓ Added signature field" + EndOfLine
+		      vY = vY + 22
+
+		      // Push buttons with different actions
+		      // Reset button (clears all form fields) - Action defaults to ResetForm
+		      Dim vnsResetBtn As New PDFButton(1, CType(17.7 * 2.83, Integer), CType(vY * 2.83, Integer), CType(25 * 2.83, Integer), CType(8 * 2.83, Integer), "resetBtn", "Reset")
+		      pdf.AddControl(vnsResetBtn)
+		      statusText = statusText + "✓ Added reset button (ResetForm action)" + EndOfLine
+
+		      // Submit button (sends form data to URL)
+		      Dim vnsSubmitBtn As New PDFButton(1, CType(47 * 2.83, Integer), CType(vY * 2.83, Integer), CType(25 * 2.83, Integer), CType(8 * 2.83, Integer), "submitBtn", "Submit")
+		      vnsSubmitBtn.Action = PDFButton.Actions.SendForm
+		      vnsSubmitBtn.URL = "https://httpbin.org/post"
+		      pdf.AddControl(vnsSubmitBtn)
+		      statusText = statusText + "✓ Added submit button (SendForm action)" + EndOfLine
+
+		      // URL button (opens link in browser)
+		      Dim vnsUrlBtn As New PDFButton(1, CType(76 * 2.83, Integer), CType(vY * 2.83, Integer), CType(30 * 2.83, Integer), CType(8 * 2.83, Integer), "urlBtn", "Visit Website")
+		      vnsUrlBtn.URL = "https://example.com"
+		      pdf.AddControl(vnsUrlBtn)
+		      statusText = statusText + "✓ Added URL button (URI action)" + EndOfLine
 
 		      // Save VNS PDF
 		      Dim pdfData As String = pdf.Output()
@@ -9305,7 +9522,7 @@ Protected Module VNSPDFExamplesModule
 		        #EndIf
 		        Dim picWidth As Integer = 400 * kScale
 		        Dim picHeight As Integer = 300 * kScale
-		        Dim pic As New Picture(picWidth, picHeight, 32)  // High-res with alpha channel
+		        Dim pic As New Picture(picWidth, picHeight)  // High-res
 		        Dim g As Graphics = pic.Graphics
 		        
 		        // White background
@@ -9458,7 +9675,7 @@ Protected Module VNSPDFExamplesModule
 		        #If TargetDesktop Then
 		          // Convert RGBA to RGB (remove alpha channel for PDF compatibility)
 		          // PDF doesn't natively support RGBA images - they need RGB or SMask
-		          Dim chartPic As New Picture(800, 600, 24)  // 24-bit = RGB without alpha
+		          Dim chartPic As New Picture(800, 600)  // RGB without alpha
 		          Dim chartGraphics As Graphics = chartPic.Graphics
 		          chartGraphics.DrawPicture(chartPicRGBA, 0, 0)
 		        #Else
@@ -9623,7 +9840,7 @@ Protected Module VNSPDFExamplesModule
 		  Dim result As New Dictionary
 		  Dim output As String = ""
 		  
-		  #If VNSPDFModule.hasPremiumZlibModule Then
+		  #If hasPremiumVNSZlibModule Then
 		    // RFC 1950 specifies: adler32("Wikipedia") = 0x11E60398
 		    Dim input As String = "Wikipedia"
 		    Dim expected As UInt32 = &h11E60398
@@ -9642,7 +9859,7 @@ Protected Module VNSPDFExamplesModule
 		      result.Value("passed") = False
 		    End If
 		  #Else
-		    output = "  (Skipped - hasPremiumZlibModule = False)" + EndOfLine
+		    output = "  (Skipped - hasPremiumVNSZlibModule = False)" + EndOfLine
 		    result.Value("passed") = True
 		  #EndIf
 		  
@@ -9715,7 +9932,7 @@ Protected Module VNSPDFExamplesModule
 		  output = output + EndOfLine
 		  
 		  // Test SHA-384 (needed for PDF Revision 6)
-		  #If VNSPDFModule.hasPremiumEncryptionModule Then
+		  #If hasPremiumVNSEncryptionModule Then
 		    output = output + "Testing SHA-384..." + EndOfLine
 		    Dim testSHA384 As Boolean = VNSPDFEncryptionPremium.TestSHA384()
 		    If testSHA384 Then
@@ -9734,7 +9951,7 @@ Protected Module VNSPDFExamplesModule
 		    output = output + "Pure Xojo AES implementation is working correctly!" + EndOfLine
 		    output = output + "AES-128 (ECB + CBC) - Ready for PDF Revision 4" + EndOfLine
 		    output = output + "AES-256 (ECB + CBC) - Ready for PDF Revisions 5-6" + EndOfLine
-		    #If VNSPDFModule.hasPremiumEncryptionModule Then
+		    #If hasPremiumVNSEncryptionModule Then
 		      output = output + "SHA-384 - Ready for PDF Revision 6" + EndOfLine
 		    #EndIf
 		  Else
@@ -9754,7 +9971,7 @@ Protected Module VNSPDFExamplesModule
 		  Dim result As New Dictionary
 		  Dim output As String = ""
 		  
-		  #If VNSPDFModule.hasPremiumEncryptionModule Then
+		  #If hasPremiumVNSEncryptionModule Then
 		    // Test CBC-AES128 encryption with NIST test vectors
 		    // From NIST SP 800-38A Section F.2.1
 		    
@@ -9818,7 +10035,7 @@ Protected Module VNSPDFExamplesModule
 		  Dim result As New Dictionary
 		  Dim output As String = ""
 		  
-		  #If VNSPDFModule.hasPremiumEncryptionModule Then
+		  #If hasPremiumVNSEncryptionModule Then
 		    // Test CBC-AES256 encryption with NIST test vectors
 		    // From NIST SP 800-38A Section F.2.5
 		    
@@ -9884,7 +10101,7 @@ Protected Module VNSPDFExamplesModule
 		  Dim result As New Dictionary
 		  Dim output As String = ""
 		  
-		  #If VNSPDFModule.hasPremiumEncryptionModule Then
+		  #If hasPremiumVNSEncryptionModule Then
 		    // Test ECB-AES128 encryption with NIST test vectors
 		    // From NIST SP 800-38A Section F.1.1
 		    
@@ -9944,7 +10161,7 @@ Protected Module VNSPDFExamplesModule
 		  Dim result As New Dictionary
 		  Dim output As String = ""
 		  
-		  #If VNSPDFModule.hasPremiumEncryptionModule Then
+		  #If hasPremiumVNSEncryptionModule Then
 		    // Test ECB-AES256 encryption with NIST test vectors
 		    // From NIST SP 800-38A Section F.1.5
 		    
@@ -10107,13 +10324,13 @@ Protected Module VNSPDFExamplesModule
 		  Dim result As New Dictionary
 		  result.Value("output") = ""
 		  
-		  #If VNSPDFModule.hasPremiumZlibModule Then
+		  #If hasPremiumVNSZlibModule Then
 		    Dim deflater As New VNSZlibPremiumDeflate
 		    Dim compressedResult As MemoryBlock = deflater.CompressString("")
 		    // Empty input should return Nil
 		    result.Value("passed") = (compressedResult = Nil)
 		  #Else
-		    result.Value("output") = "  (Skipped - hasPremiumZlibModule = False)" + EndOfLine
+		    result.Value("output") = "  (Skipped - hasPremiumVNSZlibModule = False)" + EndOfLine
 		    result.Value("passed") = True
 		  #EndIf
 		  
@@ -10127,7 +10344,7 @@ Protected Module VNSPDFExamplesModule
 		  Dim result As New Dictionary
 		  Dim output As String = ""
 		  
-		  #If VNSPDFModule.hasPremiumZlibModule Then
+		  #If hasPremiumVNSZlibModule Then
 		    Dim deflater As New VNSZlibPremiumDeflate
 		    
 		    // Create a string with repeated pattern
@@ -10164,7 +10381,7 @@ Protected Module VNSPDFExamplesModule
 		      result.Value("passed") = True
 		    End If
 		  #Else
-		    output = "  (Skipped - hasPremiumZlibModule = False)" + EndOfLine
+		    output = "  (Skipped - hasPremiumVNSZlibModule = False)" + EndOfLine
 		    result.Value("passed") = True
 		  #EndIf
 		  
@@ -10179,7 +10396,7 @@ Protected Module VNSPDFExamplesModule
 		  Dim result As New Dictionary
 		  Dim output As String = ""
 		  
-		  #If VNSPDFModule.hasPremiumZlibModule Then
+		  #If hasPremiumVNSZlibModule Then
 		    Dim deflater As New VNSZlibPremiumDeflate
 		    Dim input As String = "The quick brown fox jumps over the lazy dog"
 		    Dim compressedResult As MemoryBlock = deflater.CompressString(input)
@@ -10213,7 +10430,7 @@ Protected Module VNSPDFExamplesModule
 		      End If
 		    End If
 		  #Else
-		    output = "  (Skipped - hasPremiumZlibModule = False)" + EndOfLine
+		    output = "  (Skipped - hasPremiumVNSZlibModule = False)" + EndOfLine
 		    result.Value("passed") = True
 		  #EndIf
 		  
@@ -10225,11 +10442,11 @@ Protected Module VNSPDFExamplesModule
 	#tag Method, Flags = &h21
 		Private Function TestZlibRoundTrip() As Dictionary
 		  // Test that our compressed data can be decompressed
-		  // Now uses pure Xojo inflate on all platforms when hasPremiumZlibModule = True
+		  // Now uses pure Xojo inflate on all platforms when hasPremiumVNSZlibModule = True
 		  Dim result As New Dictionary
 		  Dim output As String = ""
 		  
-		  #If VNSPDFModule.hasPremiumZlibModule Then
+		  #If hasPremiumVNSZlibModule Then
 		    Dim deflater As New VNSZlibPremiumDeflate
 		    Dim input As String = "This is a test of the pure Xojo zlib compression implementation. It should compress and decompress correctly!"
 		    
@@ -10246,7 +10463,7 @@ Protected Module VNSPDFExamplesModule
 		      #EndIf
 		      
 		      // Try to decompress using VNSZlibModule.Uncompress
-		      // This uses pure Xojo inflate on all platforms when hasPremiumZlibModule = True
+		      // This uses pure Xojo inflate on all platforms when hasPremiumVNSZlibModule = True
 		      Dim compressedStr As String = compressed.StringValue(0, compressed.Size)
 		      
 		      #If TargetiOS Then
@@ -10282,7 +10499,7 @@ Protected Module VNSPDFExamplesModule
 		      End If
 		    End If
 		  #Else
-		    output = "  (Skipped - hasPremiumZlibModule = False)" + EndOfLine
+		    output = "  (Skipped - hasPremiumVNSZlibModule = False)" + EndOfLine
 		    result.Value("passed") = True
 		  #EndIf
 		  
@@ -10297,7 +10514,7 @@ Protected Module VNSPDFExamplesModule
 		  Dim result As New Dictionary
 		  Dim output As String = ""
 		  
-		  #If VNSPDFModule.hasPremiumZlibModule Then
+		  #If hasPremiumVNSZlibModule Then
 		    Dim deflater As New VNSZlibPremiumDeflate
 		    Dim input As String = "Hello"
 		    Dim compressedResult As MemoryBlock = deflater.CompressString(input)
@@ -10320,7 +10537,7 @@ Protected Module VNSPDFExamplesModule
 		      End If
 		    End If
 		  #Else
-		    output = "  (Skipped - hasPremiumZlibModule = False)" + EndOfLine
+		    output = "  (Skipped - hasPremiumVNSZlibModule = False)" + EndOfLine
 		    result.Value("passed") = True
 		  #EndIf
 		  
@@ -10848,34 +11065,18 @@ Protected Module VNSPDFExamplesModule
 		    pdf.Ln(4)
 
 		    // Create a test Picture with drawn graphics
-		    #If TargetiOS Then
-		      Dim testPic As New Picture(100, 100)
-		    #Else
-		      Dim testPic As New Picture(100, 100, 32)
-		    #EndIf
+		    Dim testPic As New Picture(100, 100)
 		    Dim g As Graphics = testPic.Graphics
 
 		    // Draw test pattern
-		    #If TargetiOS Then
-		      g.DrawingColor = Color.RGB(255, 200, 200)
-		    #Else
-		      g.ForeColor = Color.RGB(255, 200, 200)
-		    #EndIf
+		    g.DrawingColor = Color.RGB(255, 200, 200)
 		    g.FillRectangle(0, 0, 100, 100)
-		    #If TargetiOS Then
-		      g.DrawingColor = Color.RGB(255, 0, 0)
-		    #Else
-		      g.ForeColor = Color.RGB(255, 0, 0)
-		    #EndIf
+		    g.DrawingColor = Color.RGB(255, 0, 0)
 		    g.PenSize = 3
 		    g.DrawRectangle(5, 5, 90, 90)
 		    g.DrawLine(10, 10, 90, 90)
 		    g.DrawLine(90, 10, 10, 90)
-		    #If TargetiOS Then
-		      g.DrawingColor = Color.RGB(0, 0, 255)
-		    #Else
-		      g.ForeColor = Color.RGB(0, 0, 255)
-		    #EndIf
+		    g.DrawingColor = Color.RGB(0, 0, 255)
 		    g.FillOval(30, 30, 40, 40)
 
 		    pdf.SetFont("Helvetica", "B", 10)
@@ -11033,7 +11234,7 @@ Protected Module VNSPDFExamplesModule
 	#tag EndMethod
 
 	#tag Method, Flags = &h0, Description = 4578616D706C652032373A2048544D4C20496D706F72742E2054616B65732048544D4C20636F6E74656E7420737472696E6720616E6420636F6E766572747320746F20504446207573696E67204C6F616448544D4C28292E2052657475726E732044696374696F6E6172792077697468207374617475732C2070646620646174612C20616E642066696C656E616D652E
-		Function GenerateExample27_HTMLImport(htmlContent As String) As Dictionary
+		Function GenerateExample27_HTMLImport(htmlContent As String, imageFolder As FolderItem = Nil) As Dictionary
 		  // Example 27: HTML Import - Convert HTML content to PDF
 		  // Demonstrates LoadHTML() from the premium HTML/Markdown Import module
 
@@ -11084,8 +11285,8 @@ Protected Module VNSPDFExamplesModule
 		    pdf.RegisterHTMLTagHandler("highlight", AddressOf HandleHighlight)
 		    pdf.RegisterHTMLTagHandler("signature-line", AddressOf HandleSignatureLine)
 
-		    // Call LoadHTML with the provided content
-		    pdf.LoadHTML(htmlContent)
+		    // Call LoadHTML with the provided content and optional image folder
+		    pdf.LoadHTML(htmlContent, 0, imageFolder)
 
 		    If pdf.Ok Then
 		      // Generate PDF output
@@ -11864,7 +12065,7 @@ Protected Module VNSPDFExamplesModule
 
 	#tag Method, Flags = &h0, Description = 4578616D706C652033303A20452D496E766F69636520284661637475722D582F5A55474665524429202D205072656D69756D
 		Function GenerateExample30() As Dictionary
-		  #If VNSPDFModule.hasPremiumEInvoiceModule Then
+		  #If hasPremiumVNSEInvoiceModule Then
 		    // Example 30: E-Invoice (Factur-X/ZUGFeRD)
 		    // Demonstrates creating a PDF/A-3b compliant invoice with embedded CII XML
 
@@ -12169,13 +12370,7 @@ Protected Module VNSPDFExamplesModule
 		    statusText = statusText + "==========================================" + EndOfLine + EndOfLine
 
 		    statusText = statusText + "This example requires the premium E-Invoice module." + EndOfLine + EndOfLine
-
-		    statusText = statusText + "ENABLING THE E-INVOICE MODULE:" + EndOfLine
-		    statusText = statusText + "==============================" + EndOfLine
-		    statusText = statusText + "1. Open: PDF_Library/VNSPDFModule.xojo_code" + EndOfLine
-		    statusText = statusText + "2. Find the constant: hasPremiumEInvoiceModule" + EndOfLine
-		    statusText = statusText + "3. Change Default from ""False"" to ""True""" + EndOfLine
-		    statusText = statusText + "4. Rebuild your project" + EndOfLine + EndOfLine
+		    statusText = statusText + GetPremiumEnablingInstructions(Array("hasPremiumVNSEInvoiceModule")) + EndOfLine
 
 		    statusText = statusText + "FEATURES:" + EndOfLine
 		    statusText = statusText + "  - Factur-X and ZUGFeRD compliant e-invoicing" + EndOfLine
@@ -12197,7 +12392,7 @@ Protected Module VNSPDFExamplesModule
 
 	#tag Method, Flags = &h0, Description = 436865636B20612050444620666F72204661637475722D582F5A55474665524420652D696E766F69636520636F6E666F726D6974792E2052657475726E732044696374696F6E6172792077697468204A534F4E20726573756C742E
 		Function GenerateExample31_CheckEInvoice(pdfData As String) As Dictionary
-		  #If VNSPDFModule.hasPremiumEInvoiceModule Then
+		  #If hasPremiumVNSEInvoiceModule Then
 		    // Example 31: E-Invoice PDF Checker
 		    // Reads an existing PDF and checks for Factur-X/ZUGFeRD conformity
 
@@ -12229,7 +12424,7 @@ Protected Module VNSPDFExamplesModule
 		    // Format the JSON result nicely
 		    Dim isValid As Boolean = False
 		    Dim kValid As String = VNSPDFEInvoicePremium.eInvoiceJSONKey.Valid.ToString
-		    If jsonResult.HasName(kValid) Then
+		    If jsonResult.HasKey(kValid) Then
 		      isValid = jsonResult.Value(kValid)
 		    End If
 
@@ -12238,65 +12433,65 @@ Protected Module VNSPDFExamplesModule
 
 		      Dim standard As String = ""
 		      Dim kStandard As String = VNSPDFEInvoicePremium.eInvoiceJSONKey.Standard.ToString
-		      If jsonResult.HasName(kStandard) Then standard = jsonResult.Value(kStandard)
+		      If jsonResult.HasKey(kStandard) Then standard = jsonResult.Value(kStandard)
 		      Dim profile As String = ""
 		      Dim kProfile As String = VNSPDFEInvoicePremium.eInvoiceJSONKey.Profile.ToString
-		      If jsonResult.HasName(kProfile) Then profile = jsonResult.Value(kProfile)
+		      If jsonResult.HasKey(kProfile) Then profile = jsonResult.Value(kProfile)
 
 		      statusText = statusText + "Standard: " + standard + EndOfLine
 		      statusText = statusText + "Profile:  " + profile + EndOfLine + EndOfLine
 
 		      // Extract invoice details
 		      Dim kInvoice As String = VNSPDFEInvoicePremium.eInvoiceJSONKey.Invoice.ToString
-		      If jsonResult.HasName(kInvoice) Then
+		      If jsonResult.HasKey(kInvoice) Then
 		        Dim inv As JSONItem = jsonResult.Value(kInvoice)
 
 		        Dim kInvNum As String = VNSPDFEInvoicePremium.eInvoiceJSONKey.InvoiceNumber.ToString
-		        If inv.HasName(kInvNum) Then
+		        If inv.HasKey(kInvNum) Then
 		          statusText = statusText + "Invoice Number: " + inv.Value(kInvNum).StringValue + EndOfLine
 		        End If
 		        Dim kInvDate As String = VNSPDFEInvoicePremium.eInvoiceJSONKey.InvoiceDate.ToString
-		        If inv.HasName(kInvDate) Then
+		        If inv.HasKey(kInvDate) Then
 		          statusText = statusText + "Invoice Date:   " + inv.Value(kInvDate).StringValue + EndOfLine
 		        End If
 		        Dim kCurrency As String = VNSPDFEInvoicePremium.eInvoiceJSONKey.Currency.ToString
-		        If inv.HasName(kCurrency) Then
+		        If inv.HasKey(kCurrency) Then
 		          statusText = statusText + "Currency:       " + inv.Value(kCurrency).StringValue + EndOfLine
 		        End If
 
 		        // Seller
 		        Dim kSeller As String = VNSPDFEInvoicePremium.eInvoiceJSONKey.Seller.ToString
-		        If inv.HasName(kSeller) Then
+		        If inv.HasKey(kSeller) Then
 		          Dim seller As JSONItem = inv.Value(kSeller)
 		          Dim kName As String = VNSPDFEInvoicePremium.eInvoiceJSONKey.Name.ToString
 		          Dim kVAT As String = VNSPDFEInvoicePremium.eInvoiceJSONKey.VATNumber.ToString
 		          Dim kCity As String = VNSPDFEInvoicePremium.eInvoiceJSONKey.City.ToString
 		          Dim kCountry As String = VNSPDFEInvoicePremium.eInvoiceJSONKey.CountryCode.ToString
 		          statusText = statusText + EndOfLine + "Seller:" + EndOfLine
-		          If seller.HasName(kName) Then statusText = statusText + "  Name:    " + seller.Value(kName).StringValue + EndOfLine
-		          If seller.HasName(kVAT) Then statusText = statusText + "  VAT:     " + seller.Value(kVAT).StringValue + EndOfLine
-		          If seller.HasName(kCity) Then statusText = statusText + "  City:    " + seller.Value(kCity).StringValue + EndOfLine
-		          If seller.HasName(kCountry) Then statusText = statusText + "  Country: " + seller.Value(kCountry).StringValue + EndOfLine
+		          If seller.HasKey(kName) Then statusText = statusText + "  Name:    " + seller.Value(kName).StringValue + EndOfLine
+		          If seller.HasKey(kVAT) Then statusText = statusText + "  VAT:     " + seller.Value(kVAT).StringValue + EndOfLine
+		          If seller.HasKey(kCity) Then statusText = statusText + "  City:    " + seller.Value(kCity).StringValue + EndOfLine
+		          If seller.HasKey(kCountry) Then statusText = statusText + "  Country: " + seller.Value(kCountry).StringValue + EndOfLine
 		        End If
 
 		        // Buyer
 		        Dim kBuyer As String = VNSPDFEInvoicePremium.eInvoiceJSONKey.Buyer.ToString
-		        If inv.HasName(kBuyer) Then
+		        If inv.HasKey(kBuyer) Then
 		          Dim buyer As JSONItem = inv.Value(kBuyer)
 		          Dim kName As String = VNSPDFEInvoicePremium.eInvoiceJSONKey.Name.ToString
 		          Dim kVAT As String = VNSPDFEInvoicePremium.eInvoiceJSONKey.VATNumber.ToString
 		          Dim kCity As String = VNSPDFEInvoicePremium.eInvoiceJSONKey.City.ToString
 		          Dim kCountry As String = VNSPDFEInvoicePremium.eInvoiceJSONKey.CountryCode.ToString
 		          statusText = statusText + EndOfLine + "Buyer:" + EndOfLine
-		          If buyer.HasName(kName) Then statusText = statusText + "  Name:    " + buyer.Value(kName).StringValue + EndOfLine
-		          If buyer.HasName(kVAT) Then statusText = statusText + "  VAT:     " + buyer.Value(kVAT).StringValue + EndOfLine
-		          If buyer.HasName(kCity) Then statusText = statusText + "  City:    " + buyer.Value(kCity).StringValue + EndOfLine
-		          If buyer.HasName(kCountry) Then statusText = statusText + "  Country: " + buyer.Value(kCountry).StringValue + EndOfLine
+		          If buyer.HasKey(kName) Then statusText = statusText + "  Name:    " + buyer.Value(kName).StringValue + EndOfLine
+		          If buyer.HasKey(kVAT) Then statusText = statusText + "  VAT:     " + buyer.Value(kVAT).StringValue + EndOfLine
+		          If buyer.HasKey(kCity) Then statusText = statusText + "  City:    " + buyer.Value(kCity).StringValue + EndOfLine
+		          If buyer.HasKey(kCountry) Then statusText = statusText + "  Country: " + buyer.Value(kCountry).StringValue + EndOfLine
 		        End If
 
 		        // Line items
 		        Dim kLineItems As String = VNSPDFEInvoicePremium.eInvoiceJSONKey.LineItems.ToString
-		        If inv.HasName(kLineItems) Then
+		        If inv.HasKey(kLineItems) Then
 		          Dim items As JSONItem = inv.Value(kLineItems)
 		          statusText = statusText + EndOfLine + "Line Items (" + Str(items.Count) + "):" + EndOfLine
 		          Dim kLineID As String = VNSPDFEInvoicePremium.eInvoiceJSONKey.LineID.ToString
@@ -12307,15 +12502,15 @@ Protected Module VNSPDFExamplesModule
 		          For i As Integer = 0 To items.Count - 1
 		            Dim item As JSONItem = items.ChildAt(i)
 		            Dim lineID As String = ""
-		            If item.HasName(kLineID) Then lineID = item.Value(kLineID).StringValue
+		            If item.HasKey(kLineID) Then lineID = item.Value(kLineID).StringValue
 		            Dim prodName As String = ""
-		            If item.HasName(kProdName) Then prodName = item.Value(kProdName).StringValue
+		            If item.HasKey(kProdName) Then prodName = item.Value(kProdName).StringValue
 		            Dim qty As Double = 0
-		            If item.HasName(kQty) Then qty = item.Value(kQty)
+		            If item.HasKey(kQty) Then qty = item.Value(kQty)
 		            Dim price As Double = 0
-		            If item.HasName(kPrice) Then price = item.Value(kPrice)
+		            If item.HasKey(kPrice) Then price = item.Value(kPrice)
 		            Dim net As Double = 0
-		            If item.HasName(kNet) Then net = item.Value(kNet)
+		            If item.HasKey(kNet) Then net = item.Value(kNet)
 		            statusText = statusText + "  " + lineID + ": " + prodName + " (qty=" + Str(qty, "0.00") + " x " + Str(price, "0.00") + " = " + Str(net, "0.00") + ")" + EndOfLine
 		          Next
 		        End If
@@ -12323,15 +12518,15 @@ Protected Module VNSPDFExamplesModule
 		        // Totals
 		        statusText = statusText + EndOfLine + "Totals:" + EndOfLine
 		        Dim kLineTotal As String = VNSPDFEInvoicePremium.eInvoiceJSONKey.LineTotalAmount.ToString
-		        If inv.HasName(kLineTotal) Then
+		        If inv.HasKey(kLineTotal) Then
 		          statusText = statusText + "  Line Total: " + Str(inv.Value(kLineTotal).DoubleValue, "0.00") + EndOfLine
 		        End If
 		        Dim kTaxTotal As String = VNSPDFEInvoicePremium.eInvoiceJSONKey.TaxTotalAmount.ToString
-		        If inv.HasName(kTaxTotal) Then
+		        If inv.HasKey(kTaxTotal) Then
 		          statusText = statusText + "  Tax Total:  " + Str(inv.Value(kTaxTotal).DoubleValue, "0.00") + EndOfLine
 		        End If
 		        Dim kGrandTotal As String = VNSPDFEInvoicePremium.eInvoiceJSONKey.GrandTotalAmount.ToString
-		        If inv.HasName(kGrandTotal) Then
+		        If inv.HasKey(kGrandTotal) Then
 		          statusText = statusText + "  Grand Total:" + Str(inv.Value(kGrandTotal).DoubleValue, "0.00") + EndOfLine
 		        End If
 		      End If
@@ -12340,20 +12535,20 @@ Protected Module VNSPDFExamplesModule
 		      statusText = statusText + "NOT a valid e-invoice." + EndOfLine + EndOfLine
 		      Dim errMsg As String = ""
 		      Dim kError As String = VNSPDFEInvoicePremium.eInvoiceJSONKey.Error.ToString
-		      If jsonResult.HasName(kError) Then errMsg = jsonResult.Value(kError)
+		      If jsonResult.HasKey(kError) Then errMsg = jsonResult.Value(kError)
 		      statusText = statusText + "Reason: " + errMsg + EndOfLine
 		    End If
 
 		    // Display signature information (available for both valid and invalid invoices)
 		    Dim kSigCount As String = VNSPDFEInvoicePremium.eInvoiceJSONKey.SignatureCount.ToString
-		    If jsonResult.HasName(kSigCount) Then
+		    If jsonResult.HasKey(kSigCount) Then
 		      Dim sigCount As Integer = jsonResult.Value(kSigCount)
 		      statusText = statusText + EndOfLine + "Digital Signatures: " + Str(sigCount) + EndOfLine
 		      statusText = statusText + "-------------------" + EndOfLine
 
 		      If sigCount > 0 Then
 		        Dim kSigs As String = VNSPDFEInvoicePremium.eInvoiceJSONKey.Signatures.ToString
-		        If jsonResult.HasName(kSigs) Then
+		        If jsonResult.HasKey(kSigs) Then
 		          Dim sigs As JSONItem = jsonResult.Value(kSigs)
 		          Dim kSignerName As String = VNSPDFEInvoicePremium.eInvoiceJSONKey.SignerName.ToString
 		          Dim kSigningReason As String = VNSPDFEInvoicePremium.eInvoiceJSONKey.SigningReason.ToString
@@ -12372,54 +12567,54 @@ Protected Module VNSPDFExamplesModule
 		            Dim sig As JSONItem = sigs.ChildAt(si)
 		            statusText = statusText + EndOfLine + "  Signature " + Str(si + 1) + ":" + EndOfLine
 
-		            If sig.HasName(kSignerName) Then
+		            If sig.HasKey(kSignerName) Then
 		              statusText = statusText + "    Signer:       " + sig.Value(kSignerName).StringValue + EndOfLine
 		            End If
-		            If sig.HasName(kSigningReason) Then
+		            If sig.HasKey(kSigningReason) Then
 		              Dim reason As String = sig.Value(kSigningReason).StringValue
 		              If reason <> "" Then statusText = statusText + "    Reason:       " + reason + EndOfLine
 		            End If
-		            If sig.HasName(kSigningLocation) Then
+		            If sig.HasKey(kSigningLocation) Then
 		              Dim loc As String = sig.Value(kSigningLocation).StringValue
 		              If loc <> "" Then statusText = statusText + "    Location:     " + loc + EndOfLine
 		            End If
-		            If sig.HasName(kSigningDate) Then
+		            If sig.HasKey(kSigningDate) Then
 		              Dim dt As String = sig.Value(kSigningDate).StringValue
 		              If dt <> "" Then statusText = statusText + "    Date:         " + dt + EndOfLine
 		            End If
-		            If sig.HasName(kSigFilter) Then
+		            If sig.HasKey(kSigFilter) Then
 		              statusText = statusText + "    Filter:       " + sig.Value(kSigFilter).StringValue + EndOfLine
 		            End If
-		            If sig.HasName(kSigSubFilter) Then
+		            If sig.HasKey(kSigSubFilter) Then
 		              statusText = statusText + "    SubFilter:    " + sig.Value(kSigSubFilter).StringValue + EndOfLine
 		            End If
-		            If sig.HasName(kSigFieldName) Then
+		            If sig.HasKey(kSigFieldName) Then
 		              Dim fn As String = sig.Value(kSigFieldName).StringValue
 		              If fn <> "" Then statusText = statusText + "    Field Name:   " + fn + EndOfLine
 		            End If
-		            If sig.HasName(kSigValid) Then
+		            If sig.HasKey(kSigValid) Then
 		              If sig.Value(kSigValid) Then
 		                statusText = statusText + "    Hash Valid:   YES (integrity verified)" + EndOfLine
 		              Else
 		                statusText = statusText + "    Hash Valid:   NO (file may be tampered)" + EndOfLine
 		              End If
 		            End If
-		            If sig.HasName(kSigCovers) Then
+		            If sig.HasKey(kSigCovers) Then
 		              If sig.Value(kSigCovers) Then
 		                statusText = statusText + "    Coverage:     Whole file" + EndOfLine
 		              Else
 		                statusText = statusText + "    Coverage:     Partial" + EndOfLine
 		              End If
 		            End If
-		            If sig.HasName(kCertSubject) Then
+		            If sig.HasKey(kCertSubject) Then
 		              Dim subj As String = sig.Value(kCertSubject).StringValue
 		              If subj <> "" Then statusText = statusText + "    Cert Subject: " + subj + EndOfLine
 		            End If
-		            If sig.HasName(kCertIssuer) Then
+		            If sig.HasKey(kCertIssuer) Then
 		              Dim iss As String = sig.Value(kCertIssuer).StringValue
 		              If iss <> "" Then statusText = statusText + "    Cert Issuer:  " + iss + EndOfLine
 		            End If
-		            If sig.HasName(kSelfSigned) Then
+		            If sig.HasKey(kSelfSigned) Then
 		              If sig.Value(kSelfSigned) Then
 		                statusText = statusText + "    Self-Signed:  YES" + EndOfLine
 		              Else
@@ -12465,7 +12660,7 @@ Protected Module VNSPDFExamplesModule
 
 	#tag Method, Flags = &h0, Description = 4578616D706C652033323A204469676974616C205369676E61747572657320285041644553202B20584164455329202D205072656D69756D
 		Function GenerateExample32() As Dictionary
-		  #If VNSPDFModule.hasPremiumEncryptionModule And VNSPDFModule.hasPremiumEInvoiceModule Then
+		  #If hasPremiumVNSEncryptionModule And hasPremiumVNSEInvoiceModule Then
 		    // Example 32: Digital Signatures (PAdES-B-B + XAdES-BES)
 		    // Demonstrates signing a Factur-X PDF with PAdES and XAdES
 
@@ -12800,7 +12995,7 @@ Protected Module VNSPDFExamplesModule
 		    result.Value("message") = statusText
 		    Return result
 
-		  #ElseIf VNSPDFModule.hasPremiumEncryptionModule Then
+		  #ElseIf hasPremiumVNSEncryptionModule Then
 		    // Only encryption module - no e-invoice
 		    Dim result As New Dictionary
 		    Dim statusText As String = ""
@@ -12809,8 +13004,8 @@ Protected Module VNSPDFExamplesModule
 		    statusText = statusText + "This example requires both premium modules:" + EndOfLine
 		    statusText = statusText + "  - Encryption Module (for PAdES/XAdES signing)" + EndOfLine
 		    statusText = statusText + "  - E-Invoice Module (for Factur-X PDF generation)" + EndOfLine + EndOfLine
-		    statusText = statusText + "The Encryption Module is enabled but E-Invoice Module is not." + EndOfLine
-		    statusText = statusText + "Enable hasPremiumEInvoiceModule in VNSPDFModule." + EndOfLine
+		    statusText = statusText + "The Encryption Module is enabled but E-Invoice Module is not." + EndOfLine + EndOfLine
+		    statusText = statusText + GetPremiumEnablingInstructions(Array("hasPremiumVNSEInvoiceModule")) + EndOfLine
 		    result.Value("message") = statusText
 		    result.Value("error") = "Premium E-Invoice module not enabled"
 		    Return result
@@ -12832,10 +13027,7 @@ Protected Module VNSPDFExamplesModule
 		    statusText = statusText + "  - Signs the embedded CII XML invoice data" + EndOfLine
 		    statusText = statusText + "  - Proves the invoice data has not been tampered with" + EndOfLine
 		    statusText = statusText + "  - Includes SigningCertificate in signed properties" + EndOfLine + EndOfLine
-		    statusText = statusText + "ENABLING:" + EndOfLine
-		    statusText = statusText + "1. Set hasPremiumEncryptionModule = True in VNSPDFModule" + EndOfLine
-		    statusText = statusText + "2. Set hasPremiumEInvoiceModule = True in VNSPDFModule" + EndOfLine
-		    statusText = statusText + "3. Rebuild your project" + EndOfLine
+		    statusText = statusText + GetPremiumEnablingInstructions(Array("hasPremiumVNSEncryptionModule", "hasPremiumVNSEInvoiceModule")) + EndOfLine
 		    result.Value("message") = statusText
 		    result.Value("error") = "Premium modules not enabled"
 		    Return result
@@ -12845,7 +13037,7 @@ Protected Module VNSPDFExamplesModule
 
 	#tag Method, Flags = &h21, Description = 4275696C64206120736B656C6574616C2073656C662D7369676E656420582E353039207465737420636572746966696361746520666F722064656D6F20707572706F7365732E
 		Private Function BuildTestCertificate(privateKeyHex As String, publicKeyHex As String) As MemoryBlock
-		  #If VNSPDFModule.hasPremiumEncryptionModule Then
+		  #If hasPremiumVNSEncryptionModule Then
 		  // Build a minimal self-signed X.509 certificate for testing
 		  // This is NOT a production-quality certificate generator
 		  // For production, use openssl or a CA-issued certificate
@@ -12929,7 +13121,7 @@ Protected Module VNSPDFExamplesModule
 
 	#tag Method, Flags = &h21
 		Private Function BuildX509Name(commonName As String, organization As String, country As String) As MemoryBlock
-		  #If VNSPDFModule.hasPremiumEncryptionModule Then
+		  #If hasPremiumVNSEncryptionModule Then
 		  // Build an X.509 Name: SEQUENCE of SET of SEQUENCE of { OID, value }
 
 		  // CN (2.5.4.3)
@@ -13023,7 +13215,7 @@ Protected Module VNSPDFExamplesModule
 		    #EndIf
 
 		    // ========== PAGE 2: Premium 1D Barcodes ==========
-		    #If VNSPDFModule.hasPremiumEInvoiceModule Then
+		    #If hasPremiumVNSEInvoiceModule Then
 		      Dim leftM As Double = pdf.GetLeftMargin()
 
 		      pdf.AddPage()
@@ -13189,7 +13381,7 @@ Protected Module VNSPDFExamplesModule
 		      result.Value("error") = pdf.Error
 		    Else
 		      Dim pageCount As Integer = 1
-		      #If VNSPDFModule.hasPremiumEInvoiceModule Then
+		      #If hasPremiumVNSEInvoiceModule Then
 		        pageCount = 4
 		      #EndIf
 		      statusText = statusText + "Success! PDF generated with " + Str(pageCount) + " pages." + EndOfLine

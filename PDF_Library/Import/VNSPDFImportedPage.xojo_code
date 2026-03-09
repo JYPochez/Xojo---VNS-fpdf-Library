@@ -129,27 +129,30 @@ Protected Class VNSPDFImportedPage
 		  // Handle array of streams
 		  ElseIf contentObj IsA VNSPDFArray Then
 		    Dim arr As VNSPDFArray = VNSPDFArray(contentObj)
-		    Dim arrValue() As Variant = arr.value
+		    // arr.value is a Variant holding VNSPDFType() — cast to the actual type
+		    Dim arrElements() As VNSPDFType = arr.value
 
-		    For Each item As Variant In arrValue
+		    For Each item As VNSPDFType In arrElements
 		      If item IsA VNSPDFIndirectObjectReference Then
 		        Dim ref As VNSPDFIndirectObjectReference = VNSPDFIndirectObjectReference(item)
 		        Dim streamObj As VNSPDFType = reader.GetObject(ref.objectNumber)
 		        If streamObj IsA VNSPDFStream Then
 		          Dim stream As VNSPDFStream = VNSPDFStream(streamObj)
-		          Dim streamData As String = stream.GetDecodedData()
-		          result = result + streamData
-		        Else
-		          System.DebugLog("GetDecodedContents: Array item is not a stream: " + Introspection.GetType(streamObj).Name)
+		          result = result + stream.GetDecodedData()
 		        End If
 		      ElseIf item IsA VNSPDFStream Then
 		        Dim stream As VNSPDFStream = VNSPDFStream(item)
-		        Dim streamData As String = stream.GetDecodedData()
-		        result = result + streamData
+		        result = result + stream.GetDecodedData()
 		      End If
 		    Next
-		  Else
-		    System.DebugLog("GetDecodedContents: ERROR - contentObj is neither stream nor array: " + Introspection.GetType(contentObj).Name)
+		  ElseIf contentObj IsA VNSPDFIndirectObjectReference Then
+		    // Contents is a double indirect reference (ref -> ref -> stream)
+		    Dim ref As VNSPDFIndirectObjectReference = VNSPDFIndirectObjectReference(contentObj)
+		    Dim streamObj As VNSPDFType = reader.GetObject(ref.objectNumber)
+		    If streamObj IsA VNSPDFStream Then
+		      Dim stream As VNSPDFStream = VNSPDFStream(streamObj)
+		      result = stream.GetDecodedData()
+		    End If
 		  End If
 
 		  Return result

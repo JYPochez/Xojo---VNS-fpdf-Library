@@ -3,12 +3,73 @@ Protected Module VNSZlibModule
 	#tag Method, Flags = &h1
 		Protected Function Compress(input as String) As String
 		  mLastErrorCode = 0
-		  
-		  // Check if pure Xojo zlib module is available (premium feature)
-		  // This enables compression on iOS and removes dependency on system zlib
-		  #If VNSPDFModule.hasPremiumZlibModule Then
-		    // Use pure Xojo implementation (works on ALL platforms including iOS)
+
+		  #If Not TargetiOS Then
+		    // Native-first strategy: try system zlib, fall back to premium pure Xojo
+		    // zlib uses uLongf (unsigned long) for sizes:
+		    // macOS/Linux LP64: unsigned long = 8 bytes -> UInt64
+		    // Windows LLP64: unsigned long = 4 bytes -> UInt32
+		    Try
+		      #If TargetWindows Then
+		        soft declare function zlibcompress lib kZlibPath alias "compress" (dest as Ptr, ByRef destLen as UInt32, source as Ptr, sourceLen as UInt32) as Int32
+		      #Else
+		        soft declare function zlibcompress lib kZlibPath alias "compress" (dest as Ptr, ByRef destLen as UInt64, source as Ptr, sourceLen as UInt64) as Int32
+		      #EndIf
+
+		      // Convert string to MemoryBlock to preserve binary data (CString truncates at null bytes)
+		      Dim inputMB As New MemoryBlock(input.Bytes)
+		      inputMB.StringValue(0, input.Bytes) = input
+
+		      Dim output As New MemoryBlock(12 + 1.002*input.Bytes)
+		      #If TargetWindows Then
+		        Dim outputSize As UInt32 = output.Size
+		      #Else
+		        Dim outputSize As UInt64 = output.Size
+		      #EndIf
+
+		      mLastErrorCode = zlibcompress(output, outputSize, inputMB, input.Bytes)
+		      If mLastErrorCode = 0 Then
+		        Return output.StringValue(0, outputSize)
+		      End If
+		      // Native zlib returned error - fall through to premium fallback
+
+		    Catch e As RuntimeException
+		      // Native zlib not available (e.g. ZLIB1.DLL missing on Windows)
+		      // Fall through to premium pure Xojo fallback
+		    End Try
+
+		    // Fallback: use premium pure Xojo compression if available
+		    #If hasPremiumVNSZlibModule Then
+		      Return CompressWithPremium(input)
+		    #Else
+		      // No compression available - return empty to signal failure
+		      Return ""
+		    #EndIf
+
+		  #Else
+		    // iOS: Declares to system libraries blocked by sandboxing
+		    // Use pure Xojo implementation if premium zlib module is available
+		    #If hasPremiumVNSZlibModule Then
+		      Return CompressWithPremium(input)
+		    #Else
+		      // No compression available - PDFs remain valid but larger
+		      mLastErrorCode = 0
+		      Return input
+		    #EndIf
+		  #EndIf
+		End Function
+	#tag EndMethod
+
+	#tag Method, Flags = &h21
+		Private Function CompressWithPremium(input As String) As String
+		  // Pure Xojo compression fallback (premium module)
+		  #If hasPremiumVNSZlibModule Then
 		    Dim deflater As New VNSZlibPremiumDeflate
+		    // Use fast compression (level 1) for large data to avoid slow hash chain lookups
+		    Const kFastCompressionThreshold As Integer = 102400 // 100KB
+		    If input.Bytes > kFastCompressionThreshold Then
+		      deflater.SetLevel(1)
+		    End If
 		    Dim result As MemoryBlock = deflater.CompressString(input)
 		    If result <> Nil And result.Size > 0 Then
 		      Return result.StringValue(0, result.Size)
@@ -16,29 +77,10 @@ Protected Module VNSZlibModule
 		      mLastErrorCode = kZ_MEM_ERROR
 		      Return ""
 		    End If
-		  #EndIf
-		  
-		  #If Not TargetiOS Then
-		    soft declare function zlibcompress lib kZlibPath alias "compress" (dest as Ptr, ByRef destLen as Uint32, source as Ptr, sourceLen as UInt32) as Int32
-
-		    // Convert string to MemoryBlock to preserve binary data (CString truncates at null bytes)
-		    Dim inputMB As New MemoryBlock(input.Bytes)
-		    inputMB.StringValue(0, input.Bytes) = input
-
-		    dim output as new MemoryBlock(12 + 1.002*input.Bytes)
-		    dim outputSize as UInt32 = output.Size
-
-		    mLastErrorCode = zlibcompress(output, outputSize, inputMB, input.Bytes)
-		    if mLastErrorCode = 0 then
-		      return output.StringValue(0, outputSize)
-		    else
-		      return ""
-		    end if
 		  #Else
-		    // iOS: Declares to system libraries blocked by sandboxing
-		    // Return uncompressed data - PDFs remain valid but larger
-		    mLastErrorCode = 0
-		    return input
+		    #Pragma Unused input
+		    mLastErrorCode = kZ_MEM_ERROR
+		    Return ""
 		  #EndIf
 		End Function
 	#tag EndMethod
@@ -46,28 +88,82 @@ Protected Module VNSZlibModule
 	#tag Method, Flags = &h1
 		Protected Function Uncompress(input as String, bufferSize as Integer = 0) As String
 		  mLastErrorCode = 0
-		  
-		  // Check if pure Xojo zlib module is available (premium feature)
-		  // This enables decompression on iOS and removes dependency on system zlib
-		  #If VNSPDFModule.hasPremiumZlibModule Then
-		    // Use pure Xojo implementation (works on ALL platforms including iOS)
-		    Dim inflater As New VNSZlibPremiumInflate
-		    
-		    // Convert input string to MemoryBlock
-		    #If TargetiOS Then
-		      Dim inputSize As Integer = input.Bytes
+
+		  #If Not TargetiOS Then
+		    // Native-first strategy: try system zlib, fall back to premium pure Xojo
+		    Try
+		      Dim localBufferSize As Integer = bufferSize
+		      If localBufferSize = 0 Then
+		        localBufferSize = 4*input.Bytes
+		      End If
+
+		      // Convert string to MemoryBlock to preserve binary data (CString truncates at null bytes)
+		      Dim inputMB As New MemoryBlock(input.Bytes)
+		      inputMB.StringValue(0, input.Bytes) = input
+
+		      Do
+		        #If TargetWindows Then
+		          soft declare function zlibuncompress lib kZlibPath alias "uncompress" (dest as Ptr, ByRef destLen as UInt32, source as Ptr, sourceLen as UInt32) as Int32
+		        #Else
+		          soft declare function zlibuncompress lib kZlibPath alias "uncompress" (dest as Ptr, ByRef destLen as UInt64, source as Ptr, sourceLen as UInt64) as Int32
+		        #EndIf
+
+		        Dim m As New MemoryBlock(localBufferSize)
+		        #If TargetWindows Then
+		          Dim destLength As UInt32 = m.Size
+		        #Else
+		          Dim destLength As UInt64 = m.Size
+		        #EndIf
+		        mLastErrorCode = zlibuncompress(m, destLength, inputMB, input.Bytes)
+		        If mLastErrorCode = 0 Then
+		          Return m.StringValue(0, destLength)
+		        ElseIf mLastErrorCode = kZ_BUF_ERROR Then
+		          localBufferSize = localBufferSize + localBufferSize
+		        Else
+		          // Native zlib returned error - fall through to premium fallback
+		          Exit
+		        End If
+		      Loop
+
+		    Catch e As RuntimeException
+		      // Native zlib not available (e.g. ZLIB1.DLL missing on Windows)
+		      // Fall through to premium pure Xojo fallback
+		    End Try
+
+		    // Fallback: use premium pure Xojo decompression if available
+		    #If hasPremiumVNSZlibModule Then
+		      Return UncompressWithPremium(input)
 		    #Else
-		      Dim inputSize As Integer = input.Bytes
+		      // No decompression available
+		      Return ""
 		    #EndIf
-		    
+
+		  #Else
+		    // iOS: Declares to system libraries blocked by sandboxing
+		    #Pragma Unused bufferSize
+		    #If hasPremiumVNSZlibModule Then
+		      Return UncompressWithPremium(input)
+		    #Else
+		      // No decompression available - return input as-is
+		      mLastErrorCode = 0
+		      Return input
+		    #EndIf
+		  #EndIf
+		End Function
+	#tag EndMethod
+
+	#tag Method, Flags = &h21
+		Private Function UncompressWithPremium(input As String) As String
+		  // Pure Xojo decompression fallback (premium module)
+		  #If hasPremiumVNSZlibModule Then
+		    Dim inflater As New VNSZlibPremiumInflate
+		    Dim inputSize As Integer = input.Bytes
 		    Dim inputMB As New MemoryBlock(inputSize)
 		    inputMB.StringValue(0, inputSize) = input
-		    
 		    Dim result As String = inflater.DecompressString(inputMB)
 		    If result <> "" Then
 		      Return result
 		    Else
-		      // Get error message for debugging
 		      Dim errMsg As String = inflater.GetError()
 		      If errMsg <> "" Then
 		        mLastErrorCode = kZ_DATA_ERROR
@@ -76,40 +172,10 @@ Protected Module VNSZlibModule
 		      End If
 		      Return ""
 		    End If
-		  #EndIf
-		  
-		  #If Not TargetiOS Then
-		    #Pragma Unused bufferSize
-		    
-		    Dim localBufferSize As Integer = bufferSize
-		    if localBufferSize = 0 then
-		      localBufferSize = 4*input.Bytes
-		    end if
-		    
-		    // Convert string to MemoryBlock to preserve binary data (CString truncates at null bytes)
-		    Dim inputMB As New MemoryBlock(input.Bytes)
-		    inputMB.StringValue(0, input.Bytes) = input
-
-		    do
-		      soft declare function zlibuncompress lib kZlibPath alias "uncompress" (dest as Ptr, ByRef destLen as UInt32, source as Ptr, sourceLen as Uint32) as Int32
-
-		      dim m as new MemoryBlock(localBufferSize)
-		      dim destLength as UInt32 = m.Size
-		      mLastErrorCode = zlibuncompress(m, destLength, inputMB, input.Bytes)
-		      if mLastErrorCode = 0 then
-		        return m.StringValue(0, destLength)
-		      elseIf mLastErrorCode = kZ_BUF_ERROR then
-		        localBufferSize = localBufferSize + localBufferSize
-		      else
-		        return ""
-		      end if
-		    loop
 		  #Else
-		    #Pragma Unused bufferSize
-		    // iOS without premium: Decompression not available
-		    // This should not be called if compression is disabled
-		    mLastErrorCode = 0
-		    return input
+		    #Pragma Unused input
+		    mLastErrorCode = kZ_MEM_ERROR
+		    Return ""
 		  #EndIf
 		End Function
 	#tag EndMethod
@@ -117,7 +183,7 @@ Protected Module VNSZlibModule
 	#tag Method, Flags = &h1
 		Protected Function Version() As String
 		  // Check if pure Xojo zlib module is available (premium feature)
-		  If VNSPDFModule.hasPremiumZlibModule Then
+		  If hasPremiumVNSZlibModule Then
 		    Return "1.3.1 (Pure Xojo - Compress + Decompress)"
 		  End If
 		  
@@ -147,15 +213,18 @@ Protected Module VNSZlibModule
 		Renamed to VNSZlibModule for VNS PDF Library
 		
 		PLATFORM SUPPORT:
-		
+
 		FREE VERSION:
-		- Desktop (Mac/Windows/Linux): Uses system zlib via Declares
+		- Desktop (Mac/Linux): Uses system zlib via Declares
+		- Windows: Requires ZLIB1.DLL alongside app (not included with Windows)
 		- iOS: COMPRESSION DISABLED - iOS sandboxing blocks Declares to system libraries
-		- PDFs generated on iOS will be larger but remain valid
-		
-		PREMIUM VERSION (with VNSPDFModule.hasPremiumZlibModule = True):
-		- ALL PLATFORMS: Uses pure Xojo zlib implementation
+		- PDFs generated without zlib will be larger but remain valid
+
+		PREMIUM VERSION (with hasPremiumVNSZlibModule = True):
+		- Native-first strategy: tries system zlib first, falls back to pure Xojo
+		- ALL PLATFORMS: Works without any external DLL dependencies
 		- Full compression AND decompression support on iOS!
+		- Windows: No ZLIB1.DLL needed - pure Xojo fallback handles everything
 		- No external dependencies
 		- Based on zlib 1.3.1 official source code
 		- Uses VNSZlibPremiumDeflate for compression (deflate algorithm)
@@ -186,7 +255,7 @@ Protected Module VNSZlibModule
 		Error codes for Uncompress: kZ_OK = no error, kZ_MEM_ERROR = not enough memory, kZ_DATA_ERROR = corrupted data.
 		
 		ENABLING PREMIUM ZLIB:
-		Set VNSPDFModule.hasPremiumZlibModule = True to enable pure Xojo compression/decompression.
+		Set hasPremiumVNSZlibModule = True to enable pure Xojo compression/decompression.
 		This is part of the premium VNS PDF Library package.
 	#tag EndNote
 

@@ -51,7 +51,7 @@ Protected Class VNSPDFDocument
 		  If Err() Then Return
 		  
 		  // Check premium module requirement for PDF/A support
-		  #If Not VNSPDFModule.hasPremiumPDFAModule Then
+		  #If Not hasPremiumVNSPDFAModule Then
 		    #Pragma Unused subtype
 		    #Pragma Unused outputCondition
 		    #Pragma Unused info
@@ -61,7 +61,7 @@ Protected Class VNSPDFDocument
 		  #EndIf
 		  
 		  // Delegate to premium PDF/A module
-		  #If VNSPDFModule.hasPremiumPDFAModule Then
+		  #If hasPremiumVNSPDFAModule Then
 		    VNSPDFPDFAPremium.AddOutputIntent(Self, subtype, outputCondition, info, iccProfile)
 		  #EndIf
 		End Sub
@@ -1204,7 +1204,7 @@ Protected Class VNSPDFDocument
 
 		    // Simulated bold: set text rendering mode to 2 (fill + stroke) with thin stroke
 		    If simulateBold Then
-		      Dim boldStrokeWidth As Double = mFontSizePt * 0.03
+		      Dim boldStrokeWidth As Double = mFontSizePt * 0.05
 		      cmd = cmd + FormatPDF(boldStrokeWidth) + " w " + EndOfLine.UNIX
 		      cmd = cmd + FormatPDF(rPDF, 3) + " " + FormatPDF(gPDF, 3) + " " + FormatPDF(bPDF, 3) + " RG " + EndOfLine.UNIX
 		      cmd = cmd + "2 Tr" + EndOfLine.UNIX
@@ -1758,7 +1758,7 @@ Protected Class VNSPDFDocument
 		  Call PutAnnotationsAttachments()
 
 		  // PDF Forms (AcroForms) - MUST generate BEFORE PutPages so widgets can be added to /Annots
-		  #If VNSPDFModule.hasPremiumFormsModule Then
+		  #If hasPremiumVNSFormsModule Then
 		    If mHasAcroForm Then
 		      // Generate form field objects and track their references
 		      Dim fieldRefs() As String = VNSPDFFormsPremium.PutFormFields(Self)
@@ -1797,7 +1797,7 @@ Protected Class VNSPDFDocument
 		  Call PutXmpMetadata()
 
 		  // PDF Forms (AcroForms) - generate AcroForm dictionary
-		  #If VNSPDFModule.hasPremiumFormsModule Then
+		  #If hasPremiumVNSFormsModule Then
 		    If mHasAcroForm And mFormFieldRefs.Count > 0 Then
 		      // Form field objects were already generated before PutPages
 		      // Now create the AcroForm dictionary referencing those fields
@@ -2153,11 +2153,8 @@ Protected Class VNSPDFDocument
 		  
 		  // Get DECODED content stream (decompressed)
 		  // This avoids LZWDecode issues - we'll re-compress with FlateDecode if available
+		  // Some pages may have empty content (blank pages, form-only pages) — not an error
 		  Dim decodedContent As String = importedPage.GetDecodedContents(mSourceReader)
-		  If decodedContent = "" Then
-		    Call SetError("Failed to get content stream from imported page")
-		    Return ""
-		  End If
 		  
 		  // TEMP FIX: Disable compression for imported content
 		  // Our pure Xojo deflate compression may not be fully compatible with Adobe Reader
@@ -2170,7 +2167,7 @@ Protected Class VNSPDFDocument
 		  // If compressed <> "" Then
 		  //   // Add filter when compression is available (premium zlib works on all platforms)
 		  //   #If TargetiOS Then
-		  //     If VNSPDFModule.hasPremiumZlibModule Then
+		  //     If hasPremiumVNSZlibModule Then
 		  //       useFilter = "FlateDecode"
 		  //       streamData = compressed
 		  //     End If
@@ -3205,11 +3202,7 @@ Protected Class VNSPDFDocument
 		  // Example:
 		  //   Dim currentColor As Color = pdf.GetDrawColor()
 		  
-		  #If TargetDesktop Or TargetConsole Or TargetWeb Then
-		    Return Color.RGB(mDrawColorR * 256, mDrawColorG * 256, mDrawColorB * 256)  // Convert from 0-255 to 0-65535
-		  #ElseIf TargetiOS Then
-		    Return Color.RGB(mDrawColorR, mDrawColorG, mDrawColorB)
-		  #EndIf
+		  Return Color.RGB(mDrawColorR, mDrawColorG, mDrawColorB)
 		End Function
 	#tag EndMethod
 
@@ -3235,11 +3228,7 @@ Protected Class VNSPDFDocument
 		  // Example:
 		  //   Dim currentColor As Color = pdf.GetFillColor()
 		  
-		  #If TargetDesktop Or TargetConsole Or TargetWeb Then
-		    Return Color.RGB(mFillColorR * 256, mFillColorG * 256, mFillColorB * 256)  // Convert from 0-255 to 0-65535
-		  #ElseIf TargetiOS Then
-		    Return Color.RGB(mFillColorR, mFillColorG, mFillColorB)
-		  #EndIf
+		  Return Color.RGB(mFillColorR, mFillColorG, mFillColorB)
 		End Function
 	#tag EndMethod
 
@@ -3766,11 +3755,7 @@ Protected Class VNSPDFDocument
 		  // Example:
 		  //   Dim currentColor As Color = pdf.GetTextColor()
 		  
-		  #If TargetDesktop Or TargetConsole Or TargetWeb Then
-		    Return Color.RGB(mTextColorR * 256, mTextColorG * 256, mTextColorB * 256)  // Convert from 0-255 to 0-65535
-		  #ElseIf TargetiOS Then
-		    Return Color.RGB(mTextColorR, mTextColorG, mTextColorB)
-		  #EndIf
+		  Return Color.RGB(mTextColorR, mTextColorG, mTextColorB)
 		End Function
 	#tag EndMethod
 
@@ -4852,32 +4837,36 @@ Protected Class VNSPDFDocument
 	#tag EndMethod
 
 	#tag Method, Flags = &h0, Description = 436F6E76657274732048544D4C20636F6E74656E7420746F205044462E20537570706F72747320706172616772617068732C20626F6C642C206974616C69632C20696D616765732C207461626C65732C206C697374732C2068656164696E67732E205265717569726573207072656D69756D2048544D4C2F4D61726B646F776E20496D706F7274206D6F64756C652E0A
-		Sub LoadHTML(html As String, maxWidth As Double = 0)
+		Sub LoadHTML(html As String, maxWidth As Double = 0, imageFolder As FolderItem = Nil)
 		  // Convert HTML content to PDF using existing FPDF rendering methods
 		  // html: HTML string to convert (supports Summernote/Word HTML with auto-cleaning)
 		  // maxWidth: Maximum content width in user units (0 = use available page width)
+		  // imageFolder: Folder containing images referenced by <img src="..."> (optional)
 
-		  #If VNSPDFModule.hasPremiumHTMLModule Then
-		    VNSPDFHTMLPremium.LoadHTML(Self, html, maxWidth)
+		  #If hasPremiumVNSHTMLModule Then
+		    VNSPDFHTMLPremium.LoadHTML(Self, html, maxWidth, imageFolder)
 		  #Else
 		    #Pragma Unused html
 		    #Pragma Unused maxWidth
+		    #Pragma Unused imageFolder
 		    SetError("LoadHTML requires the premium HTML/Markdown Import module.")
 		  #EndIf
 		End Sub
 	#tag EndMethod
 
 	#tag Method, Flags = &h0, Description = 436F6E7665727473204D61726B646F776E20636F6E74656E7420746F205044462E20537570706F7274732068656164696E67732C20626F6C642C206974616C69632C206C697374732C20636F646520626C6F636B732C206C696E6B732C20696D616765732E205265717569726573207072656D69756D2048544D4C2F4D61726B646F776E20496D706F7274206D6F64756C652E0A
-		Sub LoadMarkdown(markdown As String, maxWidth As Double = 0)
+		Sub LoadMarkdown(markdown As String, maxWidth As Double = 0, imageFolder As FolderItem = Nil)
 		  // Convert Markdown content to PDF using existing FPDF rendering methods
 		  // markdown: Markdown string to convert
 		  // maxWidth: Maximum content width in user units (0 = use available page width)
+		  // imageFolder: Folder containing images referenced by ![](path) (optional)
 
-		  #If VNSPDFModule.hasPremiumHTMLModule Then
-		    VNSPDFHTMLPremium.LoadMarkdown(Self, markdown, maxWidth)
+		  #If hasPremiumVNSHTMLModule Then
+		    VNSPDFHTMLPremium.LoadMarkdown(Self, markdown, maxWidth, imageFolder)
 		  #Else
 		    #Pragma Unused markdown
 		    #Pragma Unused maxWidth
+		    #Pragma Unused imageFolder
 		    SetError("LoadMarkdown requires the premium HTML/Markdown Import module.")
 		  #EndIf
 		End Sub
@@ -5749,8 +5738,54 @@ Protected Class VNSPDFDocument
 		    Call Put("/AcroForm " + Str(mAcroFormObjectNumber) + " 0 R")
 		  End If
 
+		  // Display mode (zoom and page layout) - contribution: Geoff Bridges
+		  Call PutDisplayMode()
+
 		  Call Put(">>")
 		  Call Put("endobj")
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h21, Description = 4F757470757473207A6F6F6D20616E6420706167652F6C61796F757420646972656374697665732E2043616C6C65642066726F6D2050757443617461
+		Private Sub PutDisplayMode()
+		  // Outputs /OpenAction (zoom) and /PageLayout directives into the Catalog dictionary
+		  // Called from PutCatalog. Contribution: Geoff Bridges
+
+		  // Zoom mode -> /OpenAction
+		  Select Case mZoomMode
+		  Case "fullpage"
+		    Call Put("/OpenAction [3 0 R /Fit]")
+		  Case "fullwidth"
+		    Call Put("/OpenAction [3 0 R /FitH null]")
+		  Case "real"
+		    Call Put("/OpenAction [3 0 R /XYZ null null 1]")
+		  Case "default"
+		    // No /OpenAction - let viewer use its default
+		  Else
+		    // Numeric zoom percentage (e.g. "75" -> 0.75, "200" -> 2.00)
+		    If mZoomMode.IsNumeric Then
+		      Dim zoomFactor As Double = CDbl(mZoomMode) / 100.0
+		      Call Put("/OpenAction [3 0 R /XYZ null null " + FormatPDF(zoomFactor, 2) + "]")
+		    End If
+		  End Select
+
+		  // Layout mode -> /PageLayout
+		  Select Case mLayoutMode
+		  Case "single", "SinglePage"
+		    Call Put("/PageLayout /SinglePage")
+		  Case "continuous", "OneColumn"
+		    Call Put("/PageLayout /OneColumn")
+		  Case "two", "TwoColumnLeft"
+		    Call Put("/PageLayout /TwoColumnLeft")
+		  Case "TwoColumnRight"
+		    Call Put("/PageLayout /TwoColumnRight")
+		  Case "TwoPageLeft"
+		    Call Put("/PageLayout /TwoPageLeft")
+		  Case "TwoPageRight"
+		    Call Put("/PageLayout /TwoPageRight")
+		  Case "default"
+		    // No /PageLayout - let viewer use its default
+		  End Select
 		End Sub
 	#tag EndMethod
 
@@ -6266,7 +6301,7 @@ Protected Class VNSPDFDocument
 		    Call Put("/Length " + Str(VNSPDFModule.StringLenB(compressedData)))
 		    // Add filter when compression is available (premium zlib works on all platforms)
 		    #If TargetiOS Then
-		      If VNSPDFModule.hasPremiumZlibModule Then
+		      If hasPremiumVNSZlibModule Then
 		        Call Put("/Filter /FlateDecode")
 		      End If
 		    #Else
@@ -6464,7 +6499,7 @@ Protected Class VNSPDFDocument
 		    If compressedData <> "" Then
 		      // Add filter when compression is available (premium zlib works on all platforms)
 		      #If TargetiOS Then
-		        If VNSPDFModule.hasPremiumZlibModule Then
+		        If hasPremiumVNSZlibModule Then
 		          filterStr = "/Filter /FlateDecode"
 		        End If
 		      #Else
@@ -7253,6 +7288,34 @@ Protected Class VNSPDFDocument
 		  // Write directly to the current page buffer (same as all other drawing operations)
 		  mBuffer = mBuffer + str + EndOfLine.UNIX
 		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h0, Description = 52657475726E7320746865206C656E677468206F66207468652063757272656E7420706167652062756666657220666F72206D61726B696E6720696E736572742D706F696E7473
+		Function GetBufferLength() As Integer
+		  // Returns the current length of the page content buffer.
+		  // Used to mark positions for later content insertion via InsertInBuffer.
+		  Return mBuffer.Length
+		End Function
+	#tag EndMethod
+
+	#tag Method, Flags = &h0, Description = 496E736572747320726177205044462073747272696E6720617420612073617665642062756666657220706F736974696F6E
+		Sub InsertInBuffer(position As Integer, content As String)
+		  // Inserts raw PDF content at the specified byte position in the current page buffer.
+		  // Used to draw background rects behind previously rendered text content.
+		  If position < 0 Or position > mBuffer.Length Then Return
+		  mBuffer = mBuffer.Left(position) + content + mBuffer.Middle(position)
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h0, Description = 457874726163747320616E642072656D6F76657320636F6E74656E742066726F6D20746865207370656369666965642062756666657220706F736974696F6E20746F20656E64
+		Function ExtractBufferSince(position As Integer) As String
+		  // Extracts content from position to end of buffer, removing it from the buffer.
+		  // Used with InsertInBuffer to move PDF commands to an earlier position in the stream.
+		  If position < 0 Or position >= mBuffer.Length Then Return ""
+		  Var extracted As String = mBuffer.Middle(position)
+		  mBuffer = mBuffer.Left(position)
+		  Return extracted
+		End Function
 	#tag EndMethod
 
 	#tag Method, Flags = &h0, Description = 44726177732061207265637461676C652077697468206F707469C3B76E616C2066696C6C696E6720616E642F6F72206F75746C696E696E672E
@@ -8240,25 +8303,32 @@ Protected Class VNSPDFDocument
 	#tag Method, Flags = &h0, Description = 5365747320646973706C6179206D6F646520666F72207A6F6F6D20616E64206C61796F75742E0A
 		Sub SetDisplayMode(zoomStr As String, layoutStr As String = "default")
 		  // Sets display mode for zoom and layout in PDF viewer
-		  // zoomStr: "fullpage" (entire page), "fullwidth" (max width), "real" (100%), "default" (viewer default)
+		  // zoomStr: "fullpage" (entire page), "fullwidth" (max width), "real" (100%),
+		  //          "default" (viewer default), or a numeric string for zoom percentage (e.g. "75", "200")
 		  // layoutStr: "single" (one page), "continuous" (continuous), "two" (two columns), "default" (viewer default)
 		  //            Also accepts: "SinglePage", "OneColumn", "TwoColumnLeft", "TwoColumnRight",
 		  //            "TwoPageLeft", "TwoPageRight"
 		  //
 		  // Example: SetDisplayMode("fullwidth", "continuous")
-		  
+		  // Example: SetDisplayMode("75", "two")  // 75% zoom, two-column layout
+
 		  // Check for errors first
 		  If Err() Then Return
-		  
-		  // Validate zoom mode
+
+		  // Validate zoom mode (contribution: Geoff Bridges)
 		  Select Case zoomStr
 		  Case "fullpage", "fullwidth", "real", "default"
 		    mZoomMode = zoomStr
 		  Else
-		    Call SetError("Incorrect zoom display mode: " + zoomStr)
-		    Return
+		    // Allow numeric zoom percentage (e.g. "75" for 75%, "200" for 200%)
+		    If zoomStr.IsNumeric Then
+		      mZoomMode = zoomStr
+		    Else
+		      Call SetError("Incorrect zoom display mode: " + zoomStr)
+		      Return
+		    End If
 		  End Select
-		  
+
 		  // Validate layout mode
 		  Select Case layoutStr
 		  Case "single", "continuous", "two", "default", "SinglePage", "OneColumn", _
@@ -8280,16 +8350,10 @@ Protected Class VNSPDFDocument
 		  //   pdf.SetDrawColor(Color.Red)
 		  //   pdf.SetDrawColor(&cFF8800)  // Orange
 		  
-		  #If TargetDesktop Or TargetConsole Or TargetWeb Then
-		    Dim r As Integer = c.Red \ 256    // Convert from 0-65535 to 0-255
-		    Dim g As Integer = c.Green \ 256
-		    Dim b As Integer = c.Blue \ 256
-		  #ElseIf TargetiOS Then
-		    Dim r As Integer = c.Red
-		    Dim g As Integer = c.Green
-		    Dim b As Integer = c.Blue
-		  #EndIf
-		  
+		  Dim r As Integer = c.Red
+		  Dim g As Integer = c.Green
+		  Dim b As Integer = c.Blue
+
 		  SetDrawColor(r, g, b)
 		End Sub
 	#tag EndMethod
@@ -8376,16 +8440,10 @@ Protected Class VNSPDFDocument
 		  //   pdf.SetFillColor(Color.Blue)
 		  //   pdf.SetFillColor(&cFFFF00)  // Yellow
 		  
-		  #If TargetDesktop Or TargetConsole Or TargetWeb Then
-		    Dim r As Integer = c.Red \ 256    // Convert from 0-65535 to 0-255
-		    Dim g As Integer = c.Green \ 256
-		    Dim b As Integer = c.Blue \ 256
-		  #ElseIf TargetiOS Then
-		    Dim r As Integer = c.Red
-		    Dim g As Integer = c.Green
-		    Dim b As Integer = c.Blue
-		  #EndIf
-		  
+		  Dim r As Integer = c.Red
+		  Dim g As Integer = c.Green
+		  Dim b As Integer = c.Blue
+
 		  SetFillColor(r, g, b)
 		End Sub
 	#tag EndMethod
@@ -8824,9 +8882,19 @@ Protected Class VNSPDFDocument
 		Sub SetPage(pageNum As Integer)
 		  // Set current page to specified page number
 		  // pageNum: Page number to switch to (1-based, must be between 1 and PageCount)
-		  
+
 		  If pageNum > 0 And pageNum <= mPages.KeyCount Then
-		    mPage = pageNum
+		    If pageNum <> mPage Then
+		      // Save current page buffer before switching
+		      mPages.Value(Str(mPage)) = mBuffer
+		      // Load target page buffer
+		      mPage = pageNum
+		      If mPages.HasKey(Str(mPage)) Then
+		        mBuffer = mPages.Value(Str(mPage))
+		      Else
+		        mBuffer = ""
+		      End If
+		    End If
 		  End If
 		End Sub
 	#tag EndMethod
@@ -8931,7 +8999,7 @@ Protected Class VNSPDFDocument
 		  
 		  // Check premium module requirement for revisions 3-6
 		  If revision >= 3 And revision <= 6 Then
-		    #If Not VNSPDFModule.hasPremiumEncryptionModule Then
+		    #If Not hasPremiumVNSEncryptionModule Then
 		      Call SetError("Encryption revisions 3-6 (RC4-128 and AES) require premium Encryption module. Only RC4-40 (revision 2) is available in free version.")
 		      Return
 		    #EndIf
@@ -9011,16 +9079,10 @@ Protected Class VNSPDFDocument
 		  //   pdf.SetTextColor(Color.Black)
 		  //   pdf.SetTextColor(&c0000FF)  // Blue
 		  
-		  #If TargetDesktop Or TargetConsole Or TargetWeb Then
-		    Dim r As Integer = c.Red \ 256    // Convert from 0-65535 to 0-255
-		    Dim g As Integer = c.Green \ 256
-		    Dim b As Integer = c.Blue \ 256
-		  #ElseIf TargetiOS Then
-		    Dim r As Integer = c.Red
-		    Dim g As Integer = c.Green
-		    Dim b As Integer = c.Blue
-		  #EndIf
-		  
+		  Dim r As Integer = c.Red
+		  Dim g As Integer = c.Green
+		  Dim b As Integer = c.Blue
+
 		  SetTextColor(r, g, b)
 		End Sub
 	#tag EndMethod
@@ -10302,22 +10364,20 @@ Protected Class VNSPDFDocument
 	#tag Method, Flags = &h0, Description = 4F757470757473206C6C6F77696E6720746578742074686174207772617073206175746F6D61746963616C6C792E
 		Sub Write(h As Double, txt As String, link As String = "")
 		  #Pragma Unused link
-		  
+
 		  // Check if page is active
 		  If mPage = 0 Then
 		    mError = mError + "Cannot write text: no page added yet." + EndOfLine
 		    Return
 		  End If
-		  
+
 		  // Check if font is set
 		  If mCurrentFont = "" Then
 		    mError = mError + "Cannot write text: no font selected. Call SetFont first." + EndOfLine
 		    Return
 		  End If
-		  
+
 		  // Ensure UTF-8 encoding for UTF-8 fonts before processing
-		  // This is critical: if text has wrong encoding, UTF8ToCodePoints gets wrong bytes
-		  // and characters > U+00FF are lost (replaced with ?)
 		  If IsCurrentFontUTF8() Then
 		    If txt.Encoding Is Nil Then
 		      txt = txt.DefineEncoding(Encodings.UTF8)
@@ -10326,194 +10386,208 @@ Protected Class VNSPDFDocument
 		    End If
 		  End If
 
-		  // Maximum width for text
-		  Dim wMax As Double = mPageWidth - mRightMargin - mCurrentX
-
 		  // Split text into words
 		  Dim words() As String = txt.Split(" ")
-		  
+
 		  For Each word As String In words
 		    Dim wordWidth As Double = GetStringWidth(word + " ")
-		    
+
 		    If mCurrentX + wordWidth > mPageWidth - mRightMargin Then
 		      // Word doesn't fit, go to next line
 		      mCurrentX = mLeftMargin
 		      mCurrentY = mCurrentY + h
-		      
+
 		      // Check for automatic page break
 		      If mAutoPageBreak And (mCurrentY + h > mPageBreakTrigger) Then
 		        AddPage(mCurOrientation)
 		      End If
-		    End If
-		    
-		    // Output the word
-		    Dim wordWithSpace As String = word + " "
-		    
-		    // Check if current font is UTF8
-		    Dim isUTF8 As Boolean = False
-		    Dim ttf As VNSPDFTrueTypeFont = Nil
-		    Dim encodedText As String = ""
-		    Dim glyphMapping As Dictionary = Nil  // Declare at outer scope
-		    
-		    If mFonts.HasKey(mCurrentFont) Then
-		      Dim fontInfo As Dictionary = mFonts.Value(mCurrentFont)
-		      If fontInfo.HasKey("type") And fontInfo.Value("type") = "UTF8" Then
-		        isUTF8 = True
-		        If fontInfo.HasKey("ttf") Then
-		          ttf = fontInfo.Value("ttf")
+
+		      // Check if word itself is wider than a full line - break it into chunks
+		      Dim lineWidth As Double = mPageWidth - mLeftMargin - mRightMargin
+		      If GetStringWidth(word) > lineWidth And word.Length > 1 Then
+		        // Break the long word into chunks that fit on a line
+		        Dim chunk As String = ""
+		        For charIdx As Integer = 0 To word.Length - 1
+		          Dim nextChar As String = word.Middle(charIdx, 1)
+		          Dim testChunk As String = chunk + nextChar
+		          If GetStringWidth(testChunk) > lineWidth And chunk <> "" Then
+		            // Output current chunk (no trailing space - mid-word)
+		            OutputWordInWrite(h, chunk, "")
+		            // Move to next line
+		            mCurrentX = mLeftMargin
+		            mCurrentY = mCurrentY + h
+		            If mAutoPageBreak And (mCurrentY + h > mPageBreakTrigger) Then
+		              AddPage(mCurOrientation)
+		            End If
+		            chunk = nextChar
+		          Else
+		            chunk = testChunk
+		          End If
+		        Next
+		        // Output the remaining chunk with trailing space (end of word)
+		        If chunk <> "" Then
+		          OutputWordInWrite(h, chunk, " ")
 		        End If
-		        
-		        // Get glyph mapping if font was subset
-		        If fontInfo.HasKey("glyphMapping") Then
-		          glyphMapping = fontInfo.Value("glyphMapping")
-		        End If
-		        
-		        // Track used Unicode characters AFTER shaping
-		        // Shape Arabic text first (converts to presentation forms)
-		        // This ensures shaped glyph code points are included in font subset
-		        If fontInfo.HasKey("usedRunes") Then
-		          Dim usedRunes As Dictionary = fontInfo.Value("usedRunes")
-		          Dim shapedWord As String = ShapeArabicText(wordWithSpace)
-		          Dim shapedCodePoints() As Integer = UTF8ToCodePoints(shapedWord)
-		          For i As Integer = 0 To shapedCodePoints.LastIndex
-		            Dim codePoint As Integer = shapedCodePoints(i)
-		            usedRunes.Value(Str(codePoint)) = codePoint
-		          Next
-		        End If
+		        Continue For
 		      End If
 		    End If
-		    
-		    // Encode text based on font type
-		    If isUTF8 And ttf <> Nil Then
-		      // Use UTF-16BE encoding for UTF8 fonts
-		      // Pass glyph mapping if font was subset
-		      encodedText = EncodeTextForTrueType(wordWithSpace, ttf, glyphMapping)
-		    Else
-		      // Use standard PDF string escaping for core fonts
-		      encodedText = "(" + EscapeText(wordWithSpace) + ")"
+
+		    // Output the word with trailing space
+		    OutputWordInWrite(h, word, " ")
+		  Next
+
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h21, Description = 4f757470757420776f726420696e205772697465
+		Private Sub OutputWordInWrite(h As Double, word As String, suffix As String)
+		  // Output a single word (plus suffix like trailing space) at current position
+		  // This helper is used by Write() to render each word with full PDF commands
+		  #Pragma Unused h
+
+		  Dim wordWithSuffix As String = word + suffix
+		  Dim wordWidth As Double = GetStringWidth(wordWithSuffix)
+
+		  // Check if current font is UTF8
+		  Dim isUTF8 As Boolean = False
+		  Dim ttf As VNSPDFTrueTypeFont = Nil
+		  Dim encodedText As String = ""
+		  Dim glyphMapping As Dictionary = Nil
+
+		  If mFonts.HasKey(mCurrentFont) Then
+		    Dim fontInfo As Dictionary = mFonts.Value(mCurrentFont)
+		    If fontInfo.HasKey("type") And fontInfo.Value("type") = "UTF8" Then
+		      isUTF8 = True
+		      If fontInfo.HasKey("ttf") Then
+		        ttf = fontInfo.Value("ttf")
+		      End If
+
+		      If fontInfo.HasKey("glyphMapping") Then
+		        glyphMapping = fontInfo.Value("glyphMapping")
+		      End If
+
+		      // Track used Unicode characters AFTER shaping
+		      If fontInfo.HasKey("usedRunes") Then
+		        Dim usedRunes As Dictionary = fontInfo.Value("usedRunes")
+		        Dim shapedWord As String = ShapeArabicText(wordWithSuffix)
+		        Dim shapedCodePoints() As Integer = UTF8ToCodePoints(shapedWord)
+		        For i As Integer = 0 To shapedCodePoints.LastIndex
+		          Dim codePoint As Integer = shapedCodePoints(i)
+		          usedRunes.Value(Str(codePoint)) = codePoint
+		        Next
+		      End If
 		    End If
-		    
-		    Dim txtX As Double = mCurrentX * mScaleFactor
-		    Dim txtY As Double = (mPageHeight - mCurrentY) * mScaleFactor
-		    
-		    Dim cmd As String = ""
-		    
-		    // Output text color before text
-		    Dim rPDF As Double = mTextColorR / 255.0
-		    Dim gPDF As Double = mTextColorG / 255.0
-		    Dim bPDF As Double = mTextColorB / 255.0
-		    cmd = cmd + FormatPDF(rPDF, 3) + " " + FormatPDF(gPDF, 3) + " " + FormatPDF(bPDF, 3) + " rg" + EndOfLine.UNIX
+		  End If
 
-		    // Detect if we need simulated bold/italic for UTF-8 fonts without B/I variants
-		    Dim simulateBold As Boolean = False
-		    Dim simulateItalic As Boolean = False
-		    If isUTF8 And mFontStyle <> "" Then
-		      Dim styleNoDecor As String = mFontStyle.ReplaceAll("U", "").ReplaceAll("S", "")
-		      If styleNoDecor.IndexOf("B") >= 0 Then simulateBold = True
-		      If styleNoDecor.IndexOf("I") >= 0 Then simulateItalic = True
-		    End If
+		  // Encode text based on font type
+		  If isUTF8 And ttf <> Nil Then
+		    encodedText = EncodeTextForTrueType(wordWithSuffix, ttf, glyphMapping)
+		  Else
+		    encodedText = "(" + EscapeText(wordWithSuffix) + ")"
+		  End If
 
-		    // Simulated bold: set text rendering mode to 2 (fill + stroke) with thin stroke
-		    If simulateBold Then
-		      Dim boldStrokeWidth As Double = mFontSizePt * 0.03
-		      cmd = cmd + FormatPDF(boldStrokeWidth) + " w " + EndOfLine.UNIX
-		      cmd = cmd + FormatPDF(rPDF, 3) + " " + FormatPDF(gPDF, 3) + " " + FormatPDF(bPDF, 3) + " RG " + EndOfLine.UNIX
-		      cmd = cmd + "2 Tr" + EndOfLine.UNIX
-		    End If
+		  Dim txtX As Double = mCurrentX * mScaleFactor
+		  Dim txtY As Double = (mPageHeight - mCurrentY) * mScaleFactor
 
-		    cmd = cmd + "BT" + EndOfLine.UNIX
+		  Dim cmd As String = ""
 
-		    // Set font inside text object (REQUIRED in PDF)
+		  // Output text color before text
+		  Dim rPDF As Double = mTextColorR / 255.0
+		  Dim gPDF As Double = mTextColorG / 255.0
+		  Dim bPDF As Double = mTextColorB / 255.0
+		  cmd = cmd + FormatPDF(rPDF, 3) + " " + FormatPDF(gPDF, 3) + " " + FormatPDF(bPDF, 3) + " rg" + EndOfLine.UNIX
+
+		  // Detect if we need simulated bold/italic for UTF-8 fonts without B/I variants
+		  Dim simulateBold As Boolean = False
+		  Dim simulateItalic As Boolean = False
+		  If isUTF8 And mFontStyle <> "" Then
+		    Dim styleNoDecor As String = mFontStyle.ReplaceAll("U", "").ReplaceAll("S", "")
+		    If styleNoDecor.IndexOf("B") >= 0 Then simulateBold = True
+		    If styleNoDecor.IndexOf("I") >= 0 Then simulateItalic = True
+		  End If
+
+		  // Simulated bold: set text rendering mode to 2 (fill + stroke) with thin stroke
+		  If simulateBold Then
+		    Dim boldStrokeWidth As Double = mFontSizePt * 0.05
+		    cmd = cmd + FormatPDF(boldStrokeWidth) + " w " + EndOfLine.UNIX
+		    cmd = cmd + FormatPDF(rPDF, 3) + " " + FormatPDF(gPDF, 3) + " " + FormatPDF(bPDF, 3) + " RG " + EndOfLine.UNIX
+		    cmd = cmd + "2 Tr" + EndOfLine.UNIX
+		  End If
+
+		  cmd = cmd + "BT" + EndOfLine.UNIX
+
+		  // Set font inside text object (REQUIRED in PDF)
+		  If mCurrentFont <> "" And mFonts.HasKey(mCurrentFont) Then
+		    Dim fontInfo As Dictionary = mFonts.Value(mCurrentFont)
+		    Dim fontNum As Integer = fontInfo.Value("number")
+		    cmd = cmd + "/F" + Str(fontNum) + " " + FormatPDF(mFontSizePt) + " Tf" + EndOfLine.UNIX
+		  End If
+
+		  // Apply text rise for subscript/superscript
+		  If mTextRiseDirty Then
+		    cmd = cmd + FormatPDF(mTextRise) + " Ts" + EndOfLine.UNIX
+		    If mTextRise = 0.0 Then mTextRiseDirty = False
+		  End If
+
+		  // Position text: use text matrix for simulated italic (shear), otherwise simple Td
+		  If simulateItalic Then
+		    Dim shear As Double = 0.21
+		    cmd = cmd + "1 0 " + FormatPDF(shear) + " 1 " + FormatPDF(txtX) + " " + FormatPDF(txtY) + " Tm" + EndOfLine.UNIX
+		  Else
+		    cmd = cmd + FormatPDF(txtX) + " " + FormatPDF(txtY) + " Td" + EndOfLine.UNIX
+		  End If
+		  cmd = cmd + encodedText + " Tj" + EndOfLine.UNIX
+		  cmd = cmd + "ET" + EndOfLine.UNIX
+
+		  // Reset text rendering mode after simulated bold
+		  If simulateBold Then
+		    cmd = cmd + "0 Tr" + EndOfLine.UNIX
+		  End If
+
+		  // Draw underline if style contains "U"
+		  If mFontStyle.IndexOf("U") >= 0 Then
 		    If mCurrentFont <> "" And mFonts.HasKey(mCurrentFont) Then
 		      Dim fontInfo As Dictionary = mFonts.Value(mCurrentFont)
-		      Dim fontNum As Integer = fontInfo.Value("number")
-		      cmd = cmd + "/F" + Str(fontNum) + " " + FormatPDF(mFontSizePt) + " Tf" + EndOfLine.UNIX
-		    End If
-
-		    // Apply text rise for subscript/superscript (always emit when dirty to ensure 0 Ts resets)
-		    If mTextRiseDirty Then
-		      cmd = cmd + FormatPDF(mTextRise) + " Ts" + EndOfLine.UNIX
-		      If mTextRise = 0.0 Then mTextRiseDirty = False
-		    End If
-
-		    // Position text: use text matrix for simulated italic (shear), otherwise simple Td
-		    If simulateItalic Then
-		      Dim shear As Double = 0.21
-		      cmd = cmd + "1 0 " + FormatPDF(shear) + " 1 " + FormatPDF(txtX) + " " + FormatPDF(txtY) + " Tm" + EndOfLine.UNIX
-		    Else
-		      cmd = cmd + FormatPDF(txtX) + " " + FormatPDF(txtY) + " Td" + EndOfLine.UNIX
-		    End If
-		    cmd = cmd + encodedText + " Tj" + EndOfLine.UNIX
-		    cmd = cmd + "ET" + EndOfLine.UNIX
-
-		    // Reset text rendering mode after simulated bold
-		    If simulateBold Then
-		      cmd = cmd + "0 Tr" + EndOfLine.UNIX
-		    End If
-
-		    // Draw underline if style contains "U"
-		    If mFontStyle.IndexOf("U") >= 0 Then
-		      If mCurrentFont <> "" And mFonts.HasKey(mCurrentFont) Then
-		        Dim fontInfo As Dictionary = mFonts.Value(mCurrentFont)
-
-		        // Get underline position and thickness from font metrics
-		        Dim up As Double = -100 // Default underline position
-		        Dim ut As Double = 50   // Default underline thickness
-
-		        If fontInfo.HasKey("up") Then
-		          up = fontInfo.Value("up")
-		        End If
-		        If fontInfo.HasKey("ut") Then
-		          ut = fontInfo.Value("ut")
-		        End If
-		        
-		        // Calculate underline position and thickness in user units
-		        // up and ut are in font units (1000 units = 1 em)
-		        Dim underlineOffset As Double = up * mFontSizePt / 1000.0
-		        Dim underlineThickness As Double = ut * mFontSizePt / 1000.0 * mUnderlineThickness
-		        
-		        // Calculate underline Y position (in PDF coordinates)
-		        Dim underlineY As Double = txtY + (underlineOffset * mScaleFactor)
-		        
-		        // Set line width for underline
-		        cmd = cmd + FormatPDF(underlineThickness * mScaleFactor) + " w " + EndOfLine.UNIX
-		        
-		        // Set line color to text color
-		        cmd = cmd + FormatPDF(rPDF, 3) + " " + FormatPDF(gPDF, 3) + " " + FormatPDF(bPDF, 3) + " RG " + EndOfLine.UNIX
-		        
-		        // Draw underline from start to end of word
-		        cmd = cmd + FormatPDF(txtX) + " " + FormatPDF(underlineY) + " m " + EndOfLine.UNIX
-		        cmd = cmd + FormatPDF(txtX + wordWidth * mScaleFactor) + " " + FormatPDF(underlineY) + " l S " + EndOfLine.UNIX
+		      Dim up As Double = -100
+		      Dim ut As Double = 50
+		      If fontInfo.HasKey("up") Then
+		        up = fontInfo.Value("up")
 		      End If
-		    End If
-
-		    // Draw strikethrough if style contains "S"
-		    If mFontStyle.IndexOf("S") >= 0 Then
-		      If mCurrentFont <> "" And mFonts.HasKey(mCurrentFont) Then
-		        Dim stFontInfo As Dictionary = mFonts.Value(mCurrentFont)
-
-		        Dim stUt As Double = 50
-		        If stFontInfo.HasKey("ut") Then
-		          stUt = stFontInfo.Value("ut")
-		        End If
-
-		        Dim stThickness As Double = stUt * mFontSizePt / 1000.0 * mUnderlineThickness
-		        Dim stOffset As Double = 0.15 * mFontSizePt
-		        Dim stY As Double = txtY + (stOffset * mScaleFactor)
-
-		        cmd = cmd + FormatPDF(stThickness * mScaleFactor) + " w " + EndOfLine.UNIX
-		        cmd = cmd + FormatPDF(rPDF, 3) + " " + FormatPDF(gPDF, 3) + " " + FormatPDF(bPDF, 3) + " RG " + EndOfLine.UNIX
-		        cmd = cmd + FormatPDF(txtX) + " " + FormatPDF(stY) + " m " + EndOfLine.UNIX
-		        cmd = cmd + FormatPDF(txtX + wordWidth * mScaleFactor) + " " + FormatPDF(stY) + " l S " + EndOfLine.UNIX
+		      If fontInfo.HasKey("ut") Then
+		        ut = fontInfo.Value("ut")
 		      End If
+		      Dim underlineOffset As Double = up * mFontSizePt / 1000.0
+		      Dim underlineThickness As Double = ut * mFontSizePt / 1000.0 * mUnderlineThickness
+		      Dim underlineY As Double = txtY + (underlineOffset * mScaleFactor)
+		      cmd = cmd + FormatPDF(underlineThickness * mScaleFactor) + " w " + EndOfLine.UNIX
+		      cmd = cmd + FormatPDF(rPDF, 3) + " " + FormatPDF(gPDF, 3) + " " + FormatPDF(bPDF, 3) + " RG " + EndOfLine.UNIX
+		      cmd = cmd + FormatPDF(txtX) + " " + FormatPDF(underlineY) + " m " + EndOfLine.UNIX
+		      cmd = cmd + FormatPDF(txtX + wordWidth * mScaleFactor) + " " + FormatPDF(underlineY) + " l S " + EndOfLine.UNIX
 		    End If
+		  End If
 
-		    mBuffer = mBuffer + cmd
+		  // Draw strikethrough if style contains "S"
+		  If mFontStyle.IndexOf("S") >= 0 Then
+		    If mCurrentFont <> "" And mFonts.HasKey(mCurrentFont) Then
+		      Dim stFontInfo As Dictionary = mFonts.Value(mCurrentFont)
+		      Dim stUt As Double = 50
+		      If stFontInfo.HasKey("ut") Then
+		        stUt = stFontInfo.Value("ut")
+		      End If
+		      Dim stThickness As Double = stUt * mFontSizePt / 1000.0 * mUnderlineThickness
+		      Dim stOffset As Double = 0.15 * mFontSizePt
+		      Dim stY As Double = txtY + (stOffset * mScaleFactor)
+		      cmd = cmd + FormatPDF(stThickness * mScaleFactor) + " w " + EndOfLine.UNIX
+		      cmd = cmd + FormatPDF(rPDF, 3) + " " + FormatPDF(gPDF, 3) + " " + FormatPDF(bPDF, 3) + " RG " + EndOfLine.UNIX
+		      cmd = cmd + FormatPDF(txtX) + " " + FormatPDF(stY) + " m " + EndOfLine.UNIX
+		      cmd = cmd + FormatPDF(txtX + wordWidth * mScaleFactor) + " " + FormatPDF(stY) + " l S " + EndOfLine.UNIX
+		    End If
+		  End If
 
-		    // Update position
-		    mCurrentX = mCurrentX + wordWidth
-		  Next
-		  
+		  mBuffer = mBuffer + cmd
+
+		  // Update position
+		  mCurrentX = mCurrentX + wordWidth
 		End Sub
 	#tag EndMethod
 
@@ -10897,7 +10971,7 @@ Protected Class VNSPDFDocument
 			  If value <> Nil Then
 			    // Determine encryption revision based on premium availability
 			    Dim encRevision As Integer
-			    #If VNSPDFModule.hasPremiumEncryptionModule Then
+			    #If hasPremiumVNSEncryptionModule Then
 			      encRevision = VNSPDFModule.gkEncryptionAES128
 			    #Else
 			      encRevision = VNSPDFModule.gkEncryptionRC4_40

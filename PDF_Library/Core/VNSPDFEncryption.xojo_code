@@ -106,7 +106,7 @@ Protected Class VNSPDFEncryption
 		      System.DebugLog "  Using SHA-256 for validation hash"
 		    Else
 		      // Revision 6: Use Algorithm 2.B (iterative AES-based hashing)
-		      #If VNSPDFModule.hasPremiumEncryptionModule Then
+		      #If hasPremiumVNSEncryptionModule Then
 		        hash = VNSPDFEncryptionPremium.ComputeHashR6(ownerPasswordUTF8, mOwnerValidationSalt, mUserEntry.LeftBytes(48))
 		        System.DebugLog "  Using Algorithm 2.B (R6) for validation hash"
 		      #Else
@@ -207,7 +207,7 @@ Protected Class VNSPDFEncryption
 		      System.DebugLog "  Using SHA-256 for validation hash"
 		    Else
 		      // Revision 6: Use Algorithm 2.B (iterative AES-based hashing)
-		      #If VNSPDFModule.hasPremiumEncryptionModule Then
+		      #If hasPremiumVNSEncryptionModule Then
 		        hash = VNSPDFEncryptionPremium.ComputeHashR6(userPasswordUTF8, mUserValidationSalt, "")
 		        System.DebugLog "  Using Algorithm 2.B (R6) for validation hash"
 		      #Else
@@ -291,7 +291,7 @@ Protected Class VNSPDFEncryption
 		    intermediateHash = hashMB.StringValue(0, hashMB.Size).DefineEncoding(Encodings.ASCII)
 		  Else
 		    // Revision 6: Use Algorithm 2.B (iterative AES-based hashing)
-		    #If VNSPDFModule.hasPremiumEncryptionModule Then
+		    #If hasPremiumVNSEncryptionModule Then
 		      intermediateHash = VNSPDFEncryptionPremium.ComputeHashR6(ownerPasswordUTF8, mOwnerKeySalt, mUserEntry.LeftBytes(48))
 		    #Else
 		      Raise New RuntimeException("Revision 6 requires premium Encryption module")
@@ -301,7 +301,7 @@ Protected Class VNSPDFEncryption
 		  System.DebugLog "  Intermediate hash HEX: " + ToHex(intermediateHash)
 
 		  // Encrypt the file encryption key with AES-256 CBC using zero IV
-		  #If VNSPDFModule.hasPremiumEncryptionModule Then
+		  #If hasPremiumVNSEncryptionModule Then
 		    Dim zeroIVMB As New MemoryBlock(16)
 		    Dim i As Integer
 		    For i = 0 To 15
@@ -342,7 +342,7 @@ Protected Class VNSPDFEncryption
 		    intermediateHash = hashMB.StringValue(0, hashMB.Size).DefineEncoding(Encodings.ASCII)
 		  Else
 		    // Revision 6: Use Algorithm 2.B (iterative AES-based hashing)
-		    #If VNSPDFModule.hasPremiumEncryptionModule Then
+		    #If hasPremiumVNSEncryptionModule Then
 		      intermediateHash = VNSPDFEncryptionPremium.ComputeHashR6(userPasswordUTF8, mUserKeySalt, "")
 		    #Else
 		      Raise New RuntimeException("Revision 6 requires premium Encryption module")
@@ -352,7 +352,7 @@ Protected Class VNSPDFEncryption
 		  System.DebugLog "  Intermediate hash HEX: " + ToHex(intermediateHash)
 
 		  // Encrypt the file encryption key with AES-256 CBC using zero IV
-		  #If VNSPDFModule.hasPremiumEncryptionModule Then
+		  #If hasPremiumVNSEncryptionModule Then
 		    Dim zeroIVMB As New MemoryBlock(16)
 		    Dim i As Integer
 		    For i = 0 To 15
@@ -415,7 +415,7 @@ Protected Class VNSPDFEncryption
 		  System.DebugLog "  Perms input (16 bytes) HEX: " + ToHex(permsInput)
 
 		  // Encrypt with AES-256-ECB (no padding needed, exactly 16 bytes)
-		  #If VNSPDFModule.hasPremiumEncryptionModule Then
+		  #If hasPremiumVNSEncryptionModule Then
 		    Dim perms As String = VNSPDFEncryptionPremium.EncryptAESECB(permsInput, mEncryptionKey)
 		    System.DebugLog "  Perms entry (16 bytes) HEX: " + ToHex(perms)
 		    System.DebugLog "=== ComputePermsEntry END ==="
@@ -464,7 +464,7 @@ Protected Class VNSPDFEncryption
 		  // Encrypt data using AES in CBC mode
 		  // Delegate to premium module which uses pure Xojo AES implementation
 
-		  #If VNSPDFModule.hasPremiumEncryptionModule Then
+		  #If hasPremiumVNSEncryptionModule Then
 		    // Generate random IV (16 bytes for AES)
 		    Dim iv As String = VNSPDFEncryptionPremium.GenerateRandomIV()
 
@@ -502,7 +502,7 @@ Protected Class VNSPDFEncryption
 		    Return ""
 		  End If
 
-		  #If VNSPDFModule.hasPremiumEncryptionModule Then
+		  #If hasPremiumVNSEncryptionModule Then
 		    // Premium module enabled - use pure Xojo AES-ECB (no PKCS7 padding issues!)
 		    System.DebugLog "EncryptAESPassword - Using premium EncryptAESECB (input: " + Str(VNSPDFModule.StringLenB(data)) + " bytes)"
 		    Dim encrypted As String = VNSPDFEncryptionPremium.EncryptAESECB(data, key)
@@ -601,7 +601,7 @@ Protected Class VNSPDFEncryption
 
 		  // Check if this is revision 3+ RC4-128 (requires premium module)
 		  If mRevision >= 3 Then
-		    #If VNSPDFModule.hasPremiumEncryptionModule Then
+		    #If hasPremiumVNSEncryptionModule Then
 		      // Premium module enabled - use premium RC4-128 implementation
 		      Return VNSPDFEncryptionPremium.EncryptRC4(data, key)
 		    #Else
