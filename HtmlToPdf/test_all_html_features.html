@@ -411,8 +411,95 @@ pdf.Save(outputFile)</code></pre>
 <p>Text with    multiple   spaces    between    words.</p>
 <hr>
 
+<!-- ==================== EMOJI TESTS ==================== -->
+<h2>27. Emoji Rendering</h2>
+
+<h3>27a. Inline Emojis in Text</h3>
+<p>Hello 👋 World! This text has emojis 🎉 mixed inline 🚀 with regular words.</p>
+<p>Rating: ⭐⭐⭐⭐⭐ Five stars!</p>
+<p>Status: ✅ Complete | ❌ Failed | ⚠️ Warning | ℹ️ Info</p>
+
+<h3>27b. Emojis with Formatting</h3>
+<p><b>Bold text with emoji 💪 inside</b></p>
+<p><i>Italic text with emoji 🌟 inside</i></p>
+<p><u>Underlined text with emoji 📌 inside</u></p>
+<p><b><i>Bold italic with emoji 🔥 inside</i></b></p>
+
+<h3>27c. Emojis at Different Font Sizes</h3>
+<p style="font-size: 8pt">Small 8pt: Hello 🌍 World 🎈</p>
+<p style="font-size: 12pt">Normal 12pt: Hello 🌍 World 🎈</p>
+<p style="font-size: 18pt">Large 18pt: Hello 🌍 World 🎈</p>
+<p style="font-size: 24pt">Extra large 24pt: Hello 🌍 World 🎈</p>
+
+<h3>27d. Emojis with Text Alignment</h3>
+<p style="text-align: left">Left aligned: 📋 Task list item</p>
+<p style="text-align: center">Center aligned: 🎯 Bullseye!</p>
+<p style="text-align: right">Right aligned: 📊 Chart data</p>
+
+<h3>27e. Consecutive Emojis</h3>
+<p>Flags: 🇫🇷🇩🇪🇪🇸🇮🇹🇬🇧🇺🇸🇯🇵🇨🇳</p>
+<p>Faces: 😀😃😄😁😆😂🤣😊</p>
+<p>Animals: 🐶🐱🐭🐹🐰🦊🐻🐼</p>
+<p>Food: 🍎🍊🍋🍇🍉🍓🫐🍑</p>
+
+<h3>27f. Emojis in Lists</h3>
+<ul>
+  <li>🏠 Home - main dashboard</li>
+  <li>📧 Messages - inbox and sent</li>
+  <li>⚙️ Settings - configuration</li>
+  <li>👤 Profile - user account</li>
+</ul>
+<ol>
+  <li>🔍 Search for item</li>
+  <li>🛒 Add to cart</li>
+  <li>💳 Checkout</li>
+  <li>📦 Delivery</li>
+</ol>
+
+<h3>27g. Emojis in Tables</h3>
+<table>
+  <tr>
+    <th>Status</th>
+    <th>Task</th>
+    <th>Priority</th>
+  </tr>
+  <tr>
+    <td>✅ Done</td>
+    <td>Setup project 🏗️</td>
+    <td>🔴 High</td>
+  </tr>
+  <tr>
+    <td>🔄 In Progress</td>
+    <td>Write tests 🧪</td>
+    <td>🟡 Medium</td>
+  </tr>
+  <tr>
+    <td>❌ Blocked</td>
+    <td>Deploy app 🚀</td>
+    <td>🟢 Low</td>
+  </tr>
+</table>
+
+<h3>27h. Emojis in Blockquotes and Code</h3>
+<blockquote>💡 Pro tip: Always test your emojis across platforms for consistent rendering.</blockquote>
+<pre>// TODO: 🐛 Fix this bug
+function hello() {
+  return "👋 Hello!"; // 🎉 greeting
+}</pre>
+
+<h3>27i. Emoji-Only Paragraphs</h3>
+<p>🎉</p>
+<p>🎉🎊🎈</p>
+<p>👨‍👩‍👧‍👦</p>
+
+<h3>27j. Emojis with Background Colors</h3>
+<p>Text with <span style="background-color: #FFFF00">highlighted emoji 🌟 inside</span> the sentence.</p>
+<p style="background-color: #E8F5E9; padding: 5px">🌿 This paragraph has a green background with plant emojis 🌱🌳🌲</p>
+
+<hr>
+
 <!-- ==================== FINAL SUMMARY ==================== -->
-<h2>27. Test Summary</h2>
+<h2>28. Test Summary</h2>
 <table>
   <tr>
     <th>Test Category</th>
@@ -473,6 +560,11 @@ pdf.Save(outputFile)</code></pre>
     <td>Unicode tables</td>
     <td>International text in cells</td>
     <td>Proper alignment</td>
+  </tr>
+  <tr>
+    <td>Emojis</td>
+    <td>Inline, formatted, sized, aligned, in lists/tables/blockquotes</td>
+    <td>Centered on text baseline, correct size</td>
   </tr>
 </table>
 
