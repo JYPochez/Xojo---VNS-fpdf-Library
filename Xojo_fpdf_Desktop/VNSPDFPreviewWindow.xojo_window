@@ -1258,7 +1258,7 @@ End
 		  
 		  If targetFile <> Nil Then
 		    // Ensure .pdf extension
-		    If Right(targetFile.Name, 4) <> ".pdf" Then
+		    If targetFile.Name.Right(4) <> ".pdf" Then
 		      targetFile = targetFile.Parent.Child(targetFile.Name + ".pdf")
 		    End If
 		    
@@ -1287,7 +1287,7 @@ End
 		  
 		  // Show the native print dialog
 		  Dim ps As New PrinterSetup
-		  Dim g As Graphics = OpenPrinterDialog(ps)
+		  Dim g As Graphics = ps.ShowPrinterDialog()
 		  
 		  If g = Nil Then
 		    // User cancelled the print dialog

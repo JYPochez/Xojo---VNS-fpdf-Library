@@ -39,18 +39,9 @@ Protected Class VNSPDFPageRenderer
 		  #EndIf
 
 		  #If TargetWindows Then
-		    // Clean up temp file and rendered page images
-		    If mTempFile <> Nil And mTempFile.Exists Then
-		      Try
-		        mTempFile.Remove
-		      Catch e As IOException
-		        // Ignore cleanup errors
-		      End Try
-		    End If
-
+		    // Clean up temp file and rendered page images on Windows
 		    If mWinTempFolder <> Nil And mWinTempFolder.Exists Then
 		      Try
-		        // Remove rendered PNG files
 		        Dim count As Integer = mWinTempFolder.Count
 		        For i As Integer = count DownTo 1
 		          Try
@@ -60,7 +51,7 @@ Protected Class VNSPDFPageRenderer
 		        Next
 		        mWinTempFolder.Remove
 		      Catch e As IOException
-		        // Ignore
+		        // Ignore cleanup errors
 		      End Try
 		    End If
 		  #EndIf
@@ -98,7 +89,7 @@ Protected Class VNSPDFPageRenderer
 		Function GetPageWidth(pageNumber As Integer) As Double
 		  // Returns the page width in PDF points (1 point = 1/72 inch)
 		  If pageNumber < 1 Or pageNumber > mPageCount Then Return 595.0 // A4 default
-		  If pageNumber > UBound(mPageWidths) + 1 Then Return 595.0
+		  If pageNumber > mPageWidths.LastIndex + 1 Then Return 595.0
 		  Return mPageWidths(pageNumber - 1)
 		End Function
 	#tag EndMethod
@@ -107,7 +98,7 @@ Protected Class VNSPDFPageRenderer
 		Function GetPageHeight(pageNumber As Integer) As Double
 		  // Returns the page height in PDF points (1 point = 1/72 inch)
 		  If pageNumber < 1 Or pageNumber > mPageCount Then Return 842.0 // A4 default
-		  If pageNumber > UBound(mPageHeights) + 1 Then Return 842.0
+		  If pageNumber > mPageHeights.LastIndex + 1 Then Return 842.0
 		  Return mPageHeights(pageNumber - 1)
 		End Function
 	#tag EndMethod
@@ -235,7 +226,7 @@ Protected Class VNSPDFPageRenderer
 		              Dim boxContent As String = searchRange.Middle(bracketPos + 1, closeBracket - bracketPos - 1).Trim
 		              // Parse "0 0 595.28 841.89" format
 		              Dim parts() As String = boxContent.Split(" ")
-		              If UBound(parts) >= 3 Then
+		              If parts.LastIndex >= 3 Then
 		                Dim w As Double = Val(parts(2)) - Val(parts(0))
 		                Dim h As Double = Val(parts(3)) - Val(parts(1))
 		                If w > 0 And h > 0 Then
@@ -440,39 +431,54 @@ Protected Class VNSPDFPageRenderer
 		    If mTempFile = Nil Or Not mTempFile.Exists Then Return
 		    If mWinTempFolder = Nil Or Not mWinTempFolder.Exists Then Return
 
-		    // Build PowerShell script that renders all pages
-		    Dim pdfPath As String = mTempFile.NativePath.ReplaceAll("\", "\\")
-		    Dim outFolder As String = mWinTempFolder.NativePath.ReplaceAll("\", "\\")
+		    Dim pdfPath As String = mTempFile.NativePath
+		    Dim outFolder As String = mWinTempFolder.NativePath
 
+		    // Pure PowerShell approach using AsTask reflection to await WinRT async tasks.
+		    // Key fixes: (1) Seek stream to 0 after rendering, (2) use explicit static call for
+		    // WindowsRuntimeStreamExtensions.AsStreamForRead (PS 5.1 can't resolve extension methods).
 		    Dim psScript As String = _
+		    "$errorLog = Join-Path '" + outFolder.ReplaceAll("'", "''") + "' 'error.log'" + EndOfLine + _
 		    "try {" + EndOfLine + _
 		    "  Add-Type -AssemblyName 'System.Runtime.WindowsRuntime'" + EndOfLine + _
 		    "  [Windows.Data.Pdf.PdfDocument,Windows.Data.Pdf,ContentType=WindowsRuntime] | Out-Null" + EndOfLine + _
 		    "  [Windows.Storage.StorageFile,Windows.Storage,ContentType=WindowsRuntime] | Out-Null" + EndOfLine + _
 		    "  [Windows.Storage.Streams.InMemoryRandomAccessStream,Windows.Storage.Streams,ContentType=WindowsRuntime] | Out-Null" + EndOfLine + _
-		    "  " + EndOfLine + _
-		    "  # Helper to await async WinRT tasks" + EndOfLine + _
-		    "  Add-Type -Language CSharp -ReferencedAssemblies @('System.Runtime.WindowsRuntime') ''" + EndOfLine + _
-		    "  " + EndOfLine + _
-		    "  $pdfPath = '" + pdfPath + "'" + EndOfLine + _
-		    "  $outFolder = '" + outFolder + "'" + EndOfLine + _
-		    "  " + EndOfLine + _
-		    "  # Load PDF" + EndOfLine + _
-		    "  $fileTask = [Windows.Storage.StorageFile]::GetFileFromPathAsync($pdfPath)" + EndOfLine + _
-		    "  $file = $fileTask.GetAwaiter().GetResult()" + EndOfLine + _
-		    "  $pdfTask = [Windows.Data.Pdf.PdfDocument]::LoadFromFileAsync($file)" + EndOfLine + _
-		    "  $pdf = $pdfTask.GetAwaiter().GetResult()" + EndOfLine + _
-		    "  " + EndOfLine + _
-		    "  # Render each page" + EndOfLine + _
+		    "" + EndOfLine + _
+		    "  $allMethods = [System.WindowsRuntimeSystemExtensions].GetMethods()" + EndOfLine + _
+		    "  $asTaskGeneric = ($allMethods | Where-Object {" + EndOfLine + _
+		    "    $_.Name -eq 'AsTask' -and $_.GetParameters().Count -eq 1 -and $_.IsGenericMethod -and $_.GetParameters()[0].ParameterType.Name -eq 'IAsyncOperation" + Chr(96) + "1'" + EndOfLine + _
+		    "  })[0]" + EndOfLine + _
+		    "  $asTaskAction = ($allMethods | Where-Object {" + EndOfLine + _
+		    "    $_.Name -eq 'AsTask' -and $_.GetParameters().Count -eq 1 -and (-not $_.IsGenericMethod) -and $_.GetParameters()[0].ParameterType.Name -eq 'IAsyncAction'" + EndOfLine + _
+		    "  })[0]" + EndOfLine + _
+		    "" + EndOfLine + _
+		    "  if ($asTaskGeneric -eq $null) { throw 'Could not find AsTask generic method' }" + EndOfLine + _
+		    "  if ($asTaskAction -eq $null) { throw 'Could not find AsTask action method' }" + EndOfLine + _
+		    "" + EndOfLine + _
+		    "  $pdfPath = '" + pdfPath.ReplaceAll("'", "''") + "'" + EndOfLine + _
+		    "  $outFolder = '" + outFolder.ReplaceAll("'", "''") + "'" + EndOfLine + _
+		    "" + EndOfLine + _
+		    "  $fileOp = [Windows.Storage.StorageFile]::GetFileFromPathAsync($pdfPath)" + EndOfLine + _
+		    "  $fileTask = $asTaskGeneric.MakeGenericMethod([Windows.Storage.StorageFile]).Invoke($null, @($fileOp))" + EndOfLine + _
+		    "  $fileTask.Wait(-1) | Out-Null" + EndOfLine + _
+		    "  $file = $fileTask.Result" + EndOfLine + _
+		    "" + EndOfLine + _
+		    "  $pdfOp = [Windows.Data.Pdf.PdfDocument]::LoadFromFileAsync($file)" + EndOfLine + _
+		    "  $pdfTask = $asTaskGeneric.MakeGenericMethod([Windows.Data.Pdf.PdfDocument]).Invoke($null, @($pdfOp))" + EndOfLine + _
+		    "  $pdfTask.Wait(-1) | Out-Null" + EndOfLine + _
+		    "  $pdf = $pdfTask.Result" + EndOfLine + _
+		    "" + EndOfLine + _
 		    "  for ($i = 0; $i -lt $pdf.PageCount; $i++) {" + EndOfLine + _
 		    "    $page = $pdf.GetPage($i)" + EndOfLine + _
 		    "    $stream = New-Object Windows.Storage.Streams.InMemoryRandomAccessStream" + EndOfLine + _
-		    "    $renderTask = $page.RenderToStreamAsync($stream)" + EndOfLine + _
-		    "    $renderTask.GetAwaiter().GetResult()" + EndOfLine + _
-		    "    " + EndOfLine + _
-		    "    # Convert stream to file" + EndOfLine + _
+		    "    $renderOp = $page.RenderToStreamAsync($stream)" + EndOfLine + _
+		    "    $renderTask = $asTaskAction.Invoke($null, @($renderOp))" + EndOfLine + _
+		    "    $renderTask.Wait(-1) | Out-Null" + EndOfLine + _
+		    "    $stream.Seek(0) | Out-Null" + EndOfLine + _
 		    "    $outPath = Join-Path $outFolder ('page_' + ($i + 1).ToString('D4') + '.png')" + EndOfLine + _
-		    "    $netStream = $stream.AsStreamForRead()" + EndOfLine + _
+		    "    $inputStream = $stream.GetInputStreamAt(0)" + EndOfLine + _
+		    "    $netStream = [System.IO.WindowsRuntimeStreamExtensions]::AsStreamForRead($inputStream)" + EndOfLine + _
 		    "    $fileStream = [System.IO.File]::Create($outPath)" + EndOfLine + _
 		    "    $netStream.CopyTo($fileStream)" + EndOfLine + _
 		    "    $fileStream.Close()" + EndOfLine + _
@@ -481,13 +487,28 @@ Protected Class VNSPDFPageRenderer
 		    "    $page.Dispose()" + EndOfLine + _
 		    "  }" + EndOfLine + _
 		    "  $pdf.Dispose()" + EndOfLine + _
+		    "  exit 0" + EndOfLine + _
 		    "} catch {" + EndOfLine + _
-		    "  # Silently fail - pages will show fallback" + EndOfLine + _
+		    "  ('ERROR: ' + $_.Exception.Message) | Out-File $errorLog" + EndOfLine + _
+		    "  ('DETAIL: ' + $_.Exception.ToString()) | Out-File $errorLog -Append" + EndOfLine + _
+		    "  exit 1" + EndOfLine + _
 		    "}"
+
+		    // Write script to temp .ps1 file
+		    Dim scriptFile As FolderItem = mWinTempFolder.Child("render_pages.ps1")
+		    Try
+		      Dim scriptStream As BinaryStream = BinaryStream.Create(scriptFile, True)
+		      scriptStream.Write(psScript)
+		      scriptStream.Close()
+		    Catch e As IOException
+		      mWinRenderSuccess = False
+		      Return
+		    End Try
 
 		    Dim sh As New Shell
 		    sh.TimeOut = 30000 // 30 seconds for multi-page rendering
-		    sh.Execute("powershell -ExecutionPolicy Bypass -NoProfile -Command """ + psScript.ReplaceAll("""", "\""") + """")
+		    Dim cmd As String = "powershell -ExecutionPolicy Bypass -NoProfile -File """ + scriptFile.NativePath + """"
+		    sh.Execute(cmd)
 
 		    mWinRenderSuccess = (sh.ExitCode = 0)
 		  #EndIf
@@ -498,6 +519,10 @@ Protected Class VNSPDFPageRenderer
 		Private Function RenderPageWindows(pageNumber As Integer, targetWidth As Integer, targetHeight As Integer) As Picture
 		  // Load a pre-rendered PNG file for the given page on Windows.
 		  // If rendering failed, returns a placeholder picture.
+
+		  #Pragma Unused pageNumber
+		  #Pragma Unused targetWidth
+		  #Pragma Unused targetHeight
 
 		  #If TargetWindows Then
 		    If mWinTempFolder = Nil Or Not mWinTempFolder.Exists Then
@@ -611,6 +636,10 @@ Protected Class VNSPDFPageRenderer
 		  // Load a pre-rendered PNG file for the given page on Linux.
 		  // pdftoppm generates files named page-01.png, page-02.png, etc.
 		  // If rendering failed, returns a placeholder picture with install instructions.
+
+		  #Pragma Unused pageNumber
+		  #Pragma Unused targetWidth
+		  #Pragma Unused targetHeight
 
 		  #If TargetLinux Then
 		    If mLinuxTempFolder = Nil Or Not mLinuxTempFolder.Exists Then

@@ -889,8 +889,8 @@ End
 		    Return
 		  End Try
 		  
-		  // Call shared module function with file content
-		  Dim result As Dictionary = VNSPDFExamplesModule.GenerateExample27_HTMLImport(htmlContent)
+		  // Call shared module function with file content and image folder
+		  Dim result As Dictionary = VNSPDFExamplesModule.GenerateExample27_HTMLImport(htmlContent, selectedFile.Parent)
 		  
 		  // Display status
 		  txtOutput.Text = txtOutput.Text + result.Value("message")
@@ -1533,7 +1533,7 @@ End
 		      Return
 		    End Try
 		    
-		    result = VNSPDFExamplesModule.GenerateExample27_HTMLImport(htmlContent)
+		    result = VNSPDFExamplesModule.GenerateExample27_HTMLImport(htmlContent, htmlFile.Parent)
 		    ShowPreviewForResult(result)
 		    
 		  Case VNSPDFExamplesModule.kExample28
@@ -1658,7 +1658,11 @@ End
 		    // Show in preview window
 		    VNSPDFPreviewWindow.ShowPreview(pdfData, filename)
 		  Else
-		    txtOutput.Text = txtOutput.Text + "No PDF data generated." + EndOfLine
+		    If result.HasKey("message") Then
+		      txtOutput.Text = txtOutput.Text + result.Value("message").StringValue + EndOfLine
+		    Else
+		      txtOutput.Text = txtOutput.Text + "No PDF data generated." + EndOfLine
+		    End If
 		  End If
 		  
 		  txtOutput.Text = txtOutput.Text + EndOfLine
