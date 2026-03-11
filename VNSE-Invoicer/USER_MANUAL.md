@@ -1,6 +1,6 @@
 # VNS E-Invoicer - User Manual
 
-**Version 1.3** | macOS, Windows, Linux
+**Version 1.4** | macOS, Windows, Linux
 
 VNS E-Invoicer is a desktop application for creating, editing, and exporting electronic invoices compliant with the **Factur-X** and **ZUGFeRD** standards (EN 16931).
 
@@ -44,7 +44,7 @@ Use **File > New Invoice** (Cmd+N) to create a blank invoice.
 | Invoice Number | Your invoice reference (e.g., INV-2026-001) |
 | Invoice Date | Date the invoice is issued |
 | Due Date | Payment deadline |
-| Note | Optional free-text note printed on the invoice |
+| Note | Optional notes printed on the invoice. Use `[CODE] text` format for subject codes (e.g., `[AAB] No discount for early payment`). Multiple notes on separate lines. |
 | Invoice Type | 380 (Commercial Invoice), 381 (Credit Note), 384 (Corrected), 389 (Self-billed) |
 | Currency | EUR, USD, GBP, CHF, and other common currencies |
 | Buyer Reference | Purchase order number or buyer's reference |
@@ -93,6 +93,12 @@ Use **File > Open** (Cmd+O) to open a Factur-X or ZUGFeRD PDF file.
 
 The app reads the embedded XML data and populates all fields. The **Seller** fields are locked (read-only) since the original issuer's data should not be modified. You can still edit the buyer, line items, and other fields.
 
+### Opening a Plain PDF (No E-Invoice Data)
+
+You can also open any standard PDF that does not contain e-invoice data. The app will display an informational message and create a blank invoice pre-filled with your seller information from Preferences. All fields are editable (seller fields are not locked).
+
+When you export, the **original PDF visual pages are preserved** — the app imports all pages from the source PDF and embeds the CII XML attachment alongside them. This lets you add Factur-X/ZUGFeRD compliance to any existing invoice PDF without regenerating its layout.
+
 ---
 
 ## Validating an Invoice
@@ -100,14 +106,21 @@ The app reads the embedded XML data and populates all fields. The **Seller** fie
 Before exporting, validate your invoice to catch errors:
 
 1. Click **Validate** or use **Invoice > Validate** (Cmd+Shift+V)
-2. The app checks:
-   - Required fields are filled (invoice number, date, seller/buyer name and country)
-   - Line items are present (required for BASIC profile and above; not required for MINIMUM and BASIC WL)
-   - Each line item has a product name, quantity > 0, and a price
-   - IBAN is present when payment means is bank transfer
-   - Profile-specific rules (BT business terms) per the selected compliance profile (see **Profile Requirements Guide** below)
+2. The app performs 3-level validation matching European validator standards:
+   - **EN16931 core rules** (BR-02 to BR-65): Required fields, party requirements, line item integrity, tax breakdown completeness
+   - **Code list validation**: Invoice type codes (UNTDID 1001), currency codes (ISO 4217), country codes (ISO 3166-1), payment means (UNCL 4461), VAT category rules
+   - **Country-specific rules** (auto-detected from seller country): France (BR-FR: SIREN/SIRET, mandatory AAB/PMD/PMT notes), Germany (BR-DE: contact info, Leitweg-ID, SEPA IBAN), Italy (BR-IT: Codice Fiscale, SDI), Netherlands (BR-NL: KVK, IBAN)
    - Totals are consistent (line totals match sum of items, tax totals match breakdowns)
 3. Any errors are displayed in a dialog. Fix the issues and validate again.
+
+### French Invoice Notes (BR-FR-05)
+
+French invoices require three mandatory notes with specific subject codes:
+- `[AAB]` — Discount/early payment terms (e.g., "No discount for early payment")
+- `[PMD]` — Late payment penalties (e.g., "Late payment penalties: 3x the legal interest rate")
+- `[PMT]` — Recovery costs (e.g., "Fixed recovery costs: 40 EUR")
+
+When opening a French e-invoice, these notes appear in the Note field with their `[CODE]` prefix. When creating a new French invoice, add them manually in the Note field using the `[CODE] text` format, one per line.
 
 Validation is **mandatory** before saving or exporting. The app will not allow export of an invalid invoice.
 
